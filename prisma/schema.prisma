@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ProductFamily {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  nameEn      String    @default("")
+  category    String    // "single-phase" or "three-phase"
+  phase       String    @default("") // "تک‌فاز" or "سه‌فاز"
+  shellType   String    @default("چدنی")
+  description String    @default("")
+  imageUrl    String    @default("")
+  sortOrder   Int       @default(0)
+  variants    ProductVariant[]
+  createdAt   DateTime  @default(now())
+
+  @@index([category, sortOrder])
+}
+
+model ProductVariant {
+  id         String  @id @default(cuid())
+  familyId   String
+  sku        String  @unique
+  size       String  @default("")  // frame size: 80, 90, 100, 112, 132, etc.
+  power      String  @default("")  // "0.5HP", "2HP", "0.09kw", etc.
+  powerKw    Float   @default(0)  // normalized power in kW for sorting/filtering
+  speed      String  @default("")  // "1400", "3000", "1000", "750"
+  voltage    String  @default("")  // "220V", "380V"
+  price      BigInt  @default(0)
+  weight     String  @default("") // kg
+  dimensions String @default("")  // e.g. "300×200×150mm"
+  inStock    Boolean @default(true)
+  sortOrder  Int     @default(0)
+  family     ProductFamily @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@index([familyId, sortOrder])
+  @@index([familyId, size])
+  @@index([speed])
+  @@index([powerKw])
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String   // hashed with bcrypt
+  name      String   @default("")
+  role      String   @default("admin") // "admin" or "editor"
+  createdAt DateTime @default(now())
+}
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String @default("")
+  label String @default("")
+  group String @default("general") // "general", "contact", "social"
+}

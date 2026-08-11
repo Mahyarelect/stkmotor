@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /panel
+Disallow: /api/admin
+Disallow: /api/auth
+
+User-agent: Googlebot
+Allow: /
+Disallow: /panel
+Disallow: /api/admin
+Disallow: /api/auth
+
+User-agent: Bingbot
+Allow: /
+Disallow: /panel
+Disallow: /api/admin
+Disallow: /api/auth

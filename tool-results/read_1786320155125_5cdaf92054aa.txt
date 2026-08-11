@@ -1,0 +1,1076 @@
+     1→     1→"use client";
+     2→     2→
+     3→     3→import { useState, useEffect, useCallback } from "react";
+     4→     4→import {
+     5→     5→  Search,
+     6→     6→  Phone,
+     7→     7→  Mail,
+     8→     8→  MapPin,
+     9→     9→  ChevronLeft,
+    10→    10→  ArrowUp,
+    11→    11→  X,
+    12→    12→  Menu,
+    13→    13→  Instagram,
+    14→    14→  Send,
+    15→    15→  Cog,
+    16→    16→  Zap,
+    17→    17→  Gauge,
+    18→    18→  ShieldCheck,
+    19→    19→  Factory,
+    20→    20→  Truck,
+    21→    21→  Award,
+    22→    22→  Timer,
+    23→    23→  Headphones,
+    24→    24→  CheckCircle2,
+    25→    25→  MessageCircle,
+    26→    26→  ArrowRight,
+    27→    27→} from "lucide-react";
+    28→    28→import { Input } from "@/components/ui/input";
+    29→    29→import { Button } from "@/components/ui/button";
+    30→    30→import { Card, CardContent } from "@/components/ui/card";
+    31→    31→import { Badge } from "@/components/ui/badge";
+    32→    32→import { Skeleton } from "@/components/ui/skeleton";
+    33→    33→import { Separator } from "@/components/ui/separator";
+    34→    34→import {
+    35→    35→  Select,
+    36→    36→  SelectContent,
+    37→    37→  SelectItem,
+    38→    38→  SelectTrigger,
+    39→    39→  SelectValue,
+    40→    40→} from "@/components/ui/select";
+    41→    41→import Link from "next/link";
+    42→    42→
+    43→    43→/* ─────────────────────────── Types ─────────────────────────── */
+    44→    44→interface Variant {
+    45→    45→  id: string;
+    46→    46→  sku: string;
+    47→    47→  size: string;
+    48→    48→  power: string;
+    49→    49→  powerKw: number;
+    50→    50→  speed: string;
+    51→    51→  voltage: string;
+    52→    52→  price: number;
+    53→    53→  weight: string;
+    54→    54→  dimensions: string;
+    55→    55→  inStock: boolean;
+    56→    56→  sortOrder: number;
+    57→    57→}
+    58→    58→
+    59→    59→interface ProductFamily {
+    60→    60→  id: string;
+    61→    61→  slug: string;
+    62→    62→  name: string;
+    63→    63→  nameEn: string;
+    64→    64→  category: string;
+    65→    65→  phase: string;
+    66→    66→  shellType: string;
+    67→    67→  description: string;
+    68→    68→  imageUrl: string;
+    69→    69→  sortOrder: number;
+    70→    70→  variants: Variant[];
+    71→    71→}
+    72→    72→
+    73→    73→interface SiteStats {
+    74→    74→  families: number;
+    75→    75→  variants: number;
+    76→    76→  singlePhaseFamilies: number;
+    77→    77→  threePhaseFamilies: number;
+    78→    78→  speeds: string[];
+    79→    79→  sizes: string[];
+    80→    80→  powerRanges: string[];
+    81→    81→}
+    82→    82→
+    83→    83→/* ─────────────────────────── Helpers ─────────────────────────── */
+    84→    84→function formatPrice(price: number): string {
+    85→    85→  if (price === 0) return "تماس بگیرید";
+    86→    86→  return new Intl.NumberFormat("fa-IR").format(price) + " تومان";
+    87→    87→}
+    88→    88→
+    89→    89→function faNum(n: number | string): string {
+    90→    90→  return String(n).replace(/\d/g, (d) =>
+    91→    91→    "\u06F0\u06F1\u06F2\u06F3\u06F4\u06F5\u06F6\u06F7\u06F8\u06F9"[
+    92→    92→      parseInt(d)
+    93→    93→    ]
+    94→    94→  );
+    95→    95→}
+    96→    96→
+    97→    97→/* ─────────────────────────── MAIN PAGE ─────────────────────────── */
+    98→    98→export default function HomePage() {
+    99→    99→  /* State */
+   100→   100→  const [products, setProducts] = useState<ProductFamily[]>([]);
+   101→   101→  const [stats, setStats] = useState<SiteStats | null>(null);
+   102→   102→  const [loading, setLoading] = useState(true);
+   103→   103→  const [categoryFilter, setCategoryFilter] = useState("all");
+   104→   104→  const [speedFilter, setSpeedFilter] = useState("all");
+   105→   105→  const [powerFilter, setPowerFilter] = useState("all");
+   106→   106→  const [searchQuery, setSearchQuery] = useState("");
+   107→   107→  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+   108→   108→  const [showScrollTop, setShowScrollTop] = useState(false);
+   109→   109→
+   110→   110→  const fetchProducts = useCallback(async () => {
+   111→   111→    setLoading(true);
+   112→   112→    try {
+   113→   113→      const params = new URLSearchParams();
+   114→   114→      if (categoryFilter !== "all") params.set("category", categoryFilter);
+   115→   115→      if (speedFilter !== "all") params.set("speed", speedFilter);
+   116→   116→      if (powerFilter !== "all") params.set("powerRange", powerFilter);
+   117→   117→      if (searchQuery) params.set("search", searchQuery);
+   118→   118→      params.set("limit", "50");
+   119→   119→
+   120→   120→      const res = await fetch(`/api/products?${params}`);
+   121→   121→      const data = await res.json();
+   122→   122→      setProducts(data.products || []);
+   123→   123→    } catch (err) {
+   124→   124→      console.error("Failed to fetch products:", err);
+   125→   125→    }
+   126→   126→    setLoading(false);
+   127→   127→  }, [categoryFilter, speedFilter, powerFilter, searchQuery]);
+   128→   128→
+   129→   129→  useEffect(() => {
+   130→   130→    fetchProducts();
+   131→   131→  }, [fetchProducts]);
+   132→   132→
+   133→   133→  useEffect(() => {
+   134→   134→    fetch("/api/stats")
+   135→   135→      .then((r) => r.json())
+   136→   136→      .then(setStats)
+   137→   137→      .catch(console.error);
+   138→   138→  }, []);
+   139→   139→
+   140→   140→  // Scroll-to-top visibility
+   141→   141→  useEffect(() => {
+   142→   142→    const handleScroll = () => setShowScrollTop(window.scrollY > 400);
+   143→   143→    window.addEventListener("scroll", handleScroll);
+   144→   144→    return () => window.removeEventListener("scroll", handleScroll);
+   145→   145→  }, []);
+   146→   146→
+   147→   147→  const hasFilters =
+   148→   148→    categoryFilter !== "all" ||
+   149→   149→    speedFilter !== "all" ||
+   150→   150→    powerFilter !== "all" ||
+   151→   151→    searchQuery;
+   152→   152→
+   153→   153→  return (
+   154→   154→    <div className="min-h-screen bg-white" dir="rtl">
+   155→   155→      {/* ─── Top Bar ─── */}
+   156→   156→      <div className="bg-blue-900 text-white text-xs py-2">
+   157→   157→        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
+   158→   158→          <div className="flex items-center gap-4">
+   159→   159→            <a
+   160→   160→              href="tel:02112345678"
+   161→   161→              className="flex items-center gap-1 hover:text-blue-200 transition-colors"
+   162→   162→            >
+   163→   163→              <Phone size={12} />
+   164→   164→              <span className="num-en">021-1234-5678</span>
+   165→   165→            </a>
+   166→   166→            <a
+   167→   167→              href="mailto:info@stkmotors.com"
+   168→   168→              className="flex items-center gap-1 hover:text-blue-200 transition-colors"
+   169→   169→            >
+   170→   170→              <Mail size={12} />
+   171→   171→              <span className="num-en">info@stkmotors.com</span>
+   172→   172→            </a>
+   173→   173→          </div>
+   174→   174→          <div className="flex items-center gap-3">
+   175→   175→            <a
+   176→   176→              href="#"
+   177→   177→              className="hover:text-blue-200 transition-colors"
+   178→   178→              aria-label="Instagram"
+   179→   179→            >
+   180→   180→              <Instagram size={14} />
+   181→   181→            </a>
+   182→   182→            <a
+   183→   183→              href="https://wa.me/982112345678"
+   184→   184→              target="_blank"
+   185→   185→              rel="noopener"
+   186→   186→              className="hover:text-blue-200 transition-colors"
+   187→   187→              aria-label="Telegram"
+   188→   188→            >
+   189→   189→              <Send size={14} />
+   190→   190→            </a>
+   191→   191→          </div>
+   192→   192→        </div>
+   193→   193→      </div>
+   194→   194→
+   195→   195→      {/* ─── Header ─── */}
+   196→   196→      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+   197→   197→        <div className="max-w-7xl mx-auto px-4">
+   198→   198→          <div className="flex items-center justify-between h-16">
+   199→   199→            {/* Logo */}
+   200→   200→            <Link href="/" className="flex items-center gap-3">
+   201→   201→              <div className="w-10 h-10 bg-blue-700 rounded-lg flex items-center justify-center">
+   202→   202→                <Cog size={22} className="text-white" />
+   203→   203→              </div>
+   204→   204→              <div>
+   205→   205→                <h1 className="text-lg font-bold text-blue-900 tracking-tight">
+   206→   206→                  STK Motors
+   207→   207→                </h1>
+   208→   208→                <p className="text-[10px] text-gray-400 -mt-0.5">
+   209→   209→                  الکتروموتور پوسته چدنی
+   210→   210→                </p>
+   211→   211→              </div>
+   212→   212→            </Link>
+   213→   213→
+   214→   214→            {/* Desktop Nav */}
+   215→   215→            <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+   216→   216→              <a
+   217→   217→                href="#home"
+   218→   218→                className="hover:text-blue-700 transition-colors"
+   219→   219→              >
+   220→   220→                خانه
+   221→   221→              </a>
+   222→   222→              <a
+   223→   223→                href="#products"
+   224→   224→                className="hover:text-blue-700 transition-colors"
+   225→   225→              >
+   226→   226→                محصولات
+   227→   227→              </a>
+   228→   228→              <a
+   229→   229→                href="#about"
+   230→   230→                className="hover:text-blue-700 transition-colors"
+   231→   231→              >
+   232→   232→                درباره ما
+   233→   233→              </a>
+   234→   234→              <a
+   235→   235→                href="#contact"
+   236→   236→                className="hover:text-blue-700 transition-colors"
+   237→   237→              >
+   238→   238→                تماس
+   239→   239→              </a>
+   240→   240→            </nav>
+   241→   241→
+   242→   242→            {/* Desktop CTA */}
+   243→   243→            <div className="hidden md:flex items-center gap-3">
+   244→   244→              <a href="tel:02112345678">
+   245→   245→                <Button
+   246→   246→                  size="sm"
+   247→   247→                  className="bg-blue-700 hover:bg-blue-800 text-white"
+   248→   248→                >
+   249→   249→                  <Phone size={14} className="ml-1.5" />
+   250→   250→                  مشاوره رایگان
+   251→   251→                </Button>
+   252→   252→              </a>
+   253→   253→            </div>
+   254→   254→
+   255→   255→            {/* Mobile menu button */}
+   256→   256→            <button
+   257→   257→              className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+   258→   258→              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+   259→   259→            >
+   260→   260→              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+   261→   261→            </button>
+   262→   262→          </div>
+   263→   263→        </div>
+   264→   264→
+   265→   265→        {/* Mobile Nav */}
+   266→   266→        {mobileMenuOpen && (
+   267→   267→          <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-2">
+   268→   268→            <a
+   269→   269→              href="#home"
+   270→   270→              className="block py-2 text-sm font-medium text-gray-700"
+   271→   271→              onClick={() => setMobileMenuOpen(false)}
+   272→   272→            >
+   273→   273→              خانه
+   274→   274→            </a>
+   275→   275→            <a
+   276→   276→              href="#products"
+   277→   277→              className="block py-2 text-sm font-medium text-gray-700"
+   278→   278→              onClick={() => setMobileMenuOpen(false)}
+   279→   279→            >
+   280→   280→              محصولات
+   281→   281→            </a>
+   282→   282→            <a
+   283→   283→              href="#about"
+   284→   284→              className="block py-2 text-sm font-medium text-gray-700"
+   285→   285→              onClick={() => setMobileMenuOpen(false)}
+   286→   286→            >
+   287→   287→              درباره ما
+   288→   288→            </a>
+   289→   289→            <a
+   290→   290→              href="#contact"
+   291→   291→              className="block py-2 text-sm font-medium text-gray-700"
+   292→   292→              onClick={() => setMobileMenuOpen(false)}
+   293→   293→            >
+   294→   294→              تماس
+   295→   295→            </a>
+   296→   296→            <Separator />
+   297→   297→            <a href="tel:02112345678" className="block">
+   298→   298→              <Button className="w-full bg-blue-700 hover:bg-blue-800 text-white">
+   299→   299→                <Phone size={14} className="ml-1.5" />
+   300→   300→                تماس: <span className="num-en mr-1">021-1234-5678</span>
+   301→   301→              </Button>
+   302→   302→            </a>
+   303→   303→          </div>
+   304→   304→        )}
+   305→   305→      </header>
+   306→   306→
+   307→   307→      {/* ─── Hero ─── */}
+   308→   308→      <section
+   309→   309→        id="home"
+   310→   310→        className="relative bg-gradient-to-bl from-blue-900 via-blue-800 to-blue-950 text-white overflow-hidden"
+   311→   311→      >
+   312→   312→        {/* Decorative */}
+   313→   313→        <div className="absolute inset-0 opacity-10">
+   314→   314→          <div className="absolute top-10 right-20 w-72 h-72 bg-white rounded-full blur-3xl" />
+   315→   315→          <div className="absolute bottom-10 left-20 w-96 h-96 bg-blue-400 rounded-full blur-3xl" />
+   316→   316→        </div>
+   317→   317→
+   318→   318→        <div className="relative max-w-7xl mx-auto px-4 py-20 md:py-28">
+   319→   319→          <div className="max-w-2xl">
+   320→   320→            <Badge className="bg-blue-600/50 text-blue-100 mb-4 text-sm">
+   321→   321→              <Zap size={12} className="ml-1" />
+   322→   322→              نماینده رسمی STK Motors
+   323→   323→            </Badge>
+   324→   324→            <h2 className="text-3xl md:text-5xl font-extrabold leading-tight mb-6">
+   325→   325→              الکتروموتور پوسته چدنی
+   326→   326→              <br />
+   327→   327→              <span className="text-blue-300">تک‌فاز و سه‌فاز</span>
+   328→   328→            </h2>
+   329→   329→            <p className="text-blue-100/80 text-base md:text-lg leading-relaxed mb-8 max-w-xl">
+   330→   330→              ارائه دهنده انواع الکتروموتورهای صنعتی پوسته چدنی با توان‌های
+   331→   331→              مختلف. مشاوره فنی رایگان، قیمت رقابتی و ارسال به سراسر ایران.
+   332→   332→            </p>
+   333→   333→            <div className="flex flex-wrap gap-3">
+   334→   334→              <a href="#products">
+   335→   335→                <Button
+   336→   336→                  size="lg"
+   337→   337→                  className="bg-white text-blue-900 hover:bg-blue-50 font-semibold px-8"
+   338→   338→                >
+   339→   339→                  مشاهده کاتالوگ
+   340→   340→                  <ChevronLeft size={18} className="mr-1" />
+   341→   341→                </Button>
+   342→   342→              </a>
+   343→   343→              <a
+   344→   344→                href="https://wa.me/982112345678"
+   345→   345→                target="_blank"
+   346→   346→                rel="noopener"
+   347→   347→              >
+   348→   348→                <Button
+   349→   349→                  size="lg"
+   350→   350→                  variant="outline"
+   351→   351→                  className="border-white/30 text-white hover:bg-white/10 px-8"
+   352→   352→                >
+   353→   353→                  <MessageCircle size={16} className="ml-1.5" />
+   354→   354→                  استعلام قیمت
+   355→   355→                </Button>
+   356→   356→              </a>
+   357→   357→            </div>
+   358→   358→          </div>
+   359→   359→
+   360→   360→          {/* Hero image placeholder */}
+   361→   361→          <div className="hidden lg:block absolute left-8 top-1/2 -translate-y-1/2">
+   362→   362→            <div className="w-80 h-80 bg-blue-700/30 rounded-2xl border border-blue-500/20 flex items-center justify-center">
+   363→   363→              <div className="text-center">
+   364→   364→                <Cog
+   365→   365→                  size={64}
+   366→   366→                  className="text-blue-400/60 mx-auto mb-3"
+   367→   367→                />
+   368→   368→                <p className="text-blue-400/40 text-sm">تصویر محصول</p>
+   369→   369→              </div>
+   370→   370→            </div>
+   371→   371→          </div>
+   372→   372→        </div>
+   373→   373→      </section>
+   374→   374→
+   375→   375→      {/* ─── Trust Strip ─── */}
+   376→   376→      <section className="bg-gray-50 border-b border-gray-200">
+   377→   377→        <div className="max-w-7xl mx-auto px-4 py-4">
+   378→   378→          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+   379→   379→            {[
+   380→   380→              {
+   381→   381→                icon: Timer,
+   382→   382→                label: "بیش از ۱۵ سال تجربه",
+   383→   383→                sub: "در صنعت الکتروموتور",
+   384→   384→              },
+   385→   385→              {
+   386→   386→                icon: Truck,
+   387→   387→                label: "ارسال به سراسر ایران",
+   388→   388→                sub: "تحویل سریع و مطمئن",
+   389→   389→              },
+   390→   390→              {
+   391→   391→                icon: ShieldCheck,
+   392→   392→                label: "گارانتی اصالت کالا",
+   393→   393→                sub: "تضمین کیفیت محصول",
+   394→   394→              },
+   395→   395→              {
+   396→   396→                icon: Headphones,
+   397→   397→                label: "مشاوره فنی رایگان",
+   398→   398→                sub: "پشتیبانی تخصصی",
+   399→   399→              },
+   400→   400→            ].map((item) => (
+   401→   401→              <div key={item.label} className="flex items-center gap-3 py-2">
+   402→   402→                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+   403→   403→                  <item.icon size={18} className="text-blue-700" />
+   404→   404→                </div>
+   405→   405→                <div>
+   406→   406→                  <p className="text-sm font-semibold text-gray-800">
+   407→   407→                    {item.label}
+   408→   408→                  </p>
+   409→   409→                  <p className="text-xs text-gray-500">{item.sub}</p>
+   410→   410→                </div>
+   411→   411→              </div>
+   412→   412→            ))}
+   413→   413→          </div>
+   414→   414→        </div>
+   415→   415→      </section>
+   416→   416→
+   417→   417→      {/* ─── Category Entry Points ─── */}
+   418→   418→      <section className="max-w-7xl mx-auto px-4 py-12">
+   419→   419→        <div className="text-center mb-8">
+   420→   420→          <h3 className="text-2xl font-bold text-gray-900 mb-2">
+   421→   421→            دسته‌بندی محصولات
+   422→   422→          </h3>
+   423→   423→          <p className="text-gray-500 text-sm">
+   424→   424→            الکتروموتورهای پوسته چدنی STK در دو دسته اصلی
+   425→   425→          </p>
+   426→   426→        </div>
+   427→   427→        <div className="grid md:grid-cols-2 gap-6">
+   428→   428→          {/* Single Phase */}
+   429→   429→          <button
+   430→   430→            onClick={() => {
+   431→   431→              setCategoryFilter("single-phase");
+   432→   432→              setSpeedFilter("all");
+   433→   433→              setPowerFilter("all");
+   434→   434→            }}
+   435→   435→            className={`text-right rounded-xl p-6 border-2 transition-all group ${
+   436→   436→              categoryFilter === "single-phase"
+   437→   437→                ? "border-blue-600 bg-blue-50 shadow-md shadow-blue-100"
+   438→   438→                : "border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm"
+   439→   439→            }`}
+   440→   440→          >
+   441→   441→            <div className="flex items-start justify-between">
+   442→   442→              <div>
+   443→   443→                <div className="flex items-center gap-2 mb-1">
+   444→   444→                  <div
+   445→   445→                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+   446→   446→                      categoryFilter === "single-phase"
+   447→   447→                        ? "bg-blue-700"
+   448→   448→                        : "bg-gray-100"
+   449→   449→                    }`}
+   450→   450→                  >
+   451→   451→                    <Zap
+   452→   452→                      size={16}
+   453→   453→                      className={
+   454→   454→                        categoryFilter === "single-phase"
+   455→   455→                          ? "text-white"
+   456→   456→                          : "text-gray-500"
+   457→   457→                      }
+   458→   458→                    />
+   459→   459→                  </div>
+   460→   460→                  <h4 className="font-bold text-lg text-gray-900">
+   461→   461→                    الکتروموتور تک‌فاز
+   462→   462→                  </h4>
+   463→   463→                </div>
+   464→   464→                <p className="text-sm text-gray-500 mr-10">پوسته چدنی</p>
+   465→   465→              </div>
+   466→   466→              <div className="text-left">
+   467→   467→                <span
+   468→   468→                  className={`text-2xl font-bold num-en ${
+   469→   469→                    categoryFilter === "single-phase"
+   470→   470→                      ? "text-blue-700"
+   471→   471→                      : "text-gray-300"
+   472→   472→                  }`}
+   473→   473→                >
+   474→   474→                  {stats?.singlePhaseFamilies ?? "-"}
+   475→   475→                </span>
+   476→   476→                <p className="text-xs text-gray-400 mt-0.5">مدل الکتروموتور</p>
+   477→   477→              </div>
+   478→   478→            </div>
+   479→   479→            <div className="mt-3 flex items-center gap-1 text-xs text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+   480→   480→              <span>مشاهده مدل‌ها</span>
+   481→   481→              <ChevronLeft size={14} />
+   482→   482→            </div>
+   483→   483→          </button>
+   484→   484→
+   485→   485→          {/* Three Phase */}
+   486→   486→          <button
+   487→   487→            onClick={() => {
+   488→   488→              setCategoryFilter("three-phase");
+   489→   489→              setSpeedFilter("all");
+   490→   490→              setPowerFilter("all");
+   491→   491→            }}
+   492→   492→            className={`text-right rounded-xl p-6 border-2 transition-all group ${
+   493→   493→              categoryFilter === "three-phase"
+   494→   494→                ? "border-blue-600 bg-blue-50 shadow-md shadow-blue-100"
+   495→   495→                : "border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm"
+   496→   496→            }`}
+   497→   497→          >
+   498→   498→            <div className="flex items-start justify-between">
+   499→   499→              <div>
+   500→   500→                <div className="flex items-center gap-2 mb-1">
+   501→   501→                  <div
+   502→   502→                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+   503→   503→                      categoryFilter === "three-phase"
+   504→   504→                        ? "bg-blue-700"
+   505→   505→                        : "bg-gray-100"
+   506→   506→                    }`}
+   507→   507→                  >
+   508→   508→                    <Gauge
+   509→   509→                      size={16}
+   510→   510→                      className={
+   511→   511→                        categoryFilter === "three-phase"
+   512→   512→                          ? "text-white"
+   513→   513→                          : "text-gray-500"
+   514→   514→                      }
+   515→   515→                    />
+   516→   516→                  </div>
+   517→   517→                  <h4 className="font-bold text-lg text-gray-900">
+   518→   518→                    الکتروموتور سه‌فاز
+   519→   519→                  </h4>
+   520→   520→                </div>
+   521→   521→                <p className="text-sm text-gray-500 mr-10">پوسته چدنی</p>
+   522→   522→              </div>
+   523→   523→              <div className="text-left">
+   524→   524→                <span
+   525→   525→                  className={`text-2xl font-bold num-en ${
+   526→   526→                    categoryFilter === "three-phase"
+   527→   527→                      ? "text-blue-700"
+   528→   528→                      : "text-gray-300"
+   529→   529→                  }`}
+   530→   530→                >
+   531→   531→                  {stats?.threePhaseFamilies ?? "-"}
+   532→   532→                </span>
+   533→   533→                <p className="text-xs text-gray-400 mt-0.5">مدل الکتروموتور</p>
+   534→   534→              </div>
+   535→   535→            </div>
+   536→   536→            <div className="mt-3 flex items-center gap-1 text-xs text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+   537→   537→              <span>مشاهده مدل‌ها</span>
+   538→   538→              <ChevronLeft size={14} />
+   539→   539→            </div>
+   540→   540→          </button>
+   541→   541→        </div>
+   542→   542→        {/* Clear filter */}
+   543→   543→        {categoryFilter !== "all" && (
+   544→   544→          <div className="text-center mt-4">
+   545→   545→            <button
+   546→   546→              onClick={() => {
+   547→   547→                setCategoryFilter("all");
+   548→   548→                setSpeedFilter("all");
+   549→   549→                setPowerFilter("all");
+   550→   550→              }}
+   551→   551→              className="text-sm text-blue-600 hover:text-blue-800 underline underline-offset-4"
+   552→   552→            >
+   553→   553→              مشاهده همه محصولات
+   554→   554→            </button>
+   555→   555→          </div>
+   556→   556→        )}
+   557→   557→      </section>
+   558→   558→
+   559→   559→      {/* ─── Products Catalog ─── */}
+   560→   560→      <section id="products" className="bg-gray-50/70">
+   561→   561→        <div className="max-w-7xl mx-auto px-4 py-12">
+   562→   562→          {/* Section Header */}
+   563→   563→          <div className="text-center mb-8">
+   564→   564→            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+   565→   565→              کاتالوگ الکتروموتور STK
+   566→   566→            </h3>
+   567→   567→            <p className="text-gray-500 text-sm">
+   568→   568→              {stats
+   569→   569→                ? `${faNum(stats.families)} مدل الکتروموتور با ${faNum(stats.variants)} سایز مختلف`
+   570→   570→                : "در حال بارگذاری..."}
+   571→   571→            </p>
+   572→   572→          </div>
+   573→   573→
+   574→   574→          {/* Filters Bar */}
+   575→   575→          <div className="bg-white rounded-xl border border-gray-200 p-4 mb-8 shadow-sm">
+   576→   576→            <div className="flex flex-col sm:flex-row gap-3">
+   577→   577→              {/* Search */}
+   578→   578→              <div className="relative flex-1">
+   579→   579→                <Search
+   580→   580→                  size={16}
+   581→   581→                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+   582→   582→                />
+   583→   583→                <Input
+   584→   584→                  placeholder="جستجوی نام، کد محصول..."
+   585→   585→                  value={searchQuery}
+   586→   586→                  onChange={(e) => setSearchQuery(e.target.value)}
+   587→   587→                  className="pr-9"
+   588→   588→                />
+   589→   589→              </div>
+   590→   590→              {/* Speed Filter */}
+   591→   591→              <Select value={speedFilter} onValueChange={setSpeedFilter}>
+   592→   592→                <SelectTrigger className="w-full sm:w-40">
+   593→   593→                  <SelectValue placeholder="دور بر دقیقه" />
+   594→   594→                </SelectTrigger>
+   595→   595→                <SelectContent>
+   596→   596→                  <SelectItem value="all">همه سرعت‌ها</SelectItem>
+   597→   597→                  <SelectItem value="750">۷۵۰ RPM</SelectItem>
+   598→   598→                  <SelectItem value="1000">۱۰۰۰ RPM</SelectItem>
+   599→   599→                  <SelectItem value="1400">۱۴۰۰ RPM</SelectItem>
+   600→   600→                  <SelectItem value="3000">۳۰۰۰ RPM</SelectItem>
+   601→   601→                </SelectContent>
+   602→   602→              </Select>
+   603→   603→              {/* Power Filter */}
+   604→   604→              <Select value={powerFilter} onValueChange={setPowerFilter}>
+   605→   605→                <SelectTrigger className="w-full sm:w-40">
+   606→   606→                  <SelectValue placeholder="محدوده توان" />
+   607→   607→                </SelectTrigger>
+   608→   608→                <SelectContent>
+   609→   609→                  <SelectItem value="all">همه توان‌ها</SelectItem>
+   610→   610→                  <SelectItem value="0-0.75">تا ۰.۷۵ kW</SelectItem>
+   611→   611→                  <SelectItem value="0.75-3">۰.۷۵ تا ۳ kW</SelectItem>
+   612→   612→                  <SelectItem value="3-11">۳ تا ۱۱ kW</SelectItem>
+   613→   613→                  <SelectItem value="11-45">۱۱ تا ۴۵ kW</SelectItem>
+   614→   614→                  <SelectItem value="45-110">۴۵ تا ۱۱۰ kW</SelectItem>
+   615→   615→                  <SelectItem value="110-999">بالای ۱۱۰ kW</SelectItem>
+   616→   616→                </SelectContent>
+   617→   617→              </Select>
+   618→   618→              {/* Reset */}
+   619→   619→              {hasFilters && (
+   620→   620→                <Button
+   621→   621→                  variant="ghost"
+   622→   622→                  size="sm"
+   623→   623→                  onClick={() => {
+   624→   624→                    setCategoryFilter("all");
+   625→   625→                    setSpeedFilter("all");
+   626→   626→                    setPowerFilter("all");
+   627→   627→                    setSearchQuery("");
+   628→   628→                  }}
+   629→   629→                  className="text-gray-500"
+   630→   630→                >
+   631→   631→                  <X size={14} className="ml-1" />
+   632→   632→                  پاک کردن
+   633→   633→                </Button>
+   634→   634→              )}
+   635→   635→            </div>
+   636→   636→          </div>
+   637→   637→
+   638→   638→          {/* Product Grid — Family Cards */}
+   639→   639→          {loading ? (
+   640→   640→            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+   641→   641→              {[1, 2, 3].map((i) => (
+   642→   642→                <Card key={i} className="overflow-hidden">
+   643→   643→                  <Skeleton className="h-40 w-full" />
+   644→   644→                  <CardContent className="p-5 space-y-3">
+   645→   645→                    <Skeleton className="h-5 w-3/4" />
+   646→   646→                    <Skeleton className="h-4 w-1/2" />
+   647→   647→                    <Skeleton className="h-8 w-full" />
+   648→   648→                    <Skeleton className="h-10 w-full" />
+   649→   649→                  </CardContent>
+   650→   650→                </Card>
+   651→   651→              ))}
+   652→   652→            </div>
+   653→   653→          ) : products.length === 0 ? (
+   654→   654→            <div className="text-center py-16">
+   655→   655→              <Search size={40} className="text-gray-300 mx-auto mb-3" />
+   656→   656→              <p className="text-gray-500 font-medium">محصولی یافت نشد</p>
+   657→   657→              <p className="text-gray-400 text-sm mt-1">
+   658→   658→                فیلترهای خود را تغییر دهید
+   659→   659→              </p>
+   660→   660→            </div>
+   661→   661→          ) : (
+   662→   662→            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+   663→   663→              {products.map((family) => (
+   664→   664→                <FamilyCard key={family.id} family={family} />
+   665→   665→              ))}
+   666→   666→            </div>
+   667→   667→          )}
+   668→   668→
+   669→   669→          {/* Count */}
+   670→   670→          {!loading && products.length > 0 && (
+   671→   671→            <div className="text-center mt-6">
+   672→   672→              <p className="text-sm text-gray-400">
+   673→   673→                نمایش{" "}
+   674→   674→                <span className="font-medium text-gray-600 num-en">
+   675→   675→                  {faNum(products.length)}
+   676→   676→                </span>{" "}
+   677→   677→                مدل الکتروموتور
+   678→   678→              </p>
+   679→   679→            </div>
+   680→   680→          )}
+   681→   681→        </div>
+   682→   682→      </section>
+   683→   683→
+   684→   684→      {/* ─── About / Proof Section ─── */}
+   685→   685→      <section id="about" className="max-w-7xl mx-auto px-4 py-16">
+   686→   686→        <div className="grid md:grid-cols-2 gap-12 items-center">
+   687→   687→          <div>
+   688→   688→            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+   689→   689→              درباره STK Motors
+   690→   690→            </h3>
+   691→   691→            <p className="text-gray-600 leading-relaxed mb-6">
+   692→   692→              شرکت STK Motors با بیش از ۱۵ سال سابقه در واردات و توزیع
+   693→   693→              الکتروموتورهای صنعتی، مجموعه‌ای کامل از موتورهای تک‌فاز و
+   694→   694→              سه‌فاز پوسته چدنی را در اختیار صنعتگران و کارخانجات سراسر ایران
+   695→   695→              قرار می‌دهد. ما با تمرکز بر کیفیت، قیمت رقابتی و خدمات پس از
+   696→   696→              فروش، به عنوان یکی از معتبرترین تأمین‌کنندگان الکتروموتور در ایران
+   697→   697→              شناخته می‌شویم.
+   698→   698→            </p>
+   699→   699→            <div className="grid grid-cols-3 gap-4">
+   700→   700→              {[
+   701→   701→                { value: "+15", label: "سال تجربه" },
+   702→   702→                {
+   703→   703→                  value: faNum(stats?.variants ?? 0),
+   704→   704→                  label: "سایز در دسترس",
+   705→   705→                },
+   706→   706→                { value: "100%", label: "اصالت کالا" },
+   707→   707→              ].map((s) => (
+   708→   708→                <div key={s.label} className="text-center">
+   709→   709→                  <div className="text-2xl font-extrabold text-blue-700 num-en">
+   710→   710→                    {s.value}
+   711→   711→                  </div>
+   712→   712→                  <div className="text-xs text-gray-500 mt-1">{s.label}</div>
+   713→   713→                </div>
+   714→   714→              ))}
+   715→   715→            </div>
+   716→   716→          </div>
+   717→   717→          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-10 flex items-center justify-center min-h-[300px]">
+   718→   718→            <div className="text-center">
+   719→   719→              <Factory size={48} className="text-blue-300 mx-auto mb-3" />
+   720→   720→              <p className="text-blue-400/60 text-sm">تصویر کارخانه / انبار</p>
+   721→   721→            </div>
+   722→   722→          </div>
+   723→   723→        </div>
+   724→   724→      </section>
+   725→   725→
+   726→   726→      {/* ─── CTA Section ─── */}
+   727→   727→      <section
+   728→   728→        id="contact"
+   729→   729→        className="bg-gradient-to-bl from-blue-800 to-blue-950 text-white"
+   730→   730→      >
+   731→   731→        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+   732→   732→          <Award size={40} className="text-blue-300 mx-auto mb-4" />
+   733→   733→          <h3 className="text-2xl md:text-3xl font-bold mb-4">
+   734→   734→            نیاز به مشاوره فنی دارید؟
+   735→   735→          </h3>
+   736→   736→          <p className="text-blue-100/70 mb-8 max-w-xl mx-auto">
+   737→   737→            کارشناسان ما آماده ارائه مشاوره رایگان برای انتخاب بهترین
+   738→   738→            الکتروموتور متناسب با نیاز شما هستند.
+   739→   739→          </p>
+   740→   740→          <div className="flex flex-wrap justify-center gap-4">
+   741→   741→            <a href="tel:02112345678">
+   742→   742→              <Button
+   743→   743→                size="lg"
+   744→   744→                className="bg-white text-blue-900 hover:bg-blue-50 font-semibold px-8"
+   745→   745→              >
+   746→   746→                <Phone size={16} className="ml-1.5" />
+   747→   747→                تماس: <span className="num-en mr-1">021-1234-5678</span>
+   748→   748→              </Button>
+   749→   749→            </a>
+   750→   750→            <a
+   751→   751→              href="https://wa.me/982112345678"
+   752→   752→              target="_blank"
+   753→   753→              rel="noopener"
+   754→   754→            >
+   755→   755→              <Button
+   756→   756→                size="lg"
+   757→   757→                variant="outline"
+   758→   758→                className="border-white/30 text-white hover:bg-white/10 px-8"
+   759→   759→              >
+   760→   760→                <MessageCircle size={16} className="ml-1.5" />
+   761→   761→                ارتباط در واتساپ
+   762→   762→              </Button>
+   763→   763→            </a>
+   764→   764→          </div>
+   765→   765→        </div>
+   766→   766→      </section>
+   767→   767→
+   768→   768→      {/* ─── Footer ─── */}
+   769→   769→      <footer className="bg-gray-900 text-gray-400">
+   770→   770→        <div className="max-w-7xl mx-auto px-4 py-10">
+   771→   771→          <div className="grid md:grid-cols-3 gap-8">
+   772→   772→            <div>
+   773→   773→              <div className="flex items-center gap-2 mb-3">
+   774→   774→                <div className="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center">
+   775→   775→                  <Cog size={16} className="text-white" />
+   776→   776→                </div>
+   777→   777→                <span className="text-white font-bold">STK Motors</span>
+   778→   778→              </div>
+   779→   779→              <p className="text-sm leading-relaxed">
+   780→   780→                ارائه دهنده انواع الکتروموتورهای تک‌فاز و سه‌فاز پوسته چدنی با
+   781→   781→                بهترین کیفیت و قیمت.
+   782→   782→              </p>
+   783→   783→            </div>
+   784→   784→            <div>
+   785→   785→              <h5 className="text-white font-semibold mb-3">دسترسی سریع</h5>
+   786→   786→              <div className="space-y-2 text-sm">
+   787→   787→                <a
+   788→   788→                  href="#products"
+   789→   789→                  className="block hover:text-blue-400 transition-colors"
+   790→   790→                >
+   791→   791→                  محصولات
+   792→   792→                </a>
+   793→   793→                <a
+   794→   794→                  href="#about"
+   795→   795→                  className="block hover:text-blue-400 transition-colors"
+   796→   796→                >
+   797→   797→                  درباره ما
+   798→   798→                </a>
+   799→   799→                <a
+   800→   800→                  href="#contact"
+   801→   801→                  className="block hover:text-blue-400 transition-colors"
+   802→   802→                >
+   803→   803→                  تماس با ما
+   804→   804→                </a>
+   805→   805→              </div>
+   806→   806→            </div>
+   807→   807→            <div>
+   808→   808→              <h5 className="text-white font-semibold mb-3">تماس با ما</h5>
+   809→   809→              <div className="space-y-2 text-sm">
+   810→   810→                <p className="flex items-center gap-2">
+   811→   811→                  <Phone size={13} />
+   812→   812→                  <span className="num-en">021-1234-5678</span>
+   813→   813→                </p>
+   814→   814→                <p className="flex items-center gap-2">
+   815→   815→                  <Mail size={13} />
+   816→   816→                  <span className="num-en">info@stkmotors.com</span>
+   817→   817→                </p>
+   818→   818→                <p className="flex items-center gap-2">
+   819→   819→                  <MapPin size={13} />
+   820→   820→                  تهران، ایران
+   821→   821→                </p>
+   822→   822→              </div>
+   823→   823→            </div>
+   824→   824→          </div>
+   825→   825→          <Separator className="bg-gray-800 my-6" />
+   826→   826→          <p className="text-center text-xs text-gray-500">
+   827→   827→            تمامی حقوق محفوظ است &copy; STK Motors {new Date().getFullYear()}
+   828→   828→          </p>
+   829→   829→        </div>
+   830→   830→      </footer>
+   831→   831→
+   832→   832→      {/* ─── Sticky Mobile Action Bar ─── */}
+   833→   833→      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] safe-area-pb">
+   834→   834→        <div className="grid grid-cols-3 divide-x divide-gray-200">
+   835→   835→          <a
+   836→   836→            href="tel:02112345678"
+   837→   837→            className="flex flex-col items-center py-2.5 text-gray-600 active:bg-gray-50"
+   838→   838→          >
+   839→   839→            <Phone size={18} className="mb-0.5 text-blue-700" />
+   840→   840→            <span className="text-[10px]">تماس</span>
+   841→   841→          </a>
+   842→   842→          <a
+   843→   843→            href="https://wa.me/982112345678"
+   844→   844→            target="_blank"
+   845→   845→            rel="noopener"
+   846→   846→            className="flex flex-col items-center py-2.5 text-gray-600 active:bg-gray-50"
+   847→   847→          >
+   848→   848→            <Send size={18} className="mb-0.5 text-emerald-600" />
+   849→   849→            <span className="text-[10px]">واتساپ</span>
+   850→   850→          </a>
+   851→   851→          <a
+   852→   852→            href="#products"
+   853→   853→            className="flex flex-col items-center py-2.5 text-gray-600 active:bg-gray-50"
+   854→   854→          >
+   855→   855→            <MessageCircle size={18} className="mb-0.5 text-orange-500" />
+   856→   856→            <span className="text-[10px]">استعلام قیمت</span>
+   857→   857→          </a>
+   858→   858→        </div>
+   859→   859→      </div>
+   860→   860→
+   861→   861→      {/* ─── Floating Desktop Consultation Button ─── */}
+   862→   862→      <a
+   863→   863→        href="https://wa.me/982112345678"
+   864→   864→        target="_blank"
+   865→   865→        rel="noopener"
+   866→   866→        className="hidden md:flex fixed bottom-6 left-6 z-50 w-14 h-14 bg-green-500 hover:bg-green-600 rounded-full items-center justify-center shadow-lg shadow-green-500/30 transition-all hover:scale-110"
+   867→   867→        title="مشاوره در واتساپ"
+   868→   868→      >
+   869→   869→        <MessageCircle size={24} className="text-white" />
+   870→   870→      </a>
+   871→   871→
+   872→   872→      {/* ─── Scroll to Top ─── */}
+   873→   873→      {showScrollTop && (
+   874→   874→        <button
+   875→   875→          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+   876→   876→          className="fixed bottom-6 right-6 z-50 w-10 h-10 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 transition-colors md:bottom-6"
+   877→   877→        >
+   878→   878→          <ArrowUp size={16} className="text-gray-600" />
+   879→   879→        </button>
+   880→   880→      )}
+   881→   881→
+   882→   882→      {/* Bottom padding for mobile action bar */}
+   883→   883→      <div className="h-16 md:hidden" />
+   884→   884→    </div>
+   885→   885→  );
+   886→   886→}
+   887→   887→
+   888→   888→/* ═══════════════════════════════════════════════════════════════════
+   889→   889→   FAMILY CARD COMPONENT — Compact, Technical, Size-Selectable
+   890→   890→   ═══════════════════════════════════════════════════════════════════ */
+   891→   891→function FamilyCard({ family }: { family: ProductFamily }) {
+   892→   892→  // Unique sizes sorted numerically
+   893→   893→  const uniqueSizes = [
+   894→   894→    ...new Set(family.variants.map((v) => v.size).filter(Boolean)),
+   895→   895→  ].sort((a, b) => parseInt(a) - parseInt(b));
+   896→   896→
+   897→   897→  // Default: select first in-stock variant
+   898→   898→  const firstInStock =
+   899→   899→    family.variants.find((v) => v.inStock) || family.variants[0];
+   900→   900→  const [selectedSize, setSelectedSize] = useState(firstInStock?.size || "");
+   901→   901→
+   902→   902→  const variantsForSize = family.variants.filter(
+   903→   903→    (v) => v.size === selectedSize
+   904→   904→  );
+   905→   905→  const activeVariant = variantsForSize[0] || family.variants[0];
+   906→   906→
+   907→   907→  // Unique speeds in this family
+   908→   908→  const uniqueSpeeds = [
+   909→   909→    ...new Set(family.variants.map((v) => v.speed).filter(Boolean)),
+   910→   910→  ].sort((a, b) => parseInt(a) - parseInt(b));
+   911→   911→
+   912→   912→  // Power range for the family
+   913→   913→  const powers = family.variants
+   914→   914→    .map((v) => v.powerKw)
+   915→   915→    .filter((k) => k > 0);
+   916→   916→  const minKw = powers.length > 0 ? Math.min(...powers) : 0;
+   917→   917→  const maxKw = powers.length > 0 ? Math.max(...powers) : 0;
+   918→   918→
+   919→   919→  // Size range string
+   920→   920→  const sizeRange =
+   921→   921→    uniqueSizes.length > 0
+   922→   922→      ? `${faNum(uniqueSizes[0])} – ${faNum(uniqueSizes[uniqueSizes.length - 1])}`
+   923→   923→      : "";
+   924→   924→
+   925→   925→  return (
+   926→   926→    <Card className="overflow-hidden border-gray-200 hover:shadow-lg hover:border-blue-200 transition-all group flex flex-col">
+   927→   927→      {/* Image Placeholder */}
+   928→   928→      <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 h-36 flex items-center justify-center overflow-hidden">
+   929→   929→        <div className="text-center">
+   930→   930→          <Cog
+   931→   931→            size={36}
+   932→   932→            className="text-gray-300 mx-auto mb-1 group-hover:scale-110 transition-transform"
+   933→   933→          />
+   934→   934→          <p className="text-gray-400/60 text-xs">تصویر محصول</p>
+   935→   935→        </div>
+   936→   936→        {/* Category badge */}
+   937→   937→        <Badge
+   938→   938→          className={`absolute top-3 right-3 text-[10px] px-2 py-0.5 ${
+   939→   939→            family.category === "single-phase"
+   940→   940→              ? "bg-amber-500 text-white"
+   941→   941→              : "bg-blue-600 text-white"
+   942→   942→          }`}
+   943→   943→        >
+   944→   944→          {family.phase}
+   945→   945→        </Badge>
+   946→   946→        {/* Variant count badge */}
+   947→   947→        <Badge
+   948→   948→          className="absolute top-3 left-3 text-[10px] px-2 py-0.5 bg-gray-100 text-gray-500"
+   949→   949→        >
+   950→   950→          {faNum(family.variants.length)} سایز
+   951→   951→        </Badge>
+   952→   952→      </div>
+   953→   953→
+   954→   954→      <CardContent className="p-4 flex flex-col flex-1">
+   955→   955→        {/* Short Systematic Name */}
+   956→   956→        <Link href={`/product/${family.slug}`} className="block mb-0.5">
+   957→   957→          <h4 className="font-bold text-gray-900 text-sm group-hover:text-blue-700 transition-colors">
+   958→   958→            الکتروموتور {family.phase} STK
+   959→   959→          </h4>
+   960→   960→        </Link>
+   961→   961→
+   962→   962→        {/* Subtitle: shell type + speed + size range */}
+   963→   963→        <p className="text-xs text-gray-400 mb-3">
+   964→   964→          پوسته {family.shellType}
+   965→   965→          {uniqueSpeeds.length > 0 &&
+   966→   966→            ` · ${faNum(uniqueSpeeds[0])} دور`}
+   967→   967→          {sizeRange && ` · سایز ${sizeRange}`}
+   968→   968→        </p>
+   969→   969→
+   970→   970→        {/* ─── Size Selector Chips ─── */}
+   971→   971→        {uniqueSizes.length > 0 && (
+   972→   972→          <div className="mb-3">
+   973→   973→            <p className="text-[10px] text-gray-500 mb-1.5 font-medium">
+   974→   974→              انتخاب سایز
+   975→   975→            </p>
+   976→   976→            <div className="flex flex-wrap gap-1.5">
+   977→   977→              {uniqueSizes.map((size) => {
+   978→   978→                const sizeVariants = family.variants.filter(
+   979→   979→                  (v) => v.size === size
+   980→   980→                );
+   981→   981→                const hasInStock = sizeVariants.some((v) => v.inStock);
+   982→   982→                const isSelected = selectedSize === size;
+   983→   983→
+   984→   984→                return (
+   985→   985→                  <button
+   986→   986→                    key={size}
+   987→   987→                    onClick={() => {
+   988→   988→                      if (hasInStock) setSelectedSize(size);
+   989→   989→                    }}
+   990→   990→                    disabled={!hasInStock}
+   991→   991→                    className={`relative px-2.5 py-1 rounded-md text-xs font-medium num-en transition-all ${
+   992→   992→                      isSelected
+   993→   993→                        ? "bg-blue-700 text-white shadow-sm ring-2 ring-blue-300"
+   994→   994→                        : hasInStock
+   995→   995→                          ? "bg-white border border-gray-200 text-gray-700 hover:border-blue-400 hover:text-blue-700 hover:shadow-sm"
+   996→   996→                          : "bg-gray-50 border border-gray-100 text-gray-300 line-through cursor-not-allowed"
+   997→   997→                    }`}
+   998→   998→                  >
+   999→   999→                    {size}
+  1000→  1000→                    {!hasInStock && (
+  1001→  1001→                      <span className="absolute -top-1.5 -left-1.5 text-[7px] bg-red-100 text-red-500 px-1 rounded leading-none">
+  1002→  1002→                        ناموجود
+  1003→  1003→                      </span>
+  1004→  1004→                    )}
+  1005→  1005→                  </button>
+  1006→  1006→                );
+  1007→  1007→              })}
+  1008→  1008→            </div>
+  1009→  1009→          </div>
+  1010→  1010→        )}
+  1011→  1011→
+  1012→  1012→        {/* ─── Dynamic Specs (3 compact items) ─── */}
+  1013→  1013→        <div className="grid grid-cols-3 gap-1.5 mb-3">
+  1014→  1014→          <div className="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+  1015→  1015→            <p className="text-[9px] text-gray-400">توان</p>
+  1016→  1016→            <p className="text-[11px] font-semibold text-gray-800 num-en">
+  1017→  1017→              {activeVariant?.power || "-"}
+  1018→  1018→            </p>
+  1019→  1019→          </div>
+  1020→  1020→          <div className="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+  1021→  1021→            <p className="text-[9px] text-gray-400">دور</p>
+  1022→  1022→            <p className="text-[11px] font-semibold text-gray-800 num-en">
+  1023→  1023→              {activeVariant?.speed
+  1024→  1024→                ? `${faNum(activeVariant.speed)} RPM`
+  1025→  1025→                : "-"}
+  1026→  1026→            </p>
+  1027→  1027→          </div>
+  1028→  1028→          <div className="bg-gray-50 rounded-lg px-2 py-1.5 text-center">
+  1029→  1029→            <p className="text-[9px] text-gray-400">ولتاژ</p>
+  1030→  1030→            <p className="text-[11px] font-semibold text-gray-800 num-en">
+  1031→  1031→              {activeVariant?.voltage || "-"}
+  1032→  1032→            </p>
+  1033→  1033→          </div>
+  1034→  1034→        </div>
+  1035→  1035→
+  1036→  1036→        {/* Stock Status */}
+  1037→  1037→        <div className="mb-3">
+  1038→  1038→          {activeVariant?.inStock ? (
+  1039→  1039→            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+  1040→  1040→              <CheckCircle2 size={11} />
+  1041→  1041→              موجود — آماده ارسال
+  1042→  1042→            </span>
+  1043→  1043→          ) : (
+  1044→  1044→            <span className="inline-flex items-center gap-1 text-[11px] text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+  1045→  1045→              <X size={11} />
+  1046→  1046→              استعلام قیمت
+  1047→  1047→            </span>
+  1048→  1048→          )}
+  1049→  1049→        </div>
+  1050→  1050→
+  1051→  1051→        {/* Spacer */}
+  1052→  1052→        <div className="flex-1" />
+  1053→  1053→
+  1054→  1054→        {/* Price */}
+  1055→  1055→        <div className="mb-3">
+  1056→  1056→          {activeVariant && activeVariant.price > 0 ? (
+  1057→  1057→            <div className="text-base font-bold text-blue-800 num-en">
+  1058→  1058→              {formatPrice(activeVariant.price)}
+  1059→  1059→            </div>
+  1060→  1060→          ) : (
+  1061→  1061→            <div className="text-sm text-gray-500">تماس بگیرید</div>
+  1062→  1062→          )}
+  1063→  1063→        </div>
+  1064→  1064→
+  1065→  1065→        {/* CTA */}
+  1066→  1066→        <Link href={`/product/${family.slug}`} className="block">
+  1067→  1067→          <Button className="w-full bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium h-9">
+  1068→  1068→            مشاهده مشخصات کامل
+  1069→  1069→            <ChevronLeft size={14} className="mr-1" />
+  1070→  1070→          </Button>
+  1071→  1071→        </Link>
+  1072→  1072→      </CardContent>
+  1073→  1073→    </Card>
+  1074→  1074→  );
+  1075→  1075→}
+  1076→  1076→

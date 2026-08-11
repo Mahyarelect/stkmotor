@@ -1,0 +1,690 @@
+[
+  {
+    "name": "موتور 1400-0.5HP -تکفاز پوسته چدني",
+    "price": 39000000,
+    "code": "10100055",
+    "category": "single-phase",
+    "speed": "1400",
+    "power": "0.5HP"
+  },
+  {
+    "name": "موتور 1400-0.55kw -تکفاز پوسته چدني",
+    "price": 150000000,
+    "code": "10100056",
+    "category": "single-phase",
+    "speed": "1400",
+    "power": "0.55kw"
+  },
+  {
+    "name": "موتور 1400-1HP -تکفاز پوسته چدني",
+    "price": 160000000,
+    "code": "10100057",
+    "category": "single-phase",
+    "speed": "1400",
+    "power": "1HP"
+  },
+  {
+    "name": "موتور 1400-1.5HP -تکفاز پوسته چدني",
+    "price": 185000000,
+    "code": "10100058",
+    "category": "single-phase",
+    "speed": "1400",
+    "power": "1.5HP"
+  },
+  {
+    "name": "موتور 1400-2HP -تکفاز پوسته چدني",
+    "price": 230000000,
+    "code": "10100059",
+    "category": "single-phase",
+    "speed": "1400",
+    "power": "2HP"
+  },
+  {
+    "name": "موتور 1400-3HP -تکفاز پوسته چدني",
+    "price": 270000000,
+    "code": "101000510",
+    "category": "single-phase",
+    "speed": "1400",
+    "power": "3HP"
+  },
+  {
+    "name": "موتور 3000-0.09kw -تکفاز پوسته چدني",
+    "price": 0,
+    "code": "101000511",
+    "category": "single-phase",
+    "speed": "3000",
+    "power": "0.09kw"
+  },
+  {
+    "name": "موتور 3000-0.5HP -تکفاز پوسته چدني",
+    "price": 34000000,
+    "code": "101000515",
+    "category": "single-phase",
+    "speed": "3000",
+    "power": "0.5HP"
+  },
+  {
+    "name": "موتور 3000-0.55kw -تکفاز پوسته چدني",
+    "price": 120000000,
+    "code": "101000516",
+    "category": "single-phase",
+    "speed": "3000",
+    "power": "0.55kw"
+  },
+  {
+    "name": "موتور 3000-1HP -تکفاز پوسته چدني",
+    "price": 147000000,
+    "code": "101000517",
+    "category": "single-phase",
+    "speed": "3000",
+    "power": "1HP"
+  },
+  {
+    "name": "موتور 3000-1.5HP -تکفاز پوسته چدني",
+    "price": 163000000,
+    "code": "101000518",
+    "category": "single-phase",
+    "speed": "3000",
+    "power": "1.5HP"
+  },
+  {
+    "name": "موتور 3000-2HP -تکفاز پوسته چدني",
+    "price": 195000000,
+    "code": "101000519",
+    "category": "single-phase",
+    "speed": "3000",
+    "power": "2HP"
+  },
+  {
+    "name": "موتور 3000-3HP -تکفاز پوسته چدني",
+    "price": 235000000,
+    "code": "101000520",
+    "category": "single-phase",
+    "speed": "3000",
+    "power": "3HP"
+  },
+  {
+    "name": "موتور 3000-4HP -تکفاز پوسته چدني",
+    "price": 0,
+    "code": "101000521",
+    "category": "single-phase",
+    "speed": "3000",
+    "power": "4HP"
+  },
+  {
+    "name": "موتور 4HP-1400 تکفاز پوسته چدني",
+    "price": 0,
+    "code": "101000522",
+    "category": "single-phase",
+    "speed": "1400",
+    "power": "4HP"
+  },
+  {
+    "name": "موتور 1400-0.25kw -پوسته چدني",
+    "price": 0,
+    "code": "10100031",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "0.25kw"
+  },
+  {
+    "name": "موتور 1400-1HP -پوسته چدني",
+    "price": 113000000,
+    "code": "10100034",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "1HP"
+  },
+  {
+    "name": "موتور 1400-1.5HP -پوسته چدني",
+    "price": 128000000,
+    "code": "10100035",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "1.5HP"
+  },
+  {
+    "name": "موتور 1400-2HP -پوسته چدني",
+    "price": 140000000,
+    "code": "10100036",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "2HP"
+  },
+  {
+    "name": "موتور 1400-3HP -پوسته چدني",
+    "price": 200000000,
+    "code": "10100037",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "3HP"
+  },
+  {
+    "name": "موتور 1400-4HP -پوسته چدني",
+    "price": 230000000,
+    "code": "10100038",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "4HP"
+  },
+  {
+    "name": "موتور 1400-5.5HP -پوسته چدني",
+    "price": 290000000,
+    "code": "10100039",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "5.5HP"
+  },
+  {
+    "name": "موتور 1400-7.5HP -پوسته چدني",
+    "price": 370000000,
+    "code": "101000310",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "7.5HP"
+  },
+  {
+    "name": "موتور 1400-10HP -پوسته چدني",
+    "price": 440000000,
+    "code": "101000311",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "10HP"
+  },
+  {
+    "name": "موتور 1400-15HP -پوسته چدني",
+    "price": 650000000,
+    "code": "101000312",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "15HP"
+  },
+  {
+    "name": "موتور 1400-20HP -پوسته چدني",
+    "price": 780000000,
+    "code": "101000313",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "20HP"
+  },
+  {
+    "name": "موتور 1400-25HP -پوسته چدني",
+    "price": 475000000,
+    "code": "101000314",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "25HP"
+  },
+  {
+    "name": "موتور 1400-30HP -پوسته چدني",
+    "price": 1000000000,
+    "code": "101000315",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "30HP"
+  },
+  {
+    "name": "موتور 1400-40HP -پوسته چدني",
+    "price": 1450000000,
+    "code": "101000316",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "40HP"
+  },
+  {
+    "name": "موتور 1400-50HP -پوسته چدني",
+    "price": 1740000000,
+    "code": "101000317",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "50HP"
+  },
+  {
+    "name": "موتور 1400-60HP -پوسته چدني",
+    "price": 2000000000,
+    "code": "101000318",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "60HP"
+  },
+  {
+    "name": "موتور 1400-75HP -پوسته چدني",
+    "price": 2350000000,
+    "code": "101000319",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "75HP"
+  },
+  {
+    "name": "موتور 1400-100HP -پوسته چدني",
+    "price": 2980000000,
+    "code": "101000320",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "100HP"
+  },
+  {
+    "name": "موتور 3000-0.09kw -پوسته چدني",
+    "price": 0,
+    "code": "101000321",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "0.09kw"
+  },
+  {
+    "name": "موتور 3000-1HP -پوسته چدني",
+    "price": 107000000,
+    "code": "101000327",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "1HP"
+  },
+  {
+    "name": "موتور 3000-1.5HP -پوسته چدني",
+    "price": 120000000,
+    "code": "101000328",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "1.5HP"
+  },
+  {
+    "name": "موتور 3000-2HP -پوسته چدني",
+    "price": 130000000,
+    "code": "101000329",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "2HP"
+  },
+  {
+    "name": "موتور 3000-3HP -پوسته چدني",
+    "price": 160000000,
+    "code": "101000330",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "3HP"
+  },
+  {
+    "name": "موتور 3000-4HP -پوسته چدني",
+    "price": 200000000,
+    "code": "101000331",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "4HP"
+  },
+  {
+    "name": "موتور 3000-5.5HP -پوسته چدني",
+    "price": 270000000,
+    "code": "101000332",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "5.5HP"
+  },
+  {
+    "name": "موتور 3000-7.5HP -پوسته چدني",
+    "price": 375000000,
+    "code": "101000333",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "7.5HP"
+  },
+  {
+    "name": "موتور 3000-10HP -پوسته چدني",
+    "price": 400000000,
+    "code": "101000334",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "10HP"
+  },
+  {
+    "name": "موتور 3000-15HP -پوسته چدني",
+    "price": 670000000,
+    "code": "101000335",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "15HP"
+  },
+  {
+    "name": "موتور 3000-20HP -پوسته چدني",
+    "price": 720000000,
+    "code": "101000336",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "20HP"
+  },
+  {
+    "name": "موتور 3000-25HP -پوسته چدني",
+    "price": 795000000,
+    "code": "101000337",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "25HP"
+  },
+  {
+    "name": "موتور 3000-30HP -پوسته چدني",
+    "price": 970000000,
+    "code": "101000338",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "30HP"
+  },
+  {
+    "name": "موتور 3000-40HP -پوسته چدني",
+    "price": 1360000000,
+    "code": "101000339",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "40HP"
+  },
+  {
+    "name": "موتور 3000-50HP -پوسته چدني",
+    "price": 1500000000,
+    "code": "101000340",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "50HP"
+  },
+  {
+    "name": "موتور 3000-60HP -پوسته چدني",
+    "price": 1800000000,
+    "code": "101000341",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "60HP"
+  },
+  {
+    "name": "موتور 3000-75HP -پوسته چدني",
+    "price": 660000000,
+    "code": "101000342",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "75HP"
+  },
+  {
+    "name": "موتور 3000-100HP -پوسته چدني",
+    "price": 860000000,
+    "code": "101000343",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "100HP"
+  },
+  {
+    "name": "موتور 1000-0.09kw -پوسته چدني",
+    "price": 0,
+    "code": "101000344",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "0.09kw"
+  },
+  {
+    "name": "موتور 1000-0.18kw -پوسته چدني",
+    "price": 0,
+    "code": "101000346",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "0.18kw"
+  },
+  {
+    "name": "موتور 1000-1HP -پوسته چدني",
+    "price": 140000000,
+    "code": "101000350",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "1HP"
+  },
+  {
+    "name": "موتور 1000-1.5HP -پوسته چدني",
+    "price": 160000000,
+    "code": "101000351",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "1.5HP"
+  },
+  {
+    "name": "موتور 1000-2HP -پوسته چدني",
+    "price": 200000000,
+    "code": "101000352",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "2HP"
+  },
+  {
+    "name": "موتور 1000-3HP -پوسته چدني",
+    "price": 250000000,
+    "code": "101000353",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "3HP"
+  },
+  {
+    "name": "موتور 1000-4HP -پوسته چدني",
+    "price": 350000000,
+    "code": "101000354",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "4HP"
+  },
+  {
+    "name": "موتور 1000-5.5HP -پوسته چدني",
+    "price": 370000000,
+    "code": "101000355",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "5.5HP"
+  },
+  {
+    "name": "موتور 1000-7.5HP -پوسته چدني",
+    "price": 450000000,
+    "code": "101000356",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "7.5HP"
+  },
+  {
+    "name": "موتور 1000-10HP -پوسته چدني",
+    "price": 635000000,
+    "code": "101000357",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "10HP"
+  },
+  {
+    "name": "موتور 1000-15HP -پوسته چدني",
+    "price": 750000000,
+    "code": "101000358",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "15HP"
+  },
+  {
+    "name": "موتور 1000-20HP -پوسته چدني",
+    "price": 980000000,
+    "code": "101000359",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "20HP"
+  },
+  {
+    "name": "موتور 1000-25HP -پوسته چدني",
+    "price": 1240000000,
+    "code": "101000360",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "25HP"
+  },
+  {
+    "name": "موتور 1000-30HP -پوسته چدني",
+    "price": 1320000000,
+    "code": "101000361",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "30HP"
+  },
+  {
+    "name": "موتور 1000-40HP -پوسته چدني",
+    "price": 2120000000,
+    "code": "101000362",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "40HP"
+  },
+  {
+    "name": "موتور 1000-50HP -پوسته چدني",
+    "price": 2500000000,
+    "code": "101000363",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "50HP"
+  },
+  {
+    "name": "موتور 1000-60HP -پوسته چدني",
+    "price": 3150000000,
+    "code": "101000364",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "60HP"
+  },
+  {
+    "name": "موتور 1000-75HP -پوسته چدني",
+    "price": 3370000000,
+    "code": "101000365",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "75HP"
+  },
+  {
+    "name": "موتور 1000-100HP -پوسته چدني",
+    "price": 6050000000,
+    "code": "101000366",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "100HP"
+  },
+  {
+    "name": "موتور 750-0.09kw -پوسته چدني",
+    "price": 0,
+    "code": "101000367",
+    "category": "three-phase",
+    "speed": "750",
+    "power": "0.09kw"
+  },
+  {
+    "name": "موتور 1400-125HP -پوسته چدني",
+    "price": 3350000000,
+    "code": "101000389",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "125HP"
+  },
+  {
+    "name": "موتور 1000-180HP- پوسته چدني",
+    "price": 1230000000,
+    "code": "101000391",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "180HP"
+  },
+  {
+    "name": "موتور 1400-150HP- پوسته چدني",
+    "price": 5800000000,
+    "code": "101000392",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "150HP"
+  },
+  {
+    "name": "موتور 3000-125HP - پوسته چدني",
+    "price": 700000000,
+    "code": "101000393",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "125HP"
+  },
+  {
+    "name": "موتور 1400-4HP -پوسته چدني فلنج دار",
+    "price": 0,
+    "code": "101000394",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "4HP"
+  },
+  {
+    "name": "موتور 3000-180HP - پوسته چدني",
+    "price": 0,
+    "code": "101000395",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "180HP"
+  },
+  {
+    "name": "موتور 270HP-1400 - پوسته چدني",
+    "price": 7700000000,
+    "code": "101000396",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "270HP"
+  },
+  {
+    "name": "موتور 1400-220HP- پوسته چدني",
+    "price": 3635000000,
+    "code": "101000397",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "220HP"
+  },
+  {
+    "name": "موتور 1000-125HP -پوسته چدني",
+    "price": 7500000000,
+    "code": "101000398",
+    "category": "three-phase",
+    "speed": "1000",
+    "power": "125HP"
+  },
+  {
+    "name": "موتور 1400-340HP -پوسته چدني",
+    "price": 0,
+    "code": "101000399",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "340HP"
+  },
+  {
+    "name": "موتور 1400-180HP -پوسته چدني",
+    "price": 6300000000,
+    "code": "1010003100",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "180HP"
+  },
+  {
+    "name": "موتور 1400-430HP -پوسته چدني",
+    "price": 0,
+    "code": "1010003101",
+    "category": "three-phase",
+    "speed": "1400",
+    "power": "430HP"
+  },
+  {
+    "name": "موتور3000-270HP-پوسته چدني",
+    "price": 0,
+    "code": "1010003102",
+    "category": "three-phase",
+    "speed": "3000",
+    "power": "270HP"
+  },
+  {
+    "name": "موتور700 - 3HP - پوسته چدني",
+    "price": 0,
+    "code": "1010003103",
+    "category": "three-phase",
+    "speed": "700",
+    "power": "3HP"
+  },
+  {
+    "name": "الکترو موتور",
+    "price": 60000000,
+    "code": "1010003104",
+    "category": "three-phase",
+    "speed": "",
+    "power": ""
+  }
+]

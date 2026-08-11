@@ -1,0 +1,1287 @@
+     1→"use client";
+     2→
+     3→import { useState, useEffect, useCallback, useRef } from "react";
+     4→import {
+     5→  Search,
+     6→  Phone,
+     7→  Mail,
+     8→  MapPin,
+     9→  ChevronLeft,
+    10→  Grid3X3,
+    11→  List,
+    12→  ArrowUp,
+    13→  X,
+    14→  Menu,
+    15→  Instagram,
+    16→  Send,
+    17→  Cog,
+    18→  Zap,
+    19→  Gauge,
+    20→  ShieldCheck,
+    21→  Factory,
+    22→  Truck,
+    23→  BadgeCheck,
+    24→  Star,
+    25→  ArrowRight,
+    26→  ArrowLeft,
+    27→  ChevronDown,
+    28→  Eye,
+    29→  MessageCircle,
+    30→  Users,
+    31→  Award,
+    32→  Timer,
+    33→  Headphones,
+    34→  CircleCheck,
+    35→  FileText,
+    36→  Weight,
+    37→  RotateCw,
+    38→  XCircle,
+    39→  CheckCircle2,
+    40→} from "lucide-react";
+    41→import { Input } from "@/components/ui/input";
+    42→import { Button } from "@/components/ui/button";
+    43→import { Card, CardContent } from "@/components/ui/card";
+    44→import { Badge } from "@/components/ui/badge";
+    45→import {
+    46→  Select,
+    47→  SelectContent,
+    48→  SelectItem,
+    49→  SelectTrigger,
+    50→  SelectValue,
+    51→} from "@/components/ui/select";
+    52→import { Skeleton } from "@/components/ui/skeleton";
+    53→import { Separator } from "@/components/ui/separator";
+    54→import {
+    55→  Dialog,
+    56→  DialogContent,
+    57→  DialogHeader,
+    58→  DialogTitle,
+    59→} from "@/components/ui/dialog";
+    60→
+    61→/* ─────────────────────────── Types ─────────────────────────── */
+    62→interface Product {
+    63→  id: string;
+    64→  code: string;
+    65→  name: string;
+    66→  price: number;
+    67→  category: string;
+    68→  speed: string;
+    69→  power: string;
+    70→  imageUrl: string;
+    71→}
+    72→
+    73→/* ─────────────────────────── Helpers ─────────────────────────── */
+    74→function formatPrice(price: number): string {
+    75→  if (price === 0) return "تماس بگیرید";
+    76→  return new Intl.NumberFormat("fa-IR").format(price) + " تومان";
+    77→}
+    78→
+    79→function faNum(n: number | string): string {
+    80→  return String(n).replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[parseInt(d)]);
+    81→}
+    82→
+    83→function parsePower(power: string): number {
+    84→  const match = power.match(/([\d.]+)\s*(kw|HP)/i);
+    85→  if (!match) return 0;
+    86→  const val = parseFloat(match[1]);
+    87→  return match[2].toLowerCase() === "kw" ? val : val * 0.746;
+    88→}
+    89→
+    90→function powerLabel(power: string): string {
+    91→  return power;
+    92→}
+    93→
+    94→function getStockStatus(product: Product): {
+    95→  label: string;
+    96→  color: string;
+    97→  icon: React.ElementType;
+    98→} {
+    99→  if (product.price > 0) {
+   100→    return {
+   101→      label: "موجود",
+   102→      color: "text-emerald-600 bg-emerald-50 border-emerald-200",
+   103→      icon: CheckCircle2,
+   104→    };
+   105→  }
+   106→  return {
+   107→    label: "استعلام قیمت",
+   108→    color: "text-amber-600 bg-amber-50 border-amber-200",
+   109→    icon: CircleCheck,
+   110→  };
+   111→}
+   112→
+   113→/* ─────────────────────── Product Card ─────────────────────────── */
+   114→function ProductCard({
+   115→  product,
+   116→  onSelect,
+   117→}: {
+   118→  product: Product;
+   119→  onSelect: (p: Product) => void;
+   120→}) {
+   121→  const status = getStockStatus(product);
+   122→  const StatusIcon = status.icon;
+   123→  const hasImage = product.imageUrl && product.imageUrl.length > 0;
+   124→
+   125→  return (
+   126→    <Card className="group hover:shadow-xl transition-all duration-300 border border-slate-200/80 overflow-hidden h-full flex flex-col bg-white">
+   127→      {/* Image Area */}
+   128→      <div className="aspect-[4/3] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center relative overflow-hidden border-b border-slate-100">
+   129→        {hasImage ? (
+   130→          <img
+   131→            src={product.imageUrl}
+   132→            alt={product.name}
+   133→            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+   134→          />
+   135→        ) : (
+   136→          <div className="relative">
+   137→            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+   138→              <Cog className="w-12 h-12 text-blue-400/70 group-hover:rotate-180 transition-transform duration-700" />
+   139→            </div>
+   140→            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+   141→              <div className="w-6 h-6 rounded-full bg-blue-300/60" />
+   142→            </div>
+   143→          </div>
+   144→        )}
+   145→        {/* Phase Badge */}
+   146→        <Badge
+   147→          className={`absolute top-2.5 right-2.5 text-[10px] font-semibold px-2 py-0.5 ${
+   148→            product.category === "single-phase"
+   149→              ? "bg-blue-600 text-white"
+   150→              : "bg-slate-700 text-white"
+   151→          }`}
+   152→        >
+   153→          {product.category === "single-phase" ? "تک فاز" : "سه فاز"}
+   154→        </Badge>
+   155→        {/* Stock Badge */}
+   156→        <Badge
+   157→          variant="outline"
+   158→          className={`absolute top-2.5 left-2.5 text-[10px] font-medium px-2 py-0.5 ${status.color}`}
+   159→        >
+   160→          <StatusIcon className="w-3 h-3 ml-0.5" />
+   161→          {status.label}
+   162→        </Badge>
+   163→      </div>
+   164→
+   165→      {/* Content */}
+   166→      <CardContent className="p-3.5 flex flex-col flex-1 gap-2">
+   167→        {/* Model / Code */}
+   168→        <div className="flex items-center justify-between">
+   169→          <span className="text-[11px] text-slate-400 font-mono num-en">
+   170→            {product.code}
+   171→          </span>
+   172→          {product.power && (
+   173→            <Badge
+   174→              variant="secondary"
+   175→              className="text-[10px] font-semibold bg-blue-50 text-blue-700 px-1.5 py-0"
+   176→            >
+   177→              {powerLabel(product.power)}
+   178→            </Badge>
+   179→          )}
+   180→        </div>
+   181→
+   182→        {/* Name */}
+   183→        <h3 className="text-[13px] font-bold text-slate-800 leading-relaxed line-clamp-2 min-h-[2.5rem]">
+   184→          {product.name}
+   185→        </h3>
+   186→
+   187→        {/* Technical Specs Row */}
+   188→        <div className="flex items-center gap-1.5 flex-wrap">
+   189→          {product.speed && (
+   190→            <span className="inline-flex items-center gap-0.5 text-[10px] text-slate-500 bg-slate-50 rounded px-1.5 py-0.5 border border-slate-100">
+   191→              <RotateCw className="w-2.5 h-2.5" />
+   192→              <span className="num-en">{product.speed}</span> RPM
+   193→            </span>
+   194→          )}
+   195→          <span className="inline-flex items-center gap-0.5 text-[10px] text-slate-500 bg-slate-50 rounded px-1.5 py-0.5 border border-slate-100">
+   196→            <Zap className="w-2.5 h-2.5" />
+   197→            پوسته چدنی
+   198→          </span>
+   199→        </div>
+   200→
+   201→        {/* Divider + Price + Actions */}
+   202→        <div className="mt-auto pt-2 border-t border-slate-100">
+   203→          <p
+   204→            className={`text-sm font-bold mb-2.5 ${product.price > 0 ? "text-blue-700" : "text-amber-600"}`}
+   205→          >
+   206→            {formatPrice(product.price)}
+   207→          </p>
+   208→          <div className="flex items-center gap-1.5">
+   209→            <Button
+   210→              size="sm"
+   211→              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[11px] h-8"
+   212→              onClick={() => onSelect(product)}
+   213→            >
+   214→              <Eye className="w-3.5 h-3.5 ml-1" />
+   215→              مشاهده مشخصات
+   216→            </Button>
+   217→            <Button
+   218→              size="sm"
+   219→              variant="outline"
+   220→              className="flex-1 border-blue-200 text-blue-700 hover:bg-blue-50 text-[11px] h-8"
+   221→              asChild
+   222→            >
+   223→              <a href="tel:+989123456789">
+   224→                <Phone className="w-3.5 h-3.5 ml-1" />
+   225→                استعلام
+   226→              </a>
+   227→            </Button>
+   228→          </div>
+   229→        </div>
+   230→      </CardContent>
+   231→    </Card>
+   232→  );
+   233→}
+   234→
+   235→/* ─────────────── Product Skeleton ─────────────── */
+   236→function ProductSkeletonGrid() {
+   237→  return (
+   238→    <Card className="border border-slate-200/80 overflow-hidden">
+   239→      <Skeleton className="aspect-[4/3] bg-slate-100" />
+   240→      <div className="p-3.5 space-y-2">
+   241→        <div className="flex justify-between">
+   242→          <Skeleton className="h-3 w-16 bg-slate-100" />
+   243→          <Skeleton className="h-4 w-12 bg-slate-100" />
+   244→        </div>
+   245→        <Skeleton className="h-4 w-full bg-slate-100" />
+   246→        <Skeleton className="h-3 w-full bg-slate-100" />
+   247→        <div className="pt-2 border-t border-slate-100 space-y-2">
+   248→          <Skeleton className="h-5 w-24 bg-slate-100" />
+   249→          <div className="flex gap-1.5">
+   250→            <Skeleton className="h-8 flex-1 bg-slate-100" />
+   251→            <Skeleton className="h-8 flex-1 bg-slate-100" />
+   252→          </div>
+   253→        </div>
+   254→      </div>
+   255→    </Card>
+   256→  );
+   257→}
+   258→
+   259→/* ─────────────── Product Detail Modal ─────────────── */
+   260→function ProductDetailModal({
+   261→  product,
+   262→  open,
+   263→  onClose,
+   264→  related,
+   265→}: {
+   266→  product: Product | null;
+   267→  open: boolean;
+   268→  onClose: () => void;
+   269→  related: Product[];
+   270→}) {
+   271→  if (!product) return null;
+   272→  const status = getStockStatus(product);
+   273→  const StatusIcon = status.icon;
+   274→
+   275→  const specs = [
+   276→    { label: "کد کالا", value: product.code },
+   277→    { label: "نام محصول", value: product.name },
+   278→    { label: "نوع", value: product.category === "single-phase" ? "تک فاز" : "سه فاز" },
+   279→    { label: "توان", value: product.power || "—" },
+   280→    { label: "دور", value: product.speed ? `${product.speed} RPM` : "—" },
+   281→    { label: "نوع پوسته", value: "چدنی" },
+   282→    { label: "وضعیت", value: status.label },
+   283→  ];
+   284→
+   285→  return (
+   286→    <Dialog open={open} onOpenChange={onClose}>
+   287→      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0" dir="rtl">
+   288→        <div className="flex flex-col md:flex-row">
+   289→          {/* Image */}
+   290→          <div className="md:w-2/5 aspect-square md:aspect-auto bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center relative">
+   291→            {product.imageUrl ? (
+   292→              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+   293→            ) : (
+   294→              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+   295→                <Cog className="w-16 h-16 text-blue-400/70" />
+   296→              </div>
+   297→            )}
+   298→            <Badge className={`absolute top-4 right-4 text-xs ${product.category === "single-phase" ? "bg-blue-600 text-white" : "bg-slate-700 text-white"}`}>
+   299→              {product.category === "single-phase" ? "تک فاز" : "سه فاز"}
+   300→            </Badge>
+   301→          </div>
+   302→
+   303→          {/* Info */}
+   304→          <div className="md:w-3/5 p-5 md:p-6 flex flex-col">
+   305→            <DialogHeader className="mb-4">
+   306→              <DialogTitle className="text-lg font-bold text-slate-800 leading-relaxed">
+   307→                {product.name}
+   308→              </DialogTitle>
+   309→              <p className="text-xs text-slate-400 font-mono num-en mt-1">کد: {product.code}</p>
+   310→            </DialogHeader>
+   311→
+   312→            <div className="flex items-center gap-2 mb-4">
+   313→              <Badge variant="outline" className={`text-xs px-2 py-0.5 ${status.color}`}>
+   314→                <StatusIcon className="w-3 h-3 ml-1" />
+   315→                {status.label}
+   316→              </Badge>
+   317→              {product.power && (
+   318→                <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700">{powerLabel(product.power)}</Badge>
+   319→              )}
+   320→              {product.speed && (
+   321→                <Badge variant="secondary" className="text-xs bg-slate-100 text-slate-600"><span className="num-en">{product.speed}</span> RPM</Badge>
+   322→              )}
+   323→            </div>
+   324→
+   325→            <p className={`text-xl font-extrabold mb-5 ${product.price > 0 ? "text-blue-700" : "text-amber-600"}`}>
+   326→              {formatPrice(product.price)}
+   327→            </p>
+   328→
+   329→            {/* Spec Table */}
+   330→            <div className="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden mb-5">
+   331→              <table className="w-full text-sm">
+   332→                <tbody>
+   333→                  {specs.map((s, i) => (
+   334→                    <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
+   335→                      <td className="px-3 py-2 text-xs font-medium text-slate-500 w-28 border-l border-slate-200">{s.label}</td>
+   336→                      <td className="px-3 py-2 text-xs font-semibold text-slate-700 num-en">{s.value}</td>
+   337→                    </tr>
+   338→                  ))}
+   339→                </tbody>
+   340→              </table>
+   341→            </div>
+   342→
+   343→            {/* Actions */}
+   344→            <div className="flex items-center gap-2.5 mt-auto">
+   345→              <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-11">
+   346→                <MessageCircle className="w-4 h-4 ml-2" />
+   347→                درخواست استعلام قیمت
+   348→              </Button>
+   349→              <Button variant="outline" className="flex-1 border-blue-200 text-blue-700 hover:bg-blue-50 h-11" asChild>
+   350→                <a href="tel:+989123456789">
+   351→                  <Phone className="w-4 h-4 ml-2" />
+   352→                  تماس مستقیم
+   353→                </a>
+   354→              </Button>
+   355→            </div>
+   356→          </div>
+   357→        </div>
+   358→
+   359→        {/* Related */}
+   360→        {related.length > 0 && (
+   361→          <div className="border-t border-slate-200 p-5">
+   362→            <h4 className="text-sm font-bold text-slate-700 mb-3">محصولات مشابه</h4>
+   363→            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+   364→              {related.slice(0, 4).map((p) => (
+   365→                <Card key={p.id} className="border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-300 transition-colors">
+   366→                  <div className="aspect-square bg-slate-50 flex items-center justify-center">
+   367→                    <Cog className="w-8 h-8 text-slate-300" />
+   368→                  </div>
+   369→                  <div className="p-2">
+   370→                    <p className="text-[10px] font-semibold text-slate-700 line-clamp-2 leading-tight">{p.name}</p>
+   371→                    <p className="text-[10px] text-blue-600 font-bold mt-1">{formatPrice(p.price)}</p>
+   372→                  </div>
+   373→                </Card>
+   374→              ))}
+   375→            </div>
+   376→          </div>
+   377→        )}
+   378→      </DialogContent>
+   379→    </Dialog>
+   380→  );
+   381→}
+   382→
+   383→/* ═══════════════════════════ MAIN PAGE ═══════════════════════════ */
+   384→export default function Home() {
+   385→  const [products, setProducts] = useState<Product[]>([]);
+   386→  const [featured, setFeatured] = useState<Product[]>([]);
+   387→  const [loading, setLoading] = useState(true);
+   388→  const [category, setCategory] = useState("all");
+   389→  const [speed, setSpeed] = useState("all");
+   390→  const [powerRange, setPowerRange] = useState("all");
+   391→  const [search, setSearch] = useState("");
+   392→  const [searchInput, setSearchInput] = useState("");
+   393→  const [page, setPage] = useState(1);
+   394→  const [totalPages, setTotalPages] = useState(1);
+   395→  const [total, setTotal] = useState(0);
+   396→  const [singleCount, setSingleCount] = useState(0);
+   397→  const [threeCount, setThreeCount] = useState(0);
+   398→  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+   399→  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+   400→  const [detailOpen, setDetailOpen] = useState(false);
+   401→
+   402→  const productsRef = useRef<HTMLDivElement>(null);
+   403→  const heroSearchRef = useRef<HTMLInputElement>(null);
+   404→
+   405→  /* ─── Fetch Products ─── */
+   406→  const fetchProducts = useCallback(async () => {
+   407→    setLoading(true);
+   408→    try {
+   409→      const params = new URLSearchParams();
+   410→      if (category !== "all") params.set("category", category);
+   411→      if (speed !== "all") params.set("speed", speed);
+   412→      if (search) params.set("search", search);
+   413→      params.set("page", String(page));
+   414→      params.set("limit", "24");
+   415→
+   416→      const res = await fetch(`/api/products?${params}`);
+   417→      const data = await res.json();
+   418→      setProducts(data.products);
+   419→      setTotalPages(data.totalPages);
+   420→      setTotal(data.total);
+   421→    } catch (err) {
+   422→      console.error("Failed to fetch:", err);
+   423→    } finally {
+   424→      setLoading(false);
+   425→    }
+   426→  }, [category, speed, search, page]);
+   427→
+   428→  /* ─── Fetch Counts & Featured ─── */
+   429→  const fetchMeta = useCallback(async () => {
+   430→    try {
+   431→      const [sRes, tRes, allRes] = await Promise.all([
+   432→        fetch("/api/products?category=single-phase&limit=1"),
+   433→        fetch("/api/products?category=three-phase&limit=1"),
+   434→        fetch("/api/products?limit=6"),
+   435→      ]);
+   436→      const [sData, tData, allData] = await Promise.all([sRes.json(), tRes.json(), allRes.json()]);
+   437→      setSingleCount(sData.total);
+   438→      setThreeCount(tData.total);
+   439→
+   440→      // Featured = products with prices, sorted by relevance
+   441→      const withPrices = allData.products
+   442→        .filter((p: Product) => p.price > 0)
+   443→        .sort((a: Product, b: Product) => {
+   444→          const aP = parsePower(a.power);
+   445→          const bP = parsePower(b.power);
+   446→          return aP - bP;
+   447→        });
+   448→      setFeatured(withPrices.slice(0, 6));
+   449→    } catch (err) {
+   450→      console.error("Failed to fetch meta:", err);
+   451→    }
+   452→  }, []);
+   453→
+   454→  useEffect(() => {
+   455→    fetchMeta();
+   456→  }, []);
+   457→
+   458→  useEffect(() => {
+   459→    fetchProducts();
+   460→  }, [fetchProducts]);
+   461→
+   462→  /* ─── Handlers ─── */
+   463→  const handleSearch = () => {
+   464→    setSearch(searchInput);
+   465→    setPage(1);
+   466→    productsRef.current?.scrollIntoView({ behavior: "smooth" });
+   467→  };
+   468→
+   469→  const handleCategoryChange = (val: string) => {
+   470→    setCategory(val);
+   471→    setPage(1);
+   472→    productsRef.current?.scrollIntoView({ behavior: "smooth" });
+   473→  };
+   474→
+   475→  const handleSpeedChange = (val: string) => {
+   476→    setSpeed(val);
+   477→    setPage(1);
+   478→  };
+   479→
+   480→  const handlePowerChange = (val: string) => {
+   481→    setPowerRange(val);
+   482→    setPage(1);
+   483→  };
+   484→
+   485→  const handleProductSelect = (product: Product) => {
+   486→    setSelectedProduct(product);
+   487→    setDetailOpen(true);
+   488→  };
+   489→
+   490→  // Filter by power range on client side
+   491→  const filteredProducts = powerRange === "all"
+   492→    ? products
+   493→    : products.filter((p) => {
+   494→        const kw = parsePower(p.power);
+   495→        if (powerRange === "small") return kw > 0 && kw <= 0.75;
+   496→        if (powerRange === "medium") return kw > 0.75 && kw <= 7.5;
+   497→        if (powerRange === "large") return kw > 7.5 && kw <= 75;
+   498→        if (powerRange === "heavy") return kw > 75;
+   499→        return true;
+   500→      });
+   501→
+   502→  const clearAllFilters = () => {
+   503→    setCategory("all");
+   504→    setSpeed("all");
+   505→    setPowerRange("all");
+   506→    setSearch("");
+   507→    setSearchInput("");
+   508→    setPage(1);
+   509→  };
+   510→
+   511→  const hasActiveFilters = category !== "all" || speed !== "all" || powerRange !== "all" || !!search;
+   512→
+   513→  return (
+   514→    <div className="min-h-screen flex flex-col">
+   515→      {/* ═══════════ TOP BAR ═══════════ */}
+   516→      <div className="bg-slate-900 text-slate-300 text-xs">
+   517→        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
+   518→          <div className="flex items-center gap-5">
+   519→            <a href="tel:+989123456789" className="flex items-center gap-1.5 hover:text-white transition-colors">
+   520→              <Phone className="w-3.5 h-3.5" />
+   521→              <span className="num-en" dir="ltr">0912-345-6789</span>
+   522→            </a>
+   523→            <a href="mailto:info@stkomotors.ir" className="hidden sm:flex items-center gap-1.5 hover:text-white transition-colors">
+   524→              <Mail className="w-3.5 h-3.5" />
+   525→              <span dir="ltr">info@stkomotors.ir</span>
+   526→            </a>
+   527→          </div>
+   528→          <div className="flex items-center gap-4">
+   529→            <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> ایران</span>
+   530→            <div className="flex items-center gap-3">
+   531→              <a href="#" className="hover:text-white transition-colors" aria-label="Instagram"><Instagram className="w-3.5 h-3.5" /></a>
+   532→              <a href="#" className="hover:text-white transition-colors" aria-label="Telegram"><Send className="w-3.5 h-3.5" /></a>
+   533→            </div>
+   534→          </div>
+   535→        </div>
+   536→      </div>
+   537→
+   538→      {/* ═══════════ HEADER / NAV ═══════════ */}
+   539→      <header className="bg-white border-b border-slate-200/80 sticky top-0 z-50 shadow-sm">
+   540→        <div className="max-w-7xl mx-auto px-4">
+   541→          <div className="flex items-center justify-between h-16 sm:h-[72px]">
+   542→            {/* Logo */}
+   543→            <a href="#" className="flex items-center gap-2.5 group">
+   544→              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center shadow-md shadow-blue-200/50 group-hover:shadow-lg group-hover:shadow-blue-300/50 transition-shadow">
+   545→                <Zap className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
+   546→              </div>
+   547→              <div>
+   548→                <h1 className="text-base sm:text-xl font-extrabold text-slate-800 tracking-tight">STK Motors</h1>
+   549→                <p className="text-[10px] text-slate-400 hidden sm:block">الکتروموتور صنعتی</p>
+   550→              </div>
+   551→            </a>
+   552→
+   553→            {/* Desktop Nav */}
+   554→            <nav className="hidden lg:flex items-center gap-0.5">
+   555→              {[
+   556→                { label: "صفحه اصلی", href: "#", active: true },
+   557→                { label: "محصولات", href: "#catalog" },
+   558→                { label: "تک فاز", href: "#catalog", action: () => handleCategoryChange("single-phase") },
+   559→                { label: "سه فاز", href: "#catalog", action: () => handleCategoryChange("three-phase") },
+   560→                { label: "درباره ما", href: "#why" },
+   561→                { label: "تماس با ما", href: "#contact" },
+   562→              ].map((item) => (
+   563→                <a
+   564→                  key={item.label}
+   565→                  href={item.href}
+   566→                  onClick={(e) => {
+   567→                    if (item.action) {
+   568→                      e.preventDefault();
+   569→                      item.action();
+   570→                    }
+   571→                  }}
+   572→                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+   573→                    item.active
+   574→                      ? "text-blue-700 bg-blue-50"
+   575→                      : "text-slate-500 hover:text-blue-700 hover:bg-blue-50/50"
+   576→                  }`}
+   577→                >
+   578→                  {item.label}
+   579→                </a>
+   580→              ))}
+   581→            </nav>
+   582→
+   583→            {/* Desktop CTA */}
+   584→            <div className="hidden lg:flex items-center gap-2">
+   585→              <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-5" asChild>
+   586→                <a href="tel:+989123456789"><Phone className="w-4 h-4 ml-1.5" />مشاوره رایگان</a>
+   587→              </Button>
+   588→            </div>
+   589→
+   590→            {/* Mobile Menu Toggle */}
+   591→            <button className="lg:hidden p-2 text-slate-500 hover:text-blue-700" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="منو">
+   592→              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+   593→            </button>
+   594→          </div>
+   595→
+   596→          {/* Mobile Nav */}
+   597→          {mobileMenuOpen && (
+   598→            <nav className="lg:hidden pb-4 border-t border-slate-100 pt-3 space-y-1">
+   599→              {["صفحه اصلی", "محصولات", "تک فاز", "سه فاز", "درباره ما", "تماس با ما"].map((item) => (
+   600→                <a
+   601→                  key={item}
+   602→                  href="#"
+   603→                  className="block px-4 py-3 text-sm font-medium text-slate-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors"
+   604→                  onClick={() => {
+   605→                    setMobileMenuOpen(false);
+   606→                    if (item === "تک فاز") handleCategoryChange("single-phase");
+   607→                    if (item === "سه فاز") handleCategoryChange("three-phase");
+   608→                  }}
+   609→                >
+   610→                  {item}
+   611→                </a>
+   612→              ))}
+   613→              <Button className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white" asChild>
+   614→                <a href="tel:+989123456789"><Phone className="w-4 h-4 ml-2" />مشاوره رایگان</a>
+   615→              </Button>
+   616→            </nav>
+   617→          )}
+   618→        </div>
+   619→      </header>
+   620→
+   621→      {/* ═══════════ HERO ═══════════ */}
+   622→      <section className="relative bg-gradient-to-l from-blue-800 via-blue-700 to-blue-900 text-white overflow-hidden">
+   623→        {/* Background Pattern */}
+   624→        <div className="absolute inset-0 opacity-[0.04]">
+   625→          <div className="absolute inset-0" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }} />
+   626→        </div>
+   627→        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-white/[0.03] to-transparent" />
+   628→
+   629→        <div className="max-w-7xl mx-auto px-4 py-14 sm:py-20 lg:py-24 relative z-10">
+   630→          <div className="grid lg:grid-cols-2 gap-10 items-center">
+   631→            {/* Text Side */}
+   632→            <div className="order-2 lg:order-1">
+   633→              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 mb-5 border border-white/10">
+   634→                <Star className="w-3.5 h-3.5 text-amber-400" />
+   635→                <span className="text-xs font-medium text-blue-100">نماینده رسمی الکتروموتور</span>
+   636→              </div>
+   637→
+   638→              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight mb-4">
+   639→                الکتروموتور صنعتی
+   640→                <br />
+   641→                <span className="text-blue-200">STK</span>
+   642→              </h2>
+   643→              <p className="text-blue-100/80 text-base sm:text-lg mb-2 leading-relaxed">
+   644→                موتورهای تک فاز و سه فاز پوسته چدنی
+   645→              </p>
+   646→              <p className="text-blue-200/60 text-sm mb-8 leading-relaxed">
+   647→                انتخاب بر اساس توان، دور و فریم — ارسال به سراسر ایران
+   648→              </p>
+   649→
+   650→              <div className="flex flex-wrap gap-3">
+   651→                <a
+   652→                  href="#catalog"
+   653→                  onClick={() => productsRef.current?.scrollIntoView({ behavior: "smooth" })}
+   654→                  className="inline-flex items-center gap-2 bg-white text-blue-800 font-bold px-7 py-3.5 rounded-xl hover:bg-blue-50 transition-colors shadow-lg text-sm"
+   655→                >
+   656→                  مشاهده محصولات
+   657→                  <ChevronLeft className="w-4 h-4" />
+   658→                </a>
+   659→                <a
+   660→                  href="tel:+989123456789"
+   661→                  className="inline-flex items-center gap-2 bg-white/10 text-white border border-white/20 font-medium px-7 py-3.5 rounded-xl hover:bg-white/20 transition-colors text-sm backdrop-blur-sm"
+   662→                >
+   663→                  <Headphones className="w-4 h-4" />
+   664→                  مشاوره رایگان خرید
+   665→                </a>
+   666→              </div>
+   667→            </div>
+   668→
+   669→            {/* Image Placeholder Side */}
+   670→            <div className="order-1 lg:order-2 flex items-center justify-center">
+   671→              <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96">
+   672→                <div className="absolute inset-0 rounded-full bg-white/[0.04] border border-white/[0.08]" />
+   673→                <div className="absolute inset-6 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center">
+   674→                  <div className="absolute inset-10 rounded-full bg-gradient-to-br from-blue-400/20 to-blue-600/20 border border-white/[0.06] flex items-center justify-center">
+   675→                    <Cog className="w-24 h-24 sm:w-32 sm:h-32 text-white/30" />
+   676→                    <div className="absolute w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+   677→                      <Zap className="w-6 h-6 text-white/50" />
+   678→                    </div>
+   679→                  </div>
+   680→                </div>
+   681→                {/* Floating Specs */}
+   682→                <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
+   683→                  <p className="text-[10px] text-blue-200">توان</p>
+   684→                  <p className="text-sm font-bold num-en">0.25 ~ 430 HP</p>
+   685→                </div>
+   686→                <div className="absolute bottom-4 left-4 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/10">
+   687→                  <p className="text-[10px] text-blue-200">دور</p>
+   688→                  <p className="text-sm font-bold num-en">750 ~ 3000 RPM</p>
+   689→                </div>
+   690→              </div>
+   691→            </div>
+   692→          </div>
+   693→        </div>
+   694→      </section>
+   695→
+   696→      {/* ═══════════ TECHNICAL SEARCH BAR ═══════════ */}
+   697→      <section className="bg-white border-b border-slate-200 -mt-px relative z-10">
+   698→        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-5">
+   699→          <div className="bg-slate-50 rounded-xl border border-slate-200 p-3 sm:p-4">
+   700→            <div className="flex flex-col sm:flex-row items-stretch gap-2.5 sm:gap-3">
+   701→              {/* Search Input */}
+   702→              <div className="relative flex-1">
+   703→                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+   704→                <input
+   705→                  ref={heroSearchRef}
+   706→                  placeholder="جستجوی نام یا کد موتور..."
+   707→                  value={searchInput}
+   708→                  onChange={(e) => setSearchInput(e.target.value)}
+   709→                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+   710→                  className="w-full h-11 pr-10 pl-4 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-shadow"
+   711→                  dir="rtl"
+   712→                />
+   713→              </div>
+   714→
+   715→              {/* Category Chip Buttons */}
+   716→              <div className="flex items-center gap-1.5 flex-wrap">
+   717→                <button
+   718→                  onClick={() => handleCategoryChange("all")}
+   719→                  className={`px-3.5 py-2 text-xs font-semibold rounded-lg border transition-all ${
+   720→                    category === "all"
+   721→                      ? "bg-blue-600 text-white border-blue-600"
+   722→                      : "bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-700"
+   723→                  }`}
+   724→                >
+   725→                  همه
+   726→                </button>
+   727→                <button
+   728→                  onClick={() => handleCategoryChange("single-phase")}
+   729→                  className={`px-3.5 py-2 text-xs font-semibold rounded-lg border transition-all ${
+   730→                    category === "single-phase"
+   731→                      ? "bg-blue-600 text-white border-blue-600"
+   732→                      : "bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-700"
+   733→                  }`}
+   734→                >
+   735→                  تک فاز
+   736→                </button>
+   737→                <button
+   738→                  onClick={() => handleCategoryChange("three-phase")}
+   739→                  className={`px-3.5 py-2 text-xs font-semibold rounded-lg border transition-all ${
+   740→                    category === "three-phase"
+   741→                      ? "bg-blue-600 text-white border-blue-600"
+   742→                      : "bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-700"
+   743→                  }`}
+   744→                >
+   745→                  سه فاز
+   746→                </button>
+   747→              </div>
+   748→
+   749→              {/* Dropdowns */}
+   750→              <Select value={speed} onValueChange={handleSpeedChange}>
+   751→                <SelectTrigger className="h-11 w-auto min-w-[130px] bg-white border-slate-200 text-xs">
+   752→                  <SelectValue placeholder="دور موتور" />
+   753→                </SelectTrigger>
+   754→                <SelectContent>
+   755→                  <SelectItem value="all">همه دورها</SelectItem>
+   756→                  <SelectItem value="750">750 RPM</SelectItem>
+   757→                  <SelectItem value="1000">1000 RPM</SelectItem>
+   758→                  <SelectItem value="1400">1400 RPM</SelectItem>
+   759→                  <SelectItem value="3000">3000 RPM</SelectItem>
+   760→                </SelectContent>
+   761→              </Select>
+   762→
+   763→              <Select value={powerRange} onValueChange={handlePowerChange}>
+   764→                <SelectTrigger className="h-11 w-auto min-w-[130px] bg-white border-slate-200 text-xs">
+   765→                  <SelectValue placeholder="محدوده توان" />
+   766→                </SelectTrigger>
+   767→                <SelectContent>
+   768→                  <SelectItem value="all">همه توان‌ها</SelectItem>
+   769→                  <SelectItem value="small">کم‌توان (تا ۰.۷۵ kW)</SelectItem>
+   770→                  <SelectItem value="medium">متوسط (۰.۷۵ تا ۷.۵ kW)</SelectItem>
+   771→                  <SelectItem value="large">بزرگ (۷.۵ تا ۷۵ kW)</SelectItem>
+   772→                  <SelectItem value="heavy">صنعتی سنگین (+۷۵ kW)</SelectItem>
+   773→                </SelectContent>
+   774→              </Select>
+   775→
+   776→              <Button className="h-11 bg-blue-600 hover:bg-blue-700 text-white px-5 text-sm" onClick={handleSearch}>
+   777→                <Search className="w-4 h-4 ml-1.5" />
+   778→                جستجو
+   779→              </Button>
+   780→            </div>
+   781→
+   782→            {/* Active Filter Tags */}
+   783→            {hasActiveFilters && (
+   784→              <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3 border-t border-slate-200">
+   785→                <span className="text-[11px] text-slate-400 ml-1">فیلترها:</span>
+   786→                {category !== "all" && (
+   787→                  <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-[11px] gap-1 px-2 py-0.5">
+   788→                    {category === "single-phase" ? "تک فاز" : "سه فاز"}
+   789→                    <button onClick={() => handleCategoryChange("all")}><X className="w-2.5 h-2.5" /></button>
+   790→                  </Badge>
+   791→                )}
+   792→                {speed !== "all" && (
+   793→                  <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-[11px] gap-1 px-2 py-0.5">
+   794→                    <span className="num-en">{speed}</span> RPM
+   795→                    <button onClick={() => handleSpeedChange("all")}><X className="w-2.5 h-2.5" /></button>
+   796→                  </Badge>
+   797→                )}
+   798→                {powerRange !== "all" && (
+   799→                  <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-[11px] gap-1 px-2 py-0.5">
+   800→                    {powerRange === "small" ? "کم‌توان" : powerRange === "medium" ? "متوسط" : powerRange === "large" ? "بزرگ" : "صنعتی"}
+   801→                    <button onClick={() => handlePowerChange("all")}><X className="w-2.5 h-2.5" /></button>
+   802→                  </Badge>
+   803→                )}
+   804→                {search && (
+   805→                  <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-[11px] gap-1 px-2 py-0.5">
+   806→                    &laquo;{search}&raquo;
+   807→                    <button onClick={() => { setSearch(""); setSearchInput(""); }}><X className="w-2.5 h-2.5" /></button>
+   808→                  </Badge>
+   809→                )}
+   810→                <button onClick={clearAllFilters} className="text-[11px] text-slate-400 hover:text-red-500 ml-1 transition-colors">
+   811→                  پاک کردن همه
+   812→                </button>
+   813→              </div>
+   814→            )}
+   815→          </div>
+   816→        </div>
+   817→      </section>
+   818→
+   819→      {/* ═══════════ TRUST STRIP ═══════════ */}
+   820→      <section className="bg-white">
+   821→        <div className="max-w-7xl mx-auto px-4 py-5 sm:py-6">
+   822→          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+   823→            {[
+   824→              { icon: BadgeCheck, title: "ضمانت اصالت کالا", desc: "محصولات اورجینال با گارانتی" },
+   825→              { icon: Truck, title: "ارسال به سراسر ایران", desc: "بسته‌بندی صنعتی و ارسال سریع" },
+   826→              { icon: ShieldCheck, title: "گارانتی تعویض", desc: "تضمین کیفیت و سلامت محصول" },
+   827→              { icon: Factory, title: "قیمت کارخانه", desc: "بدون واسطه، مستقیم از واردکننده" },
+   828→            ].map((f, i) => (
+   829→              <div key={i} className="flex items-center gap-3">
+   830→                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+   831→                  <f.icon className="w-5 h-5 text-blue-600" />
+   832→                </div>
+   833→                <div>
+   834→                  <h4 className="text-xs font-bold text-slate-700">{f.title}</h4>
+   835→                  <p className="text-[10px] text-slate-400 leading-relaxed">{f.desc}</p>
+   836→                </div>
+   837→              </div>
+   838→            ))}
+   839→          </div>
+   840→        </div>
+   841→      </section>
+   842→
+   843→      {/* ═══════════ CATEGORIES ═══════════ */}
+   844→      <section className="bg-slate-50 py-12 sm:py-16">
+   845→        <div className="max-w-7xl mx-auto px-4">
+   846→          <div className="text-center mb-8 sm:mb-10">
+   847→            <h3 className="text-xl sm:text-2xl font-extrabold text-slate-800 mb-1.5">دسته‌بندی محصولات</h3>
+   848→            <p className="text-sm text-slate-400">انتخاب نوع موتور مورد نیاز خود</p>
+   849→          </div>
+   850→
+   851→          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 max-w-4xl mx-auto">
+   852→            {/* Single Phase */}
+   853→            <button
+   854→              onClick={() => { handleCategoryChange("single-phase"); productsRef.current?.scrollIntoView({ behavior: "smooth" }); }}
+   855→              className={`group relative overflow-hidden rounded-2xl border-2 transition-all duration-300 text-right p-6 sm:p-8 ${
+   856→                category === "single-phase"
+   857→                  ? "border-blue-500 bg-blue-50/50 shadow-xl shadow-blue-100/50"
+   858→                  : "border-slate-200 bg-white hover:border-blue-300 hover:shadow-lg"
+   859→              }`}
+   860→            >
+   861→              {/* Decorative BG */}
+   862→              <div className="absolute top-0 left-0 w-48 h-48 bg-gradient-to-br from-blue-100/30 to-transparent rounded-full -translate-x-1/2 -translate-y-1/2 group-hover:scale-110 transition-transform" />
+   863→
+   864→              <div className="relative flex items-start justify-between">
+   865→                <div className="flex-1">
+   866→                  <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-[11px] font-semibold mb-3 ${
+   867→                    category === "single-phase" ? "bg-blue-600 text-white" : "bg-blue-100 text-blue-700"
+   868→                  }`}>
+   869→                    <Zap className="w-3 h-3" />
+   870→                    تک فاز
+   871→                  </div>
+   872→                  <h4 className="text-lg font-extrabold text-slate-800 mb-1.5">الکتروموتور تک فاز</h4>
+   873→                  <p className="text-sm text-slate-500 leading-relaxed mb-3">
+   874→                    موتورهای تک فاز پوسته چدنی — مناسب کاربری‌های خانگی و نیمه صنعتی
+   875→                  </p>
+   876→                  <div className="flex items-center gap-3">
+   877→                    <Badge variant="secondary" className="bg-blue-50 text-blue-700 text-xs">
+   878→                      <span className="num-en">{singleCount}</span> محصول
+   879→                    </Badge>
+   880→                    <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 group-hover:gap-1.5 transition-all">
+   881→                      مشاهده
+   882→                      <ArrowLeft className="w-3.5 h-3.5" />
+   883→                    </span>
+   884→                  </div>
+   885→                </div>
+   886→                <div className={`w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 mr-4 transition-colors ${
+   887→                  category === "single-phase" ? "bg-blue-600" : "bg-blue-50"
+   888→                }`}>
+   889→                  <Zap className={`w-10 h-10 ${category === "single-phase" ? "text-white" : "text-blue-500"}`} />
+   890→                </div>
+   891→              </div>
+   892→            </button>
+   893→
+   894→            {/* Three Phase */}
+   895→            <button
+   896→              onClick={() => { handleCategoryChange("three-phase"); productsRef.current?.scrollIntoView({ behavior: "smooth" }); }}
+   897→              className={`group relative overflow-hidden rounded-2xl border-2 transition-all duration-300 text-right p-6 sm:p-8 ${
+   898→                category === "three-phase"
+   899→                  ? "border-blue-500 bg-blue-50/50 shadow-xl shadow-blue-100/50"
+   900→                  : "border-slate-200 bg-white hover:border-blue-300 hover:shadow-lg"
+   901→              }`}
+   902→            >
+   903→              <div className="absolute top-0 left-0 w-48 h-48 bg-gradient-to-br from-blue-100/30 to-transparent rounded-full -translate-x-1/2 -translate-y-1/2 group-hover:scale-110 transition-transform" />
+   904→
+   905→              <div className="relative flex items-start justify-between">
+   906→                <div className="flex-1">
+   907→                  <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-[11px] font-semibold mb-3 ${
+   908→                    category === "three-phase" ? "bg-blue-600 text-white" : "bg-blue-100 text-blue-700"
+   909→                  }`}>
+   910→                    <Gauge className="w-3 h-3" />
+   911→                    سه فاز
+   912→                  </div>
+   913→                  <h4 className="text-lg font-extrabold text-slate-800 mb-1.5">الکتروموتور سه فاز</h4>
+   914→                  <p className="text-sm text-slate-500 leading-relaxed mb-3">
+   915→                    موتورهای سه فاز پوسته چدنی — از ۰.۲۵ تا ۴۳۰ اسب بخار
+   916→                  </p>
+   917→                  <div className="flex items-center gap-3">
+   918→                    <Badge variant="secondary" className="bg-blue-50 text-blue-700 text-xs">
+   919→                      <span className="num-en">{threeCount}</span> محصول
+   920→                    </Badge>
+   921→                    <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 group-hover:gap-1.5 transition-all">
+   922→                      مشاهده
+   923→                      <ArrowLeft className="w-3.5 h-3.5" />
+   924→                    </span>
+   925→                  </div>
+   926→                </div>
+   927→                <div className={`w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 mr-4 transition-colors ${
+   928→                  category === "three-phase" ? "bg-blue-600" : "bg-blue-50"
+   929→                }`}>
+   930→                  <Gauge className={`w-10 h-10 ${category === "three-phase" ? "text-white" : "text-blue-500"}`} />
+   931→                </div>
+   932→              </div>
+   933→            </button>
+   934→          </div>
+   935→        </div>
+   936→      </section>
+   937→
+   938→      {/* ═══════════ FEATURED / POPULAR MOTORS ═══════════ */}
+   939→      {featured.length > 0 && (
+   940→        <section className="bg-white py-12 sm:py-16">
+   941→          <div className="max-w-7xl mx-auto px-4">
+   942→            <div className="flex items-center justify-between mb-8">
+   943→              <div>
+   944→                <h3 className="text-xl sm:text-2xl font-extrabold text-slate-800 mb-1">محصولات پرفروش</h3>
+   945→                <p className="text-sm text-slate-400">پراستفاده‌ترین موتورهای صنعتی</p>
+   946→              </div>
+   947→              <a
+   948→                href="#catalog"
+   949→                onClick={(e) => { e.preventDefault(); productsRef.current?.scrollIntoView({ behavior: "smooth" }); }}
+   950→                className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+   951→              >
+   952→                مشاهده همه
+   953→                <ChevronLeft className="w-4 h-4" />
+   954→              </a>
+   955→            </div>
+   956→
+   957→            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+   958→              {featured.map((p) => (
+   959→                <Card
+   960→                  key={p.id}
+   961→                  className="group cursor-pointer hover:shadow-lg hover:border-blue-300 transition-all duration-300 border border-slate-200/80 overflow-hidden"
+   962→                  onClick={() => handleProductSelect(p)}
+   963→                >
+   964→                  <div className="aspect-square bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center relative">
+   965→                    <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
+   966→                      <Cog className="w-6 h-6 text-blue-400/70 group-hover:rotate-90 transition-transform duration-500" />
+   967→                    </div>
+   968→                    <Badge className="absolute top-1.5 right-1.5 text-[9px] px-1.5 py-0 bg-slate-600 text-white">
+   969→                      {p.category === "single-phase" ? "۱ف" : "۳ف"}
+   970→                    </Badge>
+   971→                  </div>
+   972→                  <div className="p-2.5">
+   973→                    <p className="text-[11px] font-bold text-slate-700 line-clamp-2 leading-tight mb-1.5">{p.name}</p>
+   974→                    <div className="flex items-center justify-between">
+   975→                      <p className="text-[11px] font-extrabold text-blue-700">{formatPrice(p.price)}</p>
+   976→                      <span className="text-[10px] text-slate-400 num-en">{p.speed}RPM</span>
+   977→                    </div>
+   978→                  </div>
+   979→                </Card>
+   980→              ))}
+   981→            </div>
+   982→          </div>
+   983→        </section>
+   984→      )}
+   985→
+   986→      {/* ═══════════ PRODUCT CATALOG ═══════════ */}
+   987→      <section id="catalog" ref={productsRef} className="bg-slate-50 py-12 sm:py-16">
+   988→        <div className="max-w-7xl mx-auto px-4">
+   989→          {/* Header */}
+   990→          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+   991→            <div>
+   992→              <h3 className="text-xl sm:text-2xl font-extrabold text-slate-800">کاتالوگ محصولات</h3>
+   993→              <p className="text-sm text-slate-400 mt-0.5">
+   994→                <span className="num-en font-medium">{total}</span> الکتروموتور پوسته چدنی
+   995→                {hasActiveFilters && (
+   996→                  <span className="text-blue-600 mr-2">
+   997→                    — نمایش <span className="num-en">{filteredProducts.length}</span> محصول
+   998→                  </span>
+   999→                )}
+  1000→              </p>
+  1001→            </div>
+  1002→          </div>
+  1003→
+  1004→          {/* Product Grid */}
+  1005→          {loading ? (
+  1006→            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+  1007→              {Array.from({ length: 8 }).map((_, i) => <ProductSkeletonGrid key={i} />)}
+  1008→            </div>
+  1009→          ) : filteredProducts.length > 0 ? (
+  1010→            <>
+  1011→              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+  1012→                {filteredProducts.map((product) => (
+  1013→                  <ProductCard key={product.id} product={product} onSelect={handleProductSelect} />
+  1014→                ))}
+  1015→              </div>
+  1016→
+  1017→              {/* Pagination */}
+  1018→              {totalPages > 1 && (
+  1019→                <div className="flex items-center justify-center gap-1.5 mt-10">
+  1020→                  <Button variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)} className="border-slate-300 text-xs h-9">
+  1021→                    قبلی
+  1022→                  </Button>
+  1023→                  {Array.from({ length: Math.min(totalPages, 7) }).map((_, i) => {
+  1024→                    const p = page > 4 ? i + page - 3 : i + 1;
+  1025→                    if (p < 1 || p > totalPages) return null;
+  1026→                    return (
+  1027→                      <Button
+  1028→                        key={i}
+  1029→                        variant={page === p ? "default" : "outline"}
+  1030→                        onClick={() => setPage(p)}
+  1031→                        className={page === p ? "bg-blue-600 hover:bg-blue-700 text-xs h-9 w-9 p-0" : "border-slate-300 text-xs h-9 w-9 p-0"}
+  1032→                      >
+  1033→                        <span className="num-en">{p}</span>
+  1034→                      </Button>
+  1035→                    );
+  1036→                  })}
+  1037→                  <Button variant="outline" disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="border-slate-300 text-xs h-9">
+  1038→                    بعدی
+  1039→                  </Button>
+  1040→                </div>
+  1041→              )}
+  1042→            </>
+  1043→          ) : (
+  1044→            <div className="text-center py-20">
+  1045→              <div className="w-16 h-16 bg-slate-200/50 rounded-full flex items-center justify-center mx-auto mb-4">
+  1046→                <Search className="w-8 h-8 text-slate-300" />
+  1047→              </div>
+  1048→              <h4 className="text-base font-bold text-slate-600 mb-1.5">محصولی یافت نشد</h4>
+  1049→              <p className="text-sm text-slate-400 mb-5">فیلترهای خود را تغییر دهید</p>
+  1050→              <Button onClick={clearAllFilters} className="bg-blue-600 hover:bg-blue-700 text-white text-sm">نمایش همه محصولات</Button>
+  1051→            </div>
+  1052→          )}
+  1053→        </div>
+  1054→      </section>
+  1055→
+  1056→      {/* ═══════════ WHY STK — PROOF SECTION ═══════════ */}
+  1057→      <section id="why" className="bg-white py-14 sm:py-20">
+  1058→        <div className="max-w-7xl mx-auto px-4">
+  1059→          <div className="text-center mb-10 sm:mb-14">
+  1060→            <h3 className="text-xl sm:text-2xl font-extrabold text-slate-800 mb-1.5">چرا STK Motors؟</h3>
+  1061→            <p className="text-sm text-slate-400">دلایل اعتماد مشتریان صنعتی به ما</p>
+  1062→          </div>
+  1063→
+  1064→          {/* Stats */}
+  1065→          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-12 sm:mb-16">
+  1066→            {[
+  1067→              { icon: Timer, value: "+۱۰", label: "سال تجربه در صنعت", desc: "فعالیت مستمر در زمینه الکتروموتور صنعتی" },
+  1068→              { icon: Users, value: "+۵۰۰", label: "مشتری فعال", desc: "پشتیبانی از کارخانجات و صنایع مختلف" },
+  1069→              { icon: Award, value: "+۸۶", label: "مدل محصول", desc: "تنوع بالا در توان و دور موتورها" },
+  1070→              { icon: Headphones, value: "۲۴/۷", label: "پشتیبانی فنی", desc: "مشاوره تخصصی قبل و بعد از خرید" },
+  1071→            ].map((stat, i) => (
+  1072→              <div key={i} className="bg-slate-50 rounded-xl border border-slate-200/80 p-5 sm:p-6 text-center hover:shadow-md transition-shadow">
+  1073→                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+  1074→                  <stat.icon className="w-6 h-6 text-blue-600" />
+  1075→                </div>
+  1076→                <p className="text-2xl sm:text-3xl font-black text-blue-700 mb-1">{stat.value}</p>
+  1077→                <p className="text-sm font-bold text-slate-700 mb-1">{stat.label}</p>
+  1078→                <p className="text-xs text-slate-400 leading-relaxed">{stat.desc}</p>
+  1079→              </div>
+  1080→            ))}
+  1081→          </div>
+  1082→
+  1083→          {/* Proof Cards */}
+  1084→          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+  1085→            {[
+  1086→              {
+  1087→                icon: ShieldCheck,
+  1088→                title: "گارانتی تعویض و خدمات پس از فروش",
+  1089→                desc: "تمامی محصولات دارای گارانتی تعویض هستند. در صورت هرگونه مشکل، تیم فنی ما آماده ارائه خدمات پس از فروش سریع و حرفه‌ای می‌باشد.",
+  1090→              },
+  1091→              {
+  1092→                icon: FileText,
+  1093→                title: "فروش مستقیم و قیمت رقابتی",
+  1094→                desc: "بدون واسطه و با خرید مستقیم از واردکننده، بهترین قیمت بازار را ارائه می‌دهیم. فاکتور رسمی و گواهی اصالت کالا به همراه هر محصول ارسال می‌شود.",
+  1095→              },
+  1096→              {
+  1097→                icon: Weight,
+  1098→                title: "مشاوره تخصصی انتخاب موتور",
+  1099→                desc: "کارشناسان فنی ما با بررسی نیازهای پروژه شما، مناسب‌ترین موتور را از نظر توان، دور، فریم و نوع پوسته پیشنهاد می‌دهند.",
+  1100→              },
+  1101→            ].map((item, i) => (
+  1102→              <Card key={i} className="bg-white border-slate-200/80 hover:shadow-lg transition-shadow h-full">
+  1103→                <CardContent className="p-6">
+  1104→                  <div className="w-11 h-11 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
+  1105→                    <item.icon className="w-5 h-5 text-blue-600" />
+  1106→                  </div>
+  1107→                  <h4 className="text-sm font-bold text-slate-800 mb-2 leading-relaxed">{item.title}</h4>
+  1108→                  <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
+  1109→                </CardContent>
+  1110→              </Card>
+  1111→            ))}
+  1112→          </div>
+  1113→        </div>
+  1114→      </section>
+  1115→
+  1116→      {/* ═══════════ CONSULTATION CTA ═══════════ */}
+  1117→      <section className="bg-gradient-to-l from-blue-800 to-blue-900 text-white py-12 sm:py-16">
+  1118→        <div className="max-w-4xl mx-auto px-4 text-center">
+  1119→          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4 border border-white/10">
+  1120→            <Headphones className="w-3.5 h-3.5 text-blue-200" />
+  1121→            <span className="text-xs text-blue-100">مشاوره رایگان</span>
+  1122→          </div>
+  1123→          <h3 className="text-2xl sm:text-3xl font-extrabold mb-3">برای انتخاب بهترین موتورIndustrial با ما تماس بگیرید</h3>
+  1124→          <p className="text-blue-200/70 mb-8 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
+  1125→            کارشناسان فنی ما آماده پاسخگویی به سوالات تخصصی شما و ارائه بهترین پیشنهاد بر اساس نیاز پروژه‌تان هستند
+  1126→          </p>
+  1127→          <div className="flex flex-wrap justify-center gap-3">
+  1128→            <a href="tel:+989123456789" className="inline-flex items-center gap-2 bg-white text-blue-800 font-bold px-7 py-3.5 rounded-xl hover:bg-blue-50 transition-colors shadow-lg text-sm">
+  1129→              <Phone className="w-4 h-4" />
+  1130→              <span className="num-en" dir="ltr">0912-345-6789</span>
+  1131→            </a>
+  1132→            <a href="#" className="inline-flex items-center gap-2 bg-white/10 text-white border border-white/20 font-medium px-7 py-3.5 rounded-xl hover:bg-white/20 transition-colors text-sm backdrop-blur-sm">
+  1133→              <Send className="w-4 h-4" />
+  1134→              پیام در تلگرام
+  1135→            </a>
+  1136→          </div>
+  1137→        </div>
+  1138→      </section>
+  1139→
+  1140→      {/* ═══════════ FOOTER ═══════════ */}
+  1141→      <footer id="contact" className="bg-slate-900 text-white">
+  1142→        <div className="max-w-7xl mx-auto px-4 py-10 sm:py-14">
+  1143→          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
+  1144→            {/* Brand */}
+  1145→            <div>
+  1146→              <div className="flex items-center gap-2.5 mb-4">
+  1147→                <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
+  1148→                  <Zap className="w-6 h-6 text-white" />
+  1149→                </div>
+  1150→                <div>
+  1151→                  <h4 className="text-lg font-extrabold">STK Motors</h4>
+  1152→                  <p className="text-[10px] text-slate-400">الکتروموتور صنعتی</p>
+  1153→                </div>
+  1154→              </div>
+  1155→              <p className="text-sm text-slate-400 leading-relaxed">
+  1156→                عرضه انواع الکتروموتور تک فاز و سه فاز پوسته چدنی با بهترین کیفیت و مناسب‌ترین قیمت. مشاوره تخصصی و ارسال به سراسر ایران.
+  1157→              </p>
+  1158→            </div>
+  1159→
+  1160→            {/* Quick Links */}
+  1161→            <div>
+  1162→              <h5 className="font-bold text-sm mb-4">دسترسی سریع</h5>
+  1163→              <ul className="space-y-2.5">
+  1164→                {["صفحه اصلی", "کاتالوگ محصولات", "تک فاز", "سه فاز", "درباره ما"].map((item) => (
+  1165→                  <li key={item}>
+  1166→                    <a href="#" className="text-sm text-slate-400 hover:text-blue-400 transition-colors">{item}</a>
+  1167→                  </li>
+  1168→                ))}
+  1169→              </ul>
+  1170→            </div>
+  1171→
+  1172→            {/* Categories */}
+  1173→            <div>
+  1174→              <h5 className="font-bold text-sm mb-4">دسته‌بندی محصولات</h5>
+  1175→              <ul className="space-y-2.5">
+  1176→                <li>
+  1177→                  <button onClick={() => handleCategoryChange("single-phase")} className="text-sm text-slate-400 hover:text-blue-400 transition-colors">
+  1178→                    الکتروموتور تک فاز پوسته چدنی
+  1179→                  </button>
+  1180→                </li>
+  1181→                <li>
+  1182→                  <button onClick={() => handleCategoryChange("three-phase")} className="text-sm text-slate-400 hover:text-blue-400 transition-colors">
+  1183→                    الکتروموتور سه فاز پوسته چدنی
+  1184→                  </button>
+  1185→                </li>
+  1186→              </ul>
+  1187→            </div>
+  1188→
+  1189→            {/* Contact */}
+  1190→            <div>
+  1191→              <h5 className="font-bold text-sm mb-4">تماس با ما</h5>
+  1192→              <ul className="space-y-3">
+  1193→                <li className="flex items-center gap-2.5 text-sm text-slate-400">
+  1194→                  <Phone className="w-4 h-4 text-blue-400 flex-shrink-0" />
+  1195→                  <span className="num-en" dir="ltr">0912-345-6789</span>
+  1196→                </li>
+  1197→                <li className="flex items-center gap-2.5 text-sm text-slate-400">
+  1198→                  <Mail className="w-4 h-4 text-blue-400 flex-shrink-0" />
+  1199→                  <span dir="ltr">info@stkomotors.ir</span>
+  1200→                </li>
+  1201→                <li className="flex items-center gap-2.5 text-sm text-slate-400">
+  1202→                  <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
+  1203→                  ایران
+  1204→                </li>
+  1205→              </ul>
+  1206→              <div className="flex items-center gap-2.5 mt-4">
+  1207→                <a href="#" className="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors" aria-label="Instagram">
+  1208→                  <Instagram className="w-4 h-4" />
+  1209→                </a>
+  1210→                <a href="#" className="w-9 h-9 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors" aria-label="Telegram">
+  1211→                  <Send className="w-4 h-4" />
+  1212→                </a>
+  1213→              </div>
+  1214→            </div>
+  1215→          </div>
+  1216→        </div>
+  1217→
+  1218→        <div className="border-t border-slate-800">
+  1219→          <div className="max-w-7xl mx-auto px-4 py-4 text-center">
+  1220→            <p className="text-xs text-slate-500">
+  1221→              © {new Date().getFullYear()} STK Motors — تمامی حقوق محفوظ است
+  1222→            </p>
+  1223→          </div>
+  1224→        </div>
+  1225→      </footer>
+  1226→
+  1227→      {/* ═══════════ STICKY MOBILE ACTION BAR ═══════════ */}
+  1228→      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] safe-area-pb">
+  1229→        <div className="flex items-center">
+  1230→          <a
+  1231→            href="tel:+989123456789"
+  1232→            className="flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold text-blue-700 border-l border-slate-200 hover:bg-blue-50 transition-colors"
+  1233→          >
+  1234→            <Phone className="w-4 h-4" />
+  1235→            تماس
+  1236→          </a>
+  1237→          <a
+  1238→            href="#"
+  1239→            className="flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold text-emerald-600 border-l border-slate-200 hover:bg-emerald-50 transition-colors"
+  1240→          >
+  1241→            <Send className="w-4 h-4" />
+  1242→            تلگرام
+  1243→          </a>
+  1244→          <button
+  1245→            onClick={() => productsRef.current?.scrollIntoView({ behavior: "smooth" })}
+  1246→            className="flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+  1247→          >
+  1248→            <Search className="w-4 h-4" />
+  1249→            استعلام قیمت
+  1250→          </button>
+  1251→        </div>
+  1252→      </div>
+  1253→
+  1254→      {/* ═══════════ FLOATING DESKTOP CONSULTATION BUTTON ═══════════ */}
+  1255→      <div className="hidden lg:flex fixed bottom-6 left-6 z-40">
+  1256→        <a
+  1257→          href="tel:+989123456789"
+  1258→          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl shadow-lg shadow-blue-600/30 hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/40 transition-all text-sm font-bold"
+  1259→        >
+  1260→          <Headphones className="w-5 h-5" />
+  1261→          مشاوره رایگان
+  1262→        </a>
+  1263→      </div>
+  1264→
+  1265→      {/* ═══════════ SCROLL TO TOP ═══════════ */}
+  1266→      <button
+  1267→        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+  1268→        className="fixed bottom-20 lg:bottom-6 right-6 w-10 h-10 bg-white border border-slate-200 text-slate-500 rounded-full shadow-md flex items-center justify-center hover:text-blue-600 hover:border-blue-300 transition-colors z-40"
+  1269→        aria-label="بازگشت به بالا"
+  1270→      >
+  1271→        <ArrowUp className="w-4 h-4" />
+  1272→      </button>
+  1273→
+  1274→      {/* ═══════════ PRODUCT DETAIL MODAL ═══════════ */}
+  1275→      <ProductDetailModal
+  1276→        product={selectedProduct}
+  1277→        open={detailOpen}
+  1278→        onClose={() => setDetailOpen(false)}
+  1279→        related={products.filter((p) => p.id !== selectedProduct?.id && p.category === selectedProduct?.category).slice(0, 4)}
+  1280→      />
+  1281→
+  1282→      {/* Spacer for mobile action bar */}
+  1283→      <div className="h-14 lg:hidden" />
+  1284→    </div>
+  1285→  );
+  1286→}
+  1287→
