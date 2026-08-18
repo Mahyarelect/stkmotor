@@ -7,6 +7,7 @@ import {
   Mail,
   MapPin,
   ChevronLeft,
+  ChevronDown,
   ArrowUp,
   X,
   Menu,
@@ -40,6 +41,7 @@ import {
 import Link from "next/link";
 import { ProductImage } from "@/components/ProductImage";
 import { telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
+import { CATALOG_CATEGORIES } from "@/data/catalogCategories";
 
 /* ─────────────────────────── Types ─────────────────────────── */
 interface Variant {
@@ -125,6 +127,9 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mobileExpandedCat, setMobileExpandedCat] = useState<string | null>(null);
+  const dropdownTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const requestSequence = useRef(0);
 
@@ -259,32 +264,65 @@ export default function HomePage() {
               </div>
             </Link>
 
-            {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-              <a
-                href="#home"
-                className="hover:text-blue-700 transition-colors"
-              >
-                خانه
-              </a>
-              <a
-                href="#products"
-                className="hover:text-blue-700 transition-colors"
-              >
-                محصولات
-              </a>
-              <a
-                href="#about"
-                className="hover:text-blue-700 transition-colors"
-              >
-                درباره ما
-              </a>
-              <a
-                href="#contact"
-                className="hover:text-blue-700 transition-colors"
-              >
-                تماس
-              </a>
+            {/* Desktop Nav — Product Categories */}
+            <nav className="hidden md:flex items-center gap-1 text-sm font-medium text-gray-600">
+              {CATALOG_CATEGORIES.map((cat) => (
+                <div
+                  key={cat.slug}
+                  className="relative"
+                  onMouseEnter={() => {
+                    if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current);
+                    setOpenDropdown(cat.slug);
+                  }}
+                  onMouseLeave={() => {
+                    dropdownTimeout.current = setTimeout(() => setOpenDropdown(null), 150);
+                  }}
+                  onFocus={() => {
+                    if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current);
+                    if (cat.subCategories.length > 0) setOpenDropdown(cat.slug);
+                  }}
+                  onBlur={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      setOpenDropdown(null);
+                    }
+                  }}
+                >
+                  <a
+                    href={cat.href}
+                    className={`flex items-center gap-1 px-3 py-2 rounded-md transition-colors ${
+                      openDropdown === cat.slug
+                        ? "text-blue-700 bg-blue-50"
+                        : "hover:text-blue-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {cat.name}
+                    {cat.subCategories.length > 0 && (
+                      <ChevronDown
+                        size={13}
+                        className={`transition-transform ${
+                          openDropdown === cat.slug ? "rotate-180" : ""
+                        }`}
+                      />
+                    )}
+                  </a>
+                  {/* Dropdown */}
+                  {openDropdown === cat.slug && cat.subCategories.length > 0 && (
+                    <div className="absolute top-full right-0 mt-0 pt-1 z-50">
+                      <div className="bg-white border border-gray-200 rounded-lg shadow-lg py-2 min-w-[200px]">
+                        {cat.subCategories.map((sub) => (
+                          <a
+                            key={sub.slug}
+                            href={sub.href}
+                            className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                          >
+                            {sub.name}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </nav>
 
             {/* Desktop CTA */}
@@ -303,46 +341,80 @@ export default function HomePage() {
             {/* Mobile menu button */}
             <button
               className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => {
+                setMobileMenuOpen(!mobileMenuOpen);
+                setMobileExpandedCat(null);
+              }}
             >
               {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Nav */}
+        {/* Mobile Nav — Product Categories Accordion */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-2">
+          <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-1 max-h-[70vh] overflow-y-auto">
             <a
-              href="#home"
-              className="block py-2 text-sm font-medium text-gray-700"
+              href="/"
+              className="block py-2.5 text-sm font-medium text-gray-700"
               onClick={() => setMobileMenuOpen(false)}
             >
               خانه
             </a>
-            <a
-              href="#products"
-              className="block py-2 text-sm font-medium text-gray-700"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              محصولات
-            </a>
-            <a
-              href="#about"
-              className="block py-2 text-sm font-medium text-gray-700"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              درباره ما
-            </a>
-            <a
-              href="#contact"
-              className="block py-2 text-sm font-medium text-gray-700"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              تماس
-            </a>
+            <Separator className="my-1" />
+            {CATALOG_CATEGORIES.map((cat) => (
+              <div key={cat.slug}>
+                {cat.subCategories.length > 0 ? (
+                  <>
+                    <button
+                      onClick={() =>
+                        setMobileExpandedCat(
+                          mobileExpandedCat === cat.slug ? null : cat.slug
+                        )
+                      }
+                      className="flex items-center justify-between w-full py-2.5 text-sm font-medium text-gray-700"
+                    >
+                      <span>{cat.name}</span>
+                      <ChevronDown
+                        size={16}
+                        className={`text-gray-400 transition-transform ${
+                          mobileExpandedCat === cat.slug ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                    {mobileExpandedCat === cat.slug && (
+                      <div className="pr-4 pb-1 space-y-0.5">
+                        {cat.subCategories.map((sub) => (
+                          <a
+                            key={sub.slug}
+                            href={sub.href}
+                            className="block py-2 text-sm text-gray-600 hover:text-blue-700 transition-colors"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            {sub.name}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <a
+                    href={cat.href}
+                    className="block py-2.5 text-sm font-medium text-gray-700"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {cat.name}
+                  </a>
+                )}
+              </div>
+            ))}
             <Separator />
-            <a href={phoneLink} className="block">
+            <div className="flex gap-2 pt-1">
+              <a href="#about" className="text-xs text-gray-500 hover:text-blue-600" onClick={() => setMobileMenuOpen(false)}>درباره ما</a>
+              <span className="text-gray-300">|</span>
+              <a href="#contact" className="text-xs text-gray-500 hover:text-blue-600" onClick={() => setMobileMenuOpen(false)}>تماس</a>
+            </div>
+            <a href={phoneLink} className="block pt-1">
               <Button className="w-full bg-blue-700 hover:bg-blue-800 text-white">
                 <Phone size={14} className="ml-1.5" />
                 تماس: <span className="num-en mr-1">{siteSettings.phone}</span>
@@ -469,139 +541,40 @@ export default function HomePage() {
             دسته‌بندی محصولات
           </h3>
           <p className="text-gray-500 text-sm">
-            الکتروموتورهای پوسته چدنی STK در دو دسته اصلی
+            محصولات اصلی شرکت در دسته‌بندی‌های زیر
           </p>
         </div>
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Single Phase */}
-          <button
-            onClick={() => {
-              setCategoryFilter("single-phase");
-              setSpeedFilter("all");
-              setPowerFilter("all");
-            }}
-            className={`text-right rounded-xl p-6 border-2 transition-all group ${
-              categoryFilter === "single-phase"
-                ? "border-blue-600 bg-blue-50 shadow-md shadow-blue-100"
-                : "border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm"
-            }`}
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      categoryFilter === "single-phase"
-                        ? "bg-blue-700"
-                        : "bg-gray-100"
-                    }`}
-                  >
-                    <Zap
-                      size={16}
-                      className={
-                        categoryFilter === "single-phase"
-                          ? "text-white"
-                          : "text-gray-500"
-                      }
-                    />
-                  </div>
-                  <h4 className="font-bold text-lg text-gray-900">
-                    الکتروموتور تک‌فاز
-                  </h4>
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {CATALOG_CATEGORIES.map((cat) => {
+            const IconComp = cat.icon;
+            return (
+              <a
+                key={cat.slug}
+                href={cat.href}
+                className="group text-center rounded-xl p-5 border-2 border-gray-200 bg-white hover:border-blue-300 hover:shadow-md transition-all"
+              >
+                <div className="w-12 h-12 mx-auto mb-3 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-700 transition-colors">
+                  <IconComp
+                    size={22}
+                    className="text-blue-700 group-hover:text-white transition-colors"
+                  />
                 </div>
-                <p className="text-sm text-gray-500 mr-10">پوسته چدنی</p>
-              </div>
-              <div className="text-left">
-                <span
-                  className={`text-2xl font-bold num-en ${
-                    categoryFilter === "single-phase"
-                      ? "text-blue-700"
-                      : "text-gray-300"
-                  }`}
-                >
-                  {stats?.singlePhaseFamilies ?? "-"}
-                </span>
-                <p className="text-xs text-gray-400 mt-0.5">مدل الکتروموتور</p>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center gap-1 text-xs text-blue-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-              <span>مشاهده مدل‌ها</span>
-              <ChevronLeft size={14} />
-            </div>
-          </button>
-
-          {/* Three Phase */}
-          <button
-            onClick={() => {
-              setCategoryFilter("three-phase");
-              setSpeedFilter("all");
-              setPowerFilter("all");
-            }}
-            className={`text-right rounded-xl p-6 border-2 transition-all group ${
-              categoryFilter === "three-phase"
-                ? "border-blue-600 bg-blue-50 shadow-md shadow-blue-100"
-                : "border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm"
-            }`}
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      categoryFilter === "three-phase"
-                        ? "bg-blue-700"
-                        : "bg-gray-100"
-                    }`}
-                  >
-                    <Gauge
-                      size={16}
-                      className={
-                        categoryFilter === "three-phase"
-                          ? "text-white"
-                          : "text-gray-500"
-                      }
-                    />
-                  </div>
-                  <h4 className="font-bold text-lg text-gray-900">
-                    الکتروموتور سه‌فاز
-                  </h4>
+                <h4 className="font-bold text-sm text-gray-900 mb-1">
+                  {cat.name}
+                </h4>
+                {cat.subCategories.length > 0 && (
+                  <p className="text-xs text-gray-400">
+                    {faNum(cat.subCategories.length)} زیردسته
+                  </p>
+                )}
+                <div className="mt-2 flex items-center justify-center gap-1 text-xs text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span>مشاهده</span>
+                  <ChevronLeft size={12} />
                 </div>
-                <p className="text-sm text-gray-500 mr-10">پوسته چدنی</p>
-              </div>
-              <div className="text-left">
-                <span
-                  className={`text-2xl font-bold num-en ${
-                    categoryFilter === "three-phase"
-                      ? "text-blue-700"
-                      : "text-gray-300"
-                  }`}
-                >
-                  {stats?.threePhaseFamilies ?? "-"}
-                </span>
-                <p className="text-xs text-gray-400 mt-0.5">مدل الکتروموتور</p>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center gap-1 text-xs text-blue-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-              <span>مشاهده مدل‌ها</span>
-              <ChevronLeft size={14} />
-            </div>
-          </button>
+              </a>
+            );
+          })}
         </div>
-        {/* Clear filter */}
-        {categoryFilter !== "all" && (
-          <div className="text-center mt-4">
-            <button
-              onClick={() => {
-                setCategoryFilter("all");
-                setSpeedFilter("all");
-                setPowerFilter("all");
-              }}
-              className="text-sm text-blue-600 hover:text-blue-800 underline underline-offset-4"
-            >
-              مشاهده همه محصولات
-            </button>
-          </div>
-        )}
       </section>
 
       {/* ─── Products Catalog ─── */}
@@ -837,13 +810,25 @@ export default function HomePage() {
               </p>
             </div>
             <div>
-              <h5 className="text-white font-semibold mb-3">دسترسی سریع</h5>
+              <h5 className="text-white font-semibold mb-3">دسته‌بندی محصولات</h5>
+              <div className="space-y-2 text-sm">
+                {CATALOG_CATEGORIES.map((cat) => (
+                  <a
+                    key={cat.slug}
+                    href={cat.href}
+                    className="block hover:text-blue-400 transition-colors"
+                  >
+                    {cat.name}
+                  </a>
+                ))}
+              </div>
+              <h5 className="text-white font-semibold mb-3 mt-5">لینک‌های مفید</h5>
               <div className="space-y-2 text-sm">
                 <a
-                  href="#products"
+                  href="/"
                   className="block hover:text-blue-400 transition-colors"
                 >
-                  محصولات
+                  خانه
                 </a>
                 <a
                   href="#about"

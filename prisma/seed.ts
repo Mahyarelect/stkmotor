@@ -180,16 +180,13 @@ async function main() {
     const name = String(p.name || "").trim();
 
     let familySlug: string;
-    const isFlange = name.includes("فلنج");
 
     if (category === "single-phase") {
       if (speed === "1400") familySlug = "single-phase-1400";
       else if (speed === "3000") familySlug = "single-phase-3000";
       else familySlug = "single-phase-3000";
     } else {
-      if (isFlange) {
-        familySlug = "three-phase-special";
-      } else if (speed === "1000" || speed === "750" || speed === "700") {
+      if (speed === "1000" || speed === "750" || speed === "700") {
         familySlug = "three-phase-1000";
       } else if (speed === "1400") {
         familySlug = "three-phase-1400";
