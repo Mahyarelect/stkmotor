@@ -99,7 +99,7 @@ function formatPrice(price: number): string {
 function faNum(n: number | string): string {
   return String(n).replace(/\d/g, (d) =>
     "\u06F0\u06F1\u06F2\u06F3\u06F4\u06F5\u06F6\u06F7\u06F8\u06F9"[
-      parseInt(d)
+    parseInt(d)
     ]
   );
 }
@@ -289,19 +289,17 @@ export default function HomePage() {
                 >
                   <a
                     href={cat.href}
-                    className={`flex items-center gap-1 px-3 py-2 rounded-md transition-colors ${
-                      openDropdown === cat.slug
+                    className={`flex items-center gap-1 px-3 py-2 rounded-md transition-colors ${openDropdown === cat.slug
                         ? "text-blue-700 bg-blue-50"
                         : "hover:text-blue-700 hover:bg-gray-50"
-                    }`}
+                      }`}
                   >
                     {cat.name}
                     {cat.subCategories.length > 0 && (
                       <ChevronDown
                         size={13}
-                        className={`transition-transform ${
-                          openDropdown === cat.slug ? "rotate-180" : ""
-                        }`}
+                        className={`transition-transform ${openDropdown === cat.slug ? "rotate-180" : ""
+                          }`}
                       />
                     )}
                   </a>
@@ -377,9 +375,8 @@ export default function HomePage() {
                       <span>{cat.name}</span>
                       <ChevronDown
                         size={16}
-                        className={`text-gray-400 transition-transform ${
-                          mobileExpandedCat === cat.slug ? "rotate-180" : ""
-                        }`}
+                        className={`text-gray-400 transition-transform ${mobileExpandedCat === cat.slug ? "rotate-180" : ""
+                          }`}
                       />
                     </button>
                     {mobileExpandedCat === cat.slug && (
@@ -488,48 +485,6 @@ export default function HomePage() {
                 <p className="text-blue-400/40 text-sm">تصویر محصول</p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Trust Strip ─── */}
-      <section className="bg-gray-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              {
-                icon: Timer,
-                label: "بیش از ۱۵ سال تجربه",
-                sub: "در صنعت الکتروموتور",
-              },
-              {
-                icon: Truck,
-                label: "ارسال به سراسر ایران",
-                sub: "تحویل سریع و مطمئن",
-              },
-              {
-                icon: ShieldCheck,
-                label: "گارانتی اصالت کالا",
-                sub: "تضمین کیفیت محصول",
-              },
-              {
-                icon: Headphones,
-                label: "مشاوره فنی رایگان",
-                sub: "پشتیبانی تخصصی",
-              },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center gap-3 py-2">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
-                  <item.icon size={18} className="text-blue-700" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">
-                    {item.label}
-                  </p>
-                  <p className="text-xs text-gray-500">{item.sub}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -793,6 +748,51 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ─── Trust Strip ─── */}
+      <section className="bg-slate-50 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              {
+                icon: Timer,
+                label: "بیش از ۱۵ سال تجربه",
+                sub: "در صنعت الکتروموتور",
+              },
+              {
+                icon: Truck,
+                label: "ارسال به سراسر ایران",
+                sub: "تحویل سریع و مطمئن",
+              },
+              {
+                icon: ShieldCheck,
+                label: "گارانتی اصالت کالا",
+                sub: "تضمین کیفیت محصول",
+              },
+              {
+                icon: Headphones,
+                label: "مشاوره فنی رایگان",
+                sub: "پشتیبانی تخصصی",
+              },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center gap-3.5 p-4 rounded-xl bg-white border border-gray-200/80 shadow-xs hover:shadow-sm transition-shadow"
+              >
+                <div className="w-11 h-11 bg-blue-50 rounded-xl flex items-center justify-center shrink-0 text-blue-700">
+                  <item.icon size={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-800">
+                    {item.label}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">{item.sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─── Footer ─── */}
       <footer className="bg-gray-900 text-gray-400">
         <div className="max-w-7xl mx-auto px-4 py-10">
@@ -970,11 +970,10 @@ function FamilyCard({ family }: { family: ProductFamily }) {
         />
         {/* Category badge */}
         <Badge
-          className={`absolute top-3 right-3 text-[10px] px-2 py-0.5 ${
-            family.category === "single-phase"
+          className={`absolute top-3 right-3 text-[10px] px-2 py-0.5 ${family.category === "single-phase"
               ? "bg-amber-500 text-white"
               : "bg-blue-600 text-white"
-          }`}
+            }`}
         >
           {family.phase}
         </Badge>
@@ -1020,13 +1019,12 @@ function FamilyCard({ family }: { family: ProductFamily }) {
                     type="button"
                     onClick={() => setSelectedSize(size)}
                     aria-pressed={isSelected}
-                    className={`relative px-2.5 py-1 rounded-md text-xs font-medium num-en transition-all ${
-                      isSelected
+                    className={`relative px-2.5 py-1 rounded-md text-xs font-medium num-en transition-all ${isSelected
                         ? "bg-blue-700 text-white shadow-sm ring-2 ring-blue-300"
                         : hasInStock
                           ? "bg-white border border-gray-200 text-gray-700 hover:border-blue-400 hover:text-blue-700 hover:shadow-sm"
                           : "bg-gray-50 border border-gray-200 text-gray-500 hover:border-orange-300 hover:text-orange-700"
-                    }`}
+                      }`}
                   >
                     {size}
                     {!hasInStock && (
