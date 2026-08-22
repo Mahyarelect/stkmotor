@@ -221,6 +221,24 @@ export function ElectromotorsClient({ initialSlugs = [] }: { initialSlugs: strin
                 )}
               </div>
 
+              {/* Power / HP Filter (Primary Filter) */}
+              <div>
+                <Select value={powerFilter} onValueChange={setPowerFilter}>
+                  <SelectTrigger className="w-full bg-slate-50/50 border-gray-200 text-sm h-10">
+                    <SelectValue placeholder="توان (اسب بخار / kW)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">همه توان‌ها (HP / kW)</SelectItem>
+                    <SelectItem value="0-0.75">تا ۱ اسب (تا ۰.۷۵ kW)</SelectItem>
+                    <SelectItem value="0.75-3">۱ تا ۴ اسب (۰.۷۵ تا ۳ kW)</SelectItem>
+                    <SelectItem value="3-11">۴ تا ۱۵ اسب (۳ تا ۱۱ kW)</SelectItem>
+                    <SelectItem value="11-45">۱۵ تا ۶۰ اسب (۱۱ تا ۴۵ kW)</SelectItem>
+                    <SelectItem value="45-110">۶۰ تا ۱۵۰ اسب (۴۵ تا ۱۱۰ kW)</SelectItem>
+                    <SelectItem value="110-999">بالای ۱۵۰ اسب (بالای ۱۱۰ kW)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Speed Filter */}
               <div>
                 <Select value={speedFilter} onValueChange={setSpeedFilter}>
@@ -233,24 +251,6 @@ export function ElectromotorsClient({ initialSlugs = [] }: { initialSlugs: strin
                     <SelectItem value="1000">۱۰۰۰ دور (RPM)</SelectItem>
                     <SelectItem value="1400">۱۴۰۰ دور (RPM)</SelectItem>
                     <SelectItem value="3000">۳۰۰۰ دور (RPM)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Power Filter */}
-              <div>
-                <Select value={powerFilter} onValueChange={setPowerFilter}>
-                  <SelectTrigger className="w-full bg-slate-50/50 border-gray-200 text-sm h-10">
-                    <SelectValue placeholder="محدوده توان" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">همه توان‌ها</SelectItem>
-                    <SelectItem value="0-0.75">تا ۰.۷۵ kW (۱ اسب)</SelectItem>
-                    <SelectItem value="0.75-3">۰.۷۵ تا ۳ kW (۱ تا ۴ اسب)</SelectItem>
-                    <SelectItem value="3-11">۳ تا ۱۱ kW (۴ تا ۱۵ اسب)</SelectItem>
-                    <SelectItem value="11-45">۱۱ تا ۴۵ kW (۱۵ تا ۶۰ اسب)</SelectItem>
-                    <SelectItem value="45-110">۴۵ تا ۱۱۰ kW</SelectItem>
-                    <SelectItem value="110-999">بالای ۱۱۰ kW</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

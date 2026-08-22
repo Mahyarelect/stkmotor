@@ -24,10 +24,9 @@ export async function GET(request: NextRequest) {
 
   const and: Prisma.ProductFamilyWhereInput[] = [];
 
-  // Phase filter (also supports legacy category=single-phase / category=three-phase)
-  const targetPhase = phase || (category === "single-phase" || category === "three-phase" ? category : "");
-  if (targetPhase && targetPhase !== "all") {
-    if (targetPhase === "single" || targetPhase === "single-phase" || targetPhase.includes("تک")) {
+  // Category & Phase filters
+  if (category && category !== "all") {
+    if (category === "single-phase" || category === "single") {
       and.push({
         OR: [
           { category: "single-phase" },
@@ -35,7 +34,36 @@ export async function GET(request: NextRequest) {
           { phase: "single-phase" },
         ],
       });
-    } else if (targetPhase === "three" || targetPhase === "three-phase" || targetPhase.includes("سه")) {
+    } else if (category === "three-phase" || category === "three") {
+      and.push({
+        OR: [
+          { category: "three-phase" },
+          { phase: { contains: "سه" } },
+          { phase: "three-phase" },
+        ],
+      });
+    } else {
+      and.push({
+        OR: [
+          { mainCategory: category },
+          { category: category },
+          { categoryRef: { slug: category } },
+        ],
+      });
+    }
+  }
+
+  // Phase filter (explicit param)
+  if (phase && phase !== "all" && phase !== category) {
+    if (phase === "single" || phase === "single-phase" || phase.includes("تک")) {
+      and.push({
+        OR: [
+          { category: "single-phase" },
+          { phase: { contains: "تک" } },
+          { phase: "single-phase" },
+        ],
+      });
+    } else if (phase === "three" || phase === "three-phase" || phase.includes("سه")) {
       and.push({
         OR: [
           { category: "three-phase" },
@@ -116,7 +144,7 @@ export async function GET(request: NextRequest) {
             power: true,
             powerKw: true,
             speed: true,
-            voltage: true,
+            mountingType: true,
             price: true,
             inStock: true,
             sortOrder: true,

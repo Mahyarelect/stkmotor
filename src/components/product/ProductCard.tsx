@@ -15,7 +15,6 @@ export interface Variant {
   power: string;
   powerKw: number;
   speed: string;
-  voltage: string;
   price: number;
   inStock: boolean;
   sortOrder: number;
@@ -128,7 +127,7 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
         {uniqueSizes.length > 0 && (
           <div className="mb-3.5">
             <p className="text-[10px] text-gray-500 mb-1.5 font-medium">
-              انتخاب سایز فریم:
+              انتخاب توان / سایز:
             </p>
             <div className="flex flex-wrap gap-1.5">
               {uniqueSizes.map((size) => {
@@ -178,9 +177,9 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
             </p>
           </div>
           <div className="bg-gray-50/80 border border-gray-100 rounded-lg px-2 py-1.5 text-center">
-            <p className="text-[9px] text-gray-400 font-medium">ولتاژ</p>
-            <p className="text-[11px] font-bold text-gray-800 num-en">
-              {activeVariant?.voltage || "-"}
+            <p className="text-[9px] text-gray-400 font-medium">پوسته / بدنه</p>
+            <p className="text-[11px] font-bold text-gray-800">
+              {family.shellType || family.phase || "-"}
             </p>
           </div>
         </div>

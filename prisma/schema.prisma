@@ -59,7 +59,6 @@ model ProductVariant {
   power        String        @default("") // "0.5HP", "2HP", "0.09kw", etc.
   powerKw      Float         @default(0)  // normalized power in kW
   speed        String        @default("") // "1400", "3000", "1000", "750"
-  voltage      String        @default("") // "220V", "380V"
   mountingType String        @default("") // "B3", "B35", "B34", "FC", "F", "N/A/P" (Note: B5 excluded per user instruction)
   
   // Gearbox attributes

@@ -34,7 +34,7 @@ interface Variant {
   power: string;
   powerKw: number;
   speed: string;
-  voltage: string;
+  mountingType?: string;
   price: number;
   weight: string;
   dimensions: string;
@@ -369,7 +369,7 @@ export default function ProductDetailClient({
                     <th className="text-right px-4 py-3 font-medium">سایز فریم</th>
                     <th className="text-right px-4 py-3 font-medium">توان</th>
                     <th className="text-right px-4 py-3 font-medium">دور</th>
-                    <th className="text-right px-4 py-3 font-medium">ولتاژ</th>
+                    <th className="text-right px-4 py-3 font-medium">نحوه نصب</th>
                     <th className="text-right px-4 py-3 font-medium">قیمت</th>
                     <th className="text-center px-4 py-3 font-medium">وضعیت</th>
                     <th className="text-center px-4 py-3 font-medium">کد SKU</th>
@@ -387,7 +387,7 @@ export default function ProductDetailClient({
                       <td className="px-4 py-3 font-medium num-en">{v.size}</td>
                       <td className="px-4 py-3 num-en">{v.power || "-"}</td>
                       <td className="px-4 py-3 num-en">{v.speed ? `${faNum(v.speed)} RPM` : "-"}</td>
-                      <td className="px-4 py-3 num-en">{v.voltage || "-"}</td>
+                      <td className="px-4 py-3 num-en">{v.mountingType || "-"}</td>
                       <td className="px-4 py-3 font-semibold">
                         {v.price > 0 ? formatPrice(v.price) : <span className="text-gray-400">تماس بگیرید</span>}
                       </td>

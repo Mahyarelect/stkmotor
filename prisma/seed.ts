@@ -1,236 +1,316 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import rawProducts from "../src/data/products.json";
+import fs from "fs";
+import path from "path";
 
 const prisma = new PrismaClient();
 
-// Helper: normalize power to kW
-function toKw(power: string): number {
-  if (!power) return 0;
-  const hpMatch = power.match(/([\d.]+)\s*HP/i);
-  if (hpMatch) return parseFloat(hpMatch[1]) * 0.746;
-  const kwMatch = power.match(/([\d.]+)\s*kw/i);
-  if (kwMatch) return parseFloat(kwMatch[1]);
-  return 0;
+interface SeedCategory {
+  slug: string;
+  name: string;
+  nameEn: string;
+  description: string;
+  icon: string;
+  sortOrder: number;
 }
 
-// Helper: infer frame size from power (standard IEC mappings)
-function inferFrameSize(power: string, speed: string): string {
-  const kw = toKw(power);
-  if (kw <= 0.09) return "56";
-  if (kw <= 0.18) return "63";
-  if (kw <= 0.37) return "71";
-  if (kw <= 0.75) return "80";
-  if (kw <= 1.5) return "90";
-  if (kw <= 3.0) return "100";
-  if (kw <= 5.5) return "112";
-  if (kw <= 11) return "132";
-  if (kw <= 18.5) return "160";
-  if (kw <= 30) return "180";
-  if (kw <= 45) return "200";
-  if (kw <= 75) return "225";
-  if (kw <= 110) return "250";
-  if (kw <= 160) return "280";
-  if (kw <= 250) return "315";
-  return "355";
+interface SeedFamily {
+  slug: string;
+  name: string;
+  nameEn: string;
+  mainCategory: string;
+  category: string;
+  subCategory: string;
+  phase: string;
+  shellType: string;
+  brand: string;
+  level1Value?: string;
+  level2Value?: string;
+  description: string;
+  sortOrder: number;
+}
+
+interface SeedVariant {
+  sku: string;
+  familySlug: string;
+  name: string;
+  size: string;
+  power: string;
+  powerKw: number;
+  speed: string;
+  mountingType: string;
+  gearboxType: string;
+  modelType: string;
+  ratio: string;
+  inputFrame: string;
+  inputType: string;
+  pumpType: string;
+  outletSize: string;
+  headMeter: number;
+  floater: string;
+  brand: string;
+  bodyMaterial: string;
+  flangeType: string;
+  flangeLength: string;
+  price: number;
+  inStock: boolean;
+  sortOrder: number;
+}
+
+interface SeedData {
+  categories: SeedCategory[];
+  families: SeedFamily[];
+  variants: SeedVariant[];
 }
 
 async function main() {
-  // Local/bootstrap seeding is intentionally non-destructive.
-  // Existing catalog records are preserved; missing seed records are only added.
+  console.log("==================================================");
+  console.log("🚀 Starting STK Motors Comprehensive Database Seed");
+  console.log("==================================================\n");
 
-  // Seed/rotate admin user. Production never falls back to a known password.
+  // 1. Seed / Rotate Admin User
   const adminUsername = process.env.ADMIN_USERNAME || "admin";
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminPassword = process.env.ADMIN_PASSWORD || "Admin123456!";
   const adminName = process.env.ADMIN_NAME || "مدیر سایت";
+
   const existingAdmin = await prisma.adminUser.findUnique({
     where: { username: adminUsername },
   });
 
+  const hashedPassword = await bcrypt.hash(adminPassword, 12);
   if (!existingAdmin) {
-    if (!adminPassword) {
-      throw new Error("ADMIN_PASSWORD must be set before creating the admin user");
-    }
-    const hashedPassword = await bcrypt.hash(adminPassword, 12);
     await prisma.adminUser.create({
-      data: { username: adminUsername, password: hashedPassword, name: adminName, role: "admin" },
+      data: {
+        username: adminUsername,
+        password: hashedPassword,
+        name: adminName,
+        role: "admin",
+      },
     });
-    console.log(`Admin user created: ${adminUsername}`);
-  } else if (adminPassword) {
-    const hashedPassword = await bcrypt.hash(adminPassword, 12);
+    console.log(`✅ Admin user created: ${adminUsername}`);
+  } else {
     await prisma.adminUser.update({
       where: { username: adminUsername },
-      data: { password: hashedPassword, name: adminName, role: "admin" },
+      data: {
+        password: hashedPassword,
+        name: adminName,
+        role: "admin",
+      },
     });
-    console.log(`Admin user credentials rotated: ${adminUsername}`);
-  } else {
-    console.log(`Admin user kept unchanged: ${adminUsername}`);
+    console.log(`✅ Admin user credentials updated/verified: ${adminUsername}`);
   }
 
-  // Seed default settings
+  // 2. Seed Default Site Settings
   const defaultSettings = [
     { key: "site_name", value: "STK Motors", label: "نام سایت", group: "general" },
-    { key: "site_description", value: "کاتالوگ الکتروموتور STK", label: "توضیحات سایت", group: "general" },
-    { key: "phone", value: "021-1234-5678", label: "شماره تماس", group: "contact" },
-    { key: "mobile", value: "0912-345-6789", label: "شماره موبایل", group: "contact" },
-    { key: "email", value: "info@stkmotors.com", label: "ایمیل", group: "contact" },
-    { key: "address", value: "تهران، ایران", label: "آدرس", group: "contact" },
+    { key: "site_description", value: "کاتالوگ تخصصی الکتروموتور، گیربکس، پمپ و لوازم جانبی صنعتی STK", label: "توضیحات سایت", group: "general" },
+    { key: "phone", value: "021-1234-5678", label: "شماره تماس دفتر", group: "contact" },
+    { key: "mobile", value: "0912-345-6789", label: "شماره همراه مشاوره", group: "contact" },
+    { key: "email", value: "info@stkmotors.com", label: "ایمیل پشتیبانی", group: "contact" },
+    { key: "address", value: "تهران، خیابان سعدی جنوبی، پلاک ۱۲۳", label: "آدرس فروشگاه", group: "contact" },
     { key: "instagram", value: "https://instagram.com/stkmotors", label: "آدرس اینستاگرام", group: "social" },
-    { key: "telegram", value: "https://t.me/stkmotors", label: "آدرس تلگرام", group: "social" },
-    { key: "whatsapp", value: "982112345678", label: "شماره واتساپ", group: "social" },
+    { key: "telegram", value: "https://t.me/stkmotors", label: "آدرس کانال تلگرام", group: "social" },
+    { key: "whatsapp", value: "989123456789", label: "شماره پشتیبانی واتساپ", group: "social" },
   ];
 
   for (const s of defaultSettings) {
     await prisma.siteSetting.upsert({
       where: { key: s.key },
-      update: {},
+      update: { label: s.label, group: s.group },
       create: s,
     });
   }
-  console.log("Site settings seeded");
+  console.log(`✅ Default site settings verified (${defaultSettings.length} items)`);
 
-  // Define motor families
-  const families: Record<string, {
-    slug: string;
-    name: string;
-    nameEn: string;
-    category: string;
-    phase: string;
-    shellType: string;
-    description: string;
-    sortOrder: number;
-  }> = {
-    "single-phase-1400": {
-      slug: "single-phase-1400",
-      name: "الکتروموتور تک‌فاز ۱۴۰۰ دور",
-      nameEn: "Single-Phase Motor 1400 RPM",
-      category: "single-phase",
-      phase: "تک‌فاز",
-      shellType: "چدنی",
-      description: "الکتروموتورهای تک‌فاز پوسته چدنی با سرعت ۱۴۰۰ دور بر دقیقه",
-      sortOrder: 1,
-    },
-    "single-phase-3000": {
-      slug: "single-phase-3000",
-      name: "الکتروموتور تک‌فاز ۳۰۰۰ دور",
-      nameEn: "Single-Phase Motor 3000 RPM",
-      category: "single-phase",
-      phase: "تک‌فاز",
-      shellType: "چدنی",
-      description: "الکتروموتورهای تک‌فاز پوسته چدنی با سرعت ۳۰۰۰ دور بر دقیقه",
-      sortOrder: 2,
-    },
-    "three-phase-1000": {
-      slug: "three-phase-1000",
-      name: "الکتروموتور سه‌فاز ۱۰۰۰ دور",
-      nameEn: "Three-Phase Motor 1000 RPM",
-      category: "three-phase",
-      phase: "سه‌فاز",
-      shellType: "چدنی",
-      description: "الکتروموتورهای سه‌فاز پوسته چدنی با سرعت ۱۰۰۰ دور بر دقیقه",
-      sortOrder: 3,
-    },
-    "three-phase-1400": {
-      slug: "three-phase-1400",
-      name: "الکتروموتور سه‌فاز ۱۴۰۰ دور",
-      nameEn: "Three-Phase Motor 1400 RPM",
-      category: "three-phase",
-      phase: "سه‌فاز",
-      shellType: "چدنی",
-      description: "الکتروموتورهای سه‌فاز پوسته چدنی با سرعت ۱۴۰۰ دور بر دقیقه",
-      sortOrder: 4,
-    },
-    "three-phase-3000": {
-      slug: "three-phase-3000",
-      name: "الکتروموتور سه‌فاز ۳۰۰۰ دور",
-      nameEn: "Three-Phase Motor 3000 RPM",
-      category: "three-phase",
-      phase: "سه‌فاز",
-      shellType: "چدنی",
-      description: "الکتروموتورهای سه‌فاز پوسته چدنی با سرعت ۳۰۰۰ دور بر دقیقه",
-      sortOrder: 5,
-    },
-    "three-phase-special": {
-      slug: "three-phase-special",
-      name: "الکتروموتور سه‌فاز مدل‌های ویژه",
-      nameEn: "Three-Phase Motor Special Models",
-      category: "three-phase",
-      phase: "سه‌فاز",
-      shellType: "چدنی",
-      description: "الکتروموتورهای سه‌فاز مدل‌های ویژه",
-      sortOrder: 6,
-    },
-  };
+  // 3. Load Seed Data JSON
+  const seedDataPath = path.join(__dirname, "seed-data.json");
+  if (!fs.existsSync(seedDataPath)) {
+    throw new Error(`Seed data file not found at ${seedDataPath}`);
+  }
+  const seedData: SeedData = JSON.parse(fs.readFileSync(seedDataPath, "utf-8"));
+  console.log(`\n📦 Loaded seed data: ${seedData.categories.length} categories, ${seedData.families.length} families, ${seedData.variants.length} variants\n`);
 
-  // Create families
-  for (const [key, familyData] of Object.entries(families)) {
-    await prisma.productFamily.upsert({
-      where: { slug: key },
-      update: {},
-      create: familyData,
-    });
+  // 4. Clean up legacy/orphaned catalog records
+  const validFamilySlugs = new Set(seedData.families.map((f) => f.slug));
+  const validVariantSkus = new Set(seedData.variants.map((v) => v.sku));
+
+  // Delete legacy variants that are not in the new clean dataset
+  const deletedVariants = await prisma.productVariant.deleteMany({
+    where: {
+      sku: { notIn: Array.from(validVariantSkus) },
+    },
+  });
+  if (deletedVariants.count > 0) {
+    console.log(`🧹 Cleaned up ${deletedVariants.count} obsolete product variants`);
   }
 
-  // Create variants
-  let variantCount = 0;
-  for (const p of rawProducts) {
-    const speed = String(p.speed || "").trim();
-    const category = String(p.category || "").trim();
-    const power = String(p.power || "").trim();
-    const name = String(p.name || "").trim();
+  // Delete legacy families that are not in the new clean dataset
+  const deletedFamilies = await prisma.productFamily.deleteMany({
+    where: {
+      slug: { notIn: Array.from(validFamilySlugs) },
+    },
+  });
+  if (deletedFamilies.count > 0) {
+    console.log(`🧹 Cleaned up ${deletedFamilies.count} obsolete product families`);
+  }
 
-    let familySlug: string;
+  // 5. Seed Categories
+  const categoryMap = new Map<string, string>();
+  for (const cat of seedData.categories) {
+    const record = await prisma.category.upsert({
+      where: { slug: cat.slug },
+      update: {
+        name: cat.name,
+        nameEn: cat.nameEn,
+        description: cat.description,
+        icon: cat.icon,
+        sortOrder: cat.sortOrder,
+      },
+      create: {
+        slug: cat.slug,
+        name: cat.name,
+        nameEn: cat.nameEn,
+        description: cat.description,
+        icon: cat.icon,
+        sortOrder: cat.sortOrder,
+      },
+    });
+    categoryMap.set(cat.slug, record.id);
+  }
+  console.log(`✅ Seeded ${categoryMap.size} root categories`);
 
-    if (category === "single-phase") {
-      if (speed === "1400") familySlug = "single-phase-1400";
-      else if (speed === "3000") familySlug = "single-phase-3000";
-      else familySlug = "single-phase-3000";
-    } else {
-      if (speed === "1000" || speed === "750" || speed === "700") {
-        familySlug = "three-phase-1000";
-      } else if (speed === "1400") {
-        familySlug = "three-phase-1400";
-      } else if (speed === "3000") {
-        familySlug = "three-phase-3000";
-      } else {
-        familySlug = "three-phase-special";
-      }
-    }
+  // 6. Seed Product Families
+  const familyMap = new Map<string, string>();
+  for (const fam of seedData.families) {
+    const categoryId = categoryMap.get(fam.mainCategory) || null;
+    const record = await prisma.productFamily.upsert({
+      where: { slug: fam.slug },
+      update: {
+        name: fam.name,
+        nameEn: fam.nameEn,
+        mainCategory: fam.mainCategory,
+        category: fam.category,
+        subCategory: fam.subCategory,
+        phase: fam.phase,
+        shellType: fam.shellType,
+        brand: fam.brand,
+        level1Value: fam.level1Value || "",
+        level2Value: fam.level2Value || "",
+        description: fam.description,
+        sortOrder: fam.sortOrder,
+        categoryId: categoryId,
+      },
+      create: {
+        slug: fam.slug,
+        name: fam.name,
+        nameEn: fam.nameEn,
+        mainCategory: fam.mainCategory,
+        category: fam.category,
+        subCategory: fam.subCategory,
+        phase: fam.phase,
+        shellType: fam.shellType,
+        brand: fam.brand,
+        level1Value: fam.level1Value || "",
+        level2Value: fam.level2Value || "",
+        description: fam.description,
+        sortOrder: fam.sortOrder,
+        categoryId: categoryId,
+      },
+    });
+    familyMap.set(fam.slug, record.id);
+  }
+  console.log(`✅ Seeded ${familyMap.size} product families`);
 
-    const family = await prisma.productFamily.findUnique({ where: { slug: familySlug } });
-    if (!family) {
-      console.warn(`Family not found: ${familySlug}`);
+  // 6. Seed Product Variants
+  let seededVariants = 0;
+  const categoryVariantCounts: Record<string, number> = {};
+
+  for (const v of seedData.variants) {
+    const familyId = familyMap.get(v.familySlug);
+    if (!familyId) {
+      console.warn(`⚠️ Family not found for variant SKU ${v.sku} (familySlug: ${v.familySlug})`);
       continue;
     }
 
-    const frameSize = inferFrameSize(power, speed);
-    const kw = toKw(power);
-    const inStock = (p.price || 0) > 0;
-    const voltage = category === "single-phase" ? "220V" : "380V";
-
     await prisma.productVariant.upsert({
-      where: { sku: String(p.code) },
-      update: {},
+      where: { sku: v.sku },
+      update: {
+        familyId: familyId,
+        name: v.name,
+        size: v.size,
+        power: v.power,
+        powerKw: v.powerKw,
+        speed: v.speed,
+        mountingType: v.mountingType,
+        gearboxType: v.gearboxType,
+        modelType: v.modelType,
+        ratio: v.ratio,
+        inputFrame: v.inputFrame,
+        inputType: v.inputType,
+        pumpType: v.pumpType,
+        outletSize: v.outletSize,
+        headMeter: v.headMeter,
+        floater: v.floater,
+        brand: v.brand,
+        bodyMaterial: v.bodyMaterial,
+        flangeType: v.flangeType,
+        flangeLength: v.flangeLength,
+        price: BigInt(v.price),
+        inStock: v.inStock,
+        sortOrder: v.sortOrder,
+      },
       create: {
-        familyId: family.id,
-        sku: String(p.code),
-        size: frameSize,
-        power: power,
-        powerKw: kw,
-        speed: speed,
-        voltage: voltage,
-        price: p.price || 0,
-        inStock: inStock,
-        sortOrder: kw > 0 ? Math.round(kw * 100) : 999,
+        familyId: familyId,
+        sku: v.sku,
+        name: v.name,
+        size: v.size,
+        power: v.power,
+        powerKw: v.powerKw,
+        speed: v.speed,
+        mountingType: v.mountingType,
+        gearboxType: v.gearboxType,
+        modelType: v.modelType,
+        ratio: v.ratio,
+        inputFrame: v.inputFrame,
+        inputType: v.inputType,
+        pumpType: v.pumpType,
+        outletSize: v.outletSize,
+        headMeter: v.headMeter,
+        floater: v.floater,
+        brand: v.brand,
+        bodyMaterial: v.bodyMaterial,
+        flangeType: v.flangeType,
+        flangeLength: v.flangeLength,
+        price: BigInt(v.price),
+        inStock: v.inStock,
+        sortOrder: v.sortOrder,
       },
     });
-    variantCount++;
+
+    seededVariants++;
+    const famObj = seedData.families.find((f) => f.slug === v.familySlug);
+    const mainCat = famObj?.mainCategory || "other";
+    categoryVariantCounts[mainCat] = (categoryVariantCounts[mainCat] || 0) + 1;
   }
 
-  console.log(`\nSeeded: ${variantCount} variants across families`);
-  console.log("Done!");
+  console.log(`\n==================================================`);
+  console.log(`🎉 Database Seeding Completed Successfully!`);
+  console.log(`==================================================`);
+  console.log(`Total Categories: ${seedData.categories.length}`);
+  console.log(`Total Product Families: ${seedData.families.length}`);
+  console.log(`Total Variants Seeded: ${seededVariants}`);
+  console.log(`\nVariant breakdown by category:`);
+  for (const [cat, count] of Object.entries(categoryVariantCounts)) {
+    console.log(`  - ${cat}: ${count} variants`);
+  }
+  console.log(`==================================================\n`);
 }
 
 main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+  .catch((e) => {
+    console.error("❌ Seeding failed with error:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

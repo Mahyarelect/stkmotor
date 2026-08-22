@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     await requireAdmin();
 
     const body = await request.json();
-    const { familyId, sku, size, power, powerKw, speed, voltage, price, weight, dimensions, inStock, sortOrder } = body;
+    const { familyId, sku, size, power, powerKw, speed, mountingType, price, weight, dimensions, inStock, sortOrder } = body;
 
     if (!familyId || !sku) {
       return NextResponse.json(
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
         power: power || "",
         powerKw: powerKw || 0,
         speed: speed || "",
-        voltage: voltage || "",
+        mountingType: mountingType || "",
         price: price || 0,
         weight: weight || "",
         dimensions: dimensions || "",

@@ -20,7 +20,7 @@ export async function PUT(
         ...(body.power !== undefined && { power: body.power }),
         ...(body.powerKw !== undefined && { powerKw: body.powerKw }),
         ...(body.speed !== undefined && { speed: body.speed }),
-        ...(body.voltage !== undefined && { voltage: body.voltage }),
+        ...(body.mountingType !== undefined && { mountingType: body.mountingType }),
         ...(body.price !== undefined && { price: BigInt(body.price) }),
         ...(body.weight !== undefined && { weight: body.weight }),
         ...(body.dimensions !== undefined && { dimensions: body.dimensions }),

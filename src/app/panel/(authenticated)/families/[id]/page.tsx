@@ -35,7 +35,7 @@ interface Variant {
   power: string;
   powerKw: number;
   speed: string;
-  voltage: string;
+  mountingType?: string;
   price: number;
   weight: string;
   dimensions: string;
@@ -68,7 +68,7 @@ const EMPTY_VARIANT = {
   power: "",
   powerKw: 0,
   speed: "",
-  voltage: "",
+  mountingType: "",
   price: 0,
   weight: "",
   dimensions: "",
@@ -494,13 +494,13 @@ export default function FamilyDetailPage() {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs">ولتاژ</Label>
+                  <Label className="text-xs">نحوه نصب</Label>
                   <Input
-                    value={newVariant.voltage}
+                    value={newVariant.mountingType}
                     onChange={(e) =>
-                      setNewVariant({ ...newVariant, voltage: e.target.value })
+                      setNewVariant({ ...newVariant, mountingType: e.target.value })
                     }
-                    placeholder="380V"
+                    placeholder="B3 / B35 / FC"
                     dir="ltr"
                   />
                 </div>
@@ -576,7 +576,7 @@ export default function FamilyDetailPage() {
                     <TableHead className="text-right text-xs font-medium">توان</TableHead>
                     <TableHead className="text-right text-xs font-medium">kW</TableHead>
                     <TableHead className="text-right text-xs font-medium">دور</TableHead>
-                    <TableHead className="text-right text-xs font-medium">ولتاژ</TableHead>
+                    <TableHead className="text-right text-xs font-medium">نصب</TableHead>
                     <TableHead className="text-right text-xs font-medium">قیمت</TableHead>
                     <TableHead className="text-center text-xs font-medium">وضعیت</TableHead>
                     <TableHead className="text-center text-xs font-medium">عملیات</TableHead>
@@ -594,7 +594,7 @@ export default function FamilyDetailPage() {
                       <TableCell className="num-en">
                         {v.speed ? `${v.speed} RPM` : "-"}
                       </TableCell>
-                      <TableCell className="num-en">{v.voltage || "-"}</TableCell>
+                      <TableCell className="num-en">{v.mountingType || "-"}</TableCell>
                       <TableCell className="text-xs font-medium">
                         {v.price > 0
                           ? formatPrice(v.price)
