@@ -2,16 +2,17 @@ import { cpSync, existsSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 
 const root = process.cwd();
-const standalone = resolve(root, ".next", "standalone");
+const distDir = process.env.NEXT_DIST_DIR || ".next";
+const standalone = resolve(root, distDir, "standalone");
 
 if (!existsSync(standalone)) {
-  throw new Error(".next/standalone was not created. Run `next build` first.");
+  throw new Error(`${distDir}/standalone was not created. Run \`next build\` first.`);
 }
 
-const staticSource = resolve(root, ".next", "static");
-const staticTarget = resolve(standalone, ".next", "static");
+const staticSource = resolve(root, distDir, "static");
+const staticTarget = resolve(standalone, distDir, "static");
 if (existsSync(staticSource)) {
-  mkdirSync(resolve(standalone, ".next"), { recursive: true });
+  mkdirSync(resolve(standalone, distDir), { recursive: true });
   cpSync(staticSource, staticTarget, { recursive: true, force: true });
 }
 

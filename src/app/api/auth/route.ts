@@ -9,9 +9,31 @@ import {
 } from "@/lib/login-rate-limit";
 
 export async function POST(request: NextRequest) {
-  const { username, password } = await request.json();
+  let payload: unknown;
+  try {
+    payload = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "درخواست JSON معتبر نیست" },
+      { status: 400 }
+    );
+  }
 
-  if (!username || !password) {
+  if (!payload || typeof payload !== "object") {
+    return NextResponse.json(
+      { error: "نام کاربری و رمز عبور الزامی است" },
+      { status: 400 }
+    );
+  }
+
+  const { username, password } = payload as Record<string, unknown>;
+
+  if (
+    typeof username !== "string" ||
+    typeof password !== "string" ||
+    !username.trim() ||
+    !password
+  ) {
     return NextResponse.json(
       { error: "نام کاربری و رمز عبور الزامی است" },
       { status: 400 }
@@ -19,7 +41,8 @@ export async function POST(request: NextRequest) {
   }
 
   const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const clientKey = `${forwardedFor || "local"}:${String(username).toLowerCase()}`;
+  const normalizedUsername = username.trim();
+  const clientKey = `${forwardedFor || "local"}:${normalizedUsername.toLowerCase()}`;
   const retryAfter = loginRetryAfterSeconds(clientKey);
   if (retryAfter > 0) {
     return NextResponse.json(
@@ -28,7 +51,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const admin = await db.adminUser.findUnique({ where: { username } });
+  const admin = await db.adminUser.findUnique({ where: { username: normalizedUsername } });
   if (!admin) {
     recordLoginFailure(clientKey);
     return NextResponse.json(

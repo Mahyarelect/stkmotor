@@ -241,8 +241,8 @@ export default function ProductDetailClient({
       </div>
 
       <div className="max-w-7xl w-full mx-auto px-4 py-8 overflow-hidden">
-        <div className="lg:hidden mb-6">
-          <h1 className="text-2xl font-bold leading-relaxed text-gray-900">{family.name}</h1>
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold leading-relaxed text-gray-900">{family.name}</h1>
           <p className="mt-1 text-sm text-gray-500">{categoryInfo.title}</p>
         </div>
         <div className="grid lg:grid-cols-2 gap-10">
@@ -312,11 +312,7 @@ export default function ProductDetailClient({
 
           {/* ─── RIGHT: Product Info ─── */}
           <div className="min-w-0">
-            {/* Product Name */}
-            <h2 className="hidden lg:block text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-              {family.name}
-            </h2>
-            <p className="text-gray-500 mb-6">{family.mainCategory === "electromotor" ? `پوسته ${family.shellType} · ${uniqueSpeeds.length === 1 ? `${faNum(uniqueSpeeds[0])} دور بر دقیقه` : `${faNum(uniqueSpeeds.length)} سرعت مختلف`}` : categoryInfo.title}</p>
+            <p className="text-gray-500 mb-6">{family.mainCategory === "electromotor" ? `پوسته ${family.shellType} · ${uniqueSpeeds.length === 1 ? `${faNum(uniqueSpeeds[0])} دور بر دقیقه` : `${faNum(uniqueSpeeds.length)} سرعت مختلف`}` : "مشخصات فنی و وضعیت مدل انتخاب‌شده"}</p>
 
             {/* Quick Specs */}
             {selectedVariant && (

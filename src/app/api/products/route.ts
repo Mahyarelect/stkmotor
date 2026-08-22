@@ -26,10 +26,34 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(requestedLimit, MAX_PAGE_SIZE);
 
   const and: Prisma.ProductFamilyWhereInput[] = [];
+  const variantFilters: Prisma.ProductVariantWhereInput[] = [];
+  const subCategoryAliases: Record<string, string> = {
+    "motor-flange": "flange",
+    "rear-bracket": "bracket",
+  };
+  const normalizedSubCategory = subCategoryAliases[subCategory] || subCategory;
 
-  if (subCategory) and.push({ OR: [{ category: subCategory }, { subCategory }] });
-  if (level1) and.push({ OR: [{ level1Value: level1 }, { category: level1 }, { phase: level1 }] });
-  if (level2) and.push({ OR: [{ level2Value: level2 }, { shellType: level2 }, { brand: level2 }] });
+  if (normalizedSubCategory) {
+    and.push({ OR: [{ category: normalizedSubCategory }, { subCategory: normalizedSubCategory }] });
+  }
+
+  if (level1) {
+    if (category === "gearbox") variantFilters.push({ gearboxType: level1 });
+    else if (category === "pump") variantFilters.push({ pumpType: level1 });
+    else if (category === "accessories") variantFilters.push({ flangeType: level1 });
+    else and.push({ OR: [{ level1Value: level1 }, { category: level1 }, { phase: level1 }] });
+  }
+
+  if (level2) {
+    if (category === "gearbox") variantFilters.push({ inputType: level2 });
+    else if (category === "accessories") variantFilters.push({ brand: level2 });
+    else if (category === "electromotor") {
+      if (level2.includes("چدن")) and.push({ OR: [{ shellType: { contains: "چدن" } }, { name: { contains: "چدن" } }] });
+      else if (level2.includes("آلومینیوم") || level2.includes("الومینیوم")) {
+        and.push({ OR: [{ shellType: { contains: "لومینیوم" } }, { name: { contains: "لومینیوم" } }] });
+      }
+    } else and.push({ OR: [{ level2Value: level2 }, { shellType: level2 }, { brand: level2 }] });
+  }
 
   // Category & Phase filters
   if (category && category !== "all") {
@@ -103,7 +127,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const variantFilters: Prisma.ProductVariantWhereInput[] = [];
   if (speed && speed !== "all") variantFilters.push({ speed });
   if (powerRange && powerRange !== "all") {
     const [min, max] = powerRange.split("-").map(Number);

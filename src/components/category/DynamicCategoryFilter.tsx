@@ -3,7 +3,7 @@
 import { Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ActiveFilterBadges } from "./ActiveFilterBadges";
 
@@ -55,7 +55,7 @@ export function DynamicCategoryFilter({ category, value, onChange, onReset }: {
   return (
     <>
       <aside className="hidden lg:block sticky top-24 rounded-2xl border bg-white p-5 shadow-xs">{controls}</aside>
-      <div className="lg:hidden"><Sheet><SheetTrigger asChild><Button variant="outline" className="w-full"><SlidersHorizontal size={16} className="ml-2" />فیلتر محصولات</Button></SheetTrigger><SheetContent side="bottom" className="rounded-t-3xl p-6"><SheetHeader><SheetTitle>فیلتر محصولات</SheetTitle></SheetHeader><div className="mt-5">{controls}</div></SheetContent></Sheet></div>
+      <div className="lg:hidden"><Sheet><SheetTrigger asChild><Button variant="outline" className="w-full"><SlidersHorizontal size={16} className="ml-2" />فیلتر محصولات</Button></SheetTrigger><SheetContent side="bottom" className="rounded-t-3xl p-6"><SheetHeader><SheetTitle>فیلتر محصولات</SheetTitle><SheetDescription>نتایج را بر اساس نوع، مشخصات فنی یا نام محصول محدود کنید.</SheetDescription></SheetHeader><div className="mt-5">{controls}</div></SheetContent></Sheet></div>
       <div className="lg:col-span-2"><ActiveFilterBadges filters={active} onRemove={(key) => set(key as keyof CategoryFilterValue, "")} onReset={onReset} /></div>
     </>
   );
