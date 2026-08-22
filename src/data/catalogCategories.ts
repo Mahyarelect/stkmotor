@@ -51,10 +51,9 @@ export const CATALOG_CATEGORIES: CatalogCategory[] = [
     href: "/category/gearbox",
     icon: Settings,
     subCategories: [
-      { name: "گیربکس حلزونی", slug: "helical", href: "/category/gearbox/helical" },
+      { name: "گیربکس حلزونی", slug: "worm", href: "/category/gearbox/worm" },
       { name: "گیربکس شافت مستقیم", slug: "inline-shaft", href: "/category/gearbox/inline-shaft" },
       { name: "گیربکس مکعبی", slug: "cubic", href: "/category/gearbox/cubic" },
-      { name: "گیربکس ویترینی", slug: "showcase", href: "/category/gearbox/showcase" },
     ],
   },
   {
@@ -62,13 +61,24 @@ export const CATALOG_CATEGORIES: CatalogCategory[] = [
     slug: "pump",
     href: "/category/pump",
     icon: Droplets,
-    subCategories: [],
+    subCategories: [
+      { name: "الکتروپمپ", slug: "surface-pump", href: "/category/pump/surface-pump" },
+      { name: "کف‌کش", slug: "submersible-sump", href: "/category/pump/submersible-sump" },
+      { name: "لجن‌کش", slug: "sewage-pump", href: "/category/pump/sewage-pump" },
+      { name: "شناور", slug: "submersible-pump", href: "/category/pump/submersible-pump" },
+      { name: "پمپ دنده‌ای", slug: "gear-pump", href: "/category/pump/gear-pump" },
+      { name: "پمپ اسید", slug: "acid-pump", href: "/category/pump/acid-pump" },
+    ],
   },
   {
     name: "لوازم جانبی",
     slug: "accessories",
     href: "/category/accessories",
     icon: Wrench,
-    subCategories: [],
+    subCategories: [
+      { name: "فلنج الکتروموتور", slug: "motor-flange", href: "/category/accessories/motor-flange" },
+      { name: "براکت عقب", slug: "rear-bracket", href: "/category/accessories/rear-bracket" },
+      { name: "فلنج خروجی گیربکس", slug: "gearbox-flange", href: "/category/accessories/gearbox-flange" },
+    ],
   },
 ];

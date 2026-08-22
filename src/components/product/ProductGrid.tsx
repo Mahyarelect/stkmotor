@@ -14,6 +14,7 @@ interface ProductGridProps {
   loadingMore: boolean;
   onLoadMore: () => void;
   onResetFilters?: () => void;
+  itemLabel?: string;
 }
 
 function faNum(n: number | string): string {
@@ -30,6 +31,7 @@ export function ProductGrid({
   loadingMore,
   onLoadMore,
   onResetFilters,
+  itemLabel = "محصول",
 }: ProductGridProps) {
   if (loading) {
     return (
@@ -87,7 +89,7 @@ export function ProductGrid({
       <div className="text-center mt-8">
         <p className="text-xs sm:text-sm text-gray-500">
           نمایش <span className="font-bold text-gray-800 num-en">{faNum(products.length)}</span> از{" "}
-          <span className="font-bold text-gray-800 num-en">{faNum(total)}</span> مدل الکتروموتور
+          <span className="font-bold text-gray-800 num-en">{faNum(total)}</span> {itemLabel}
         </p>
       </div>
 

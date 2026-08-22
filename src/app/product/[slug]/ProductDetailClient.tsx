@@ -22,6 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { ProductImage } from "@/components/ProductImage";
+import { ProductSpecsTable } from "@/components/product/ProductSpecsTable";
+import { ProductCard, ProductFamilyData } from "@/components/product/ProductCard";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
@@ -35,6 +37,20 @@ interface Variant {
   powerKw: number;
   speed: string;
   mountingType?: string;
+  voltage?: string;
+  gearboxType?: string;
+  modelType?: string;
+  ratio?: string;
+  inputFrame?: string;
+  inputType?: string;
+  pumpType?: string;
+  outletSize?: string;
+  headMeter?: number;
+  floater?: string;
+  brand?: string;
+  bodyMaterial?: string;
+  flangeType?: string;
+  flangeLength?: string;
   price: number;
   weight: string;
   dimensions: string;
@@ -47,6 +63,7 @@ interface ProductFamily {
   slug: string;
   name: string;
   nameEn: string;
+  mainCategory: string;
   category: string;
   phase: string;
   shellType: string;
@@ -79,16 +96,9 @@ export default function ProductDetailClient({
   const [family, setFamily] = useState<ProductFamily | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariantId, setSelectedVariantId] = useState<string>("");
+  const [relatedProducts, setRelatedProducts] = useState<ProductFamilyData[]>([]);
 
   const slugRef = useRef<string>("");
-
-  // Resolve params
-  useEffect(() => {
-    params.then((p) => {
-      slugRef.current = p.slug;
-      fetchProduct(p.slug);
-    });
-  }, []);
 
   async function fetchProduct(slug: string) {
     setLoading(true);
@@ -97,6 +107,10 @@ export default function ProductDetailClient({
       if (!res.ok) return;
       const data = await res.json();
       setFamily(data);
+      fetch(`/api/products?category=${encodeURIComponent(data.mainCategory)}&limit=4`)
+        .then((response) => response.ok ? response.json() : { products: [] })
+        .then((result) => setRelatedProducts((result.products || []).filter((item: ProductFamilyData) => item.slug !== data.slug).slice(0, 3)))
+        .catch(() => setRelatedProducts([]));
       const first = data.variants.find((v: Variant) => v.inStock) || data.variants[0];
       if (first) setSelectedVariantId(first.id);
     } catch (err) {
@@ -104,6 +118,14 @@ export default function ProductDetailClient({
     }
     setLoading(false);
   }
+
+  // Resolve params
+  useEffect(() => {
+    params.then((p) => {
+      slugRef.current = p.slug;
+      fetchProduct(p.slug);
+    });
+  }, []);
 
   const selectedVariant = family?.variants.find((v) => v.id === selectedVariantId);
 
@@ -131,6 +153,45 @@ export default function ProductDetailClient({
       (a, b) => Number.parseInt(a) - Number.parseInt(b)
     );
   }, [family]);
+
+  const categoryInfo = family ? ({
+    electromotor: { title: "الکتروموتورها", href: "/electromotors" },
+    gearbox: { title: "گیربکس‌ها", href: "/category/gearbox" },
+    pump: { title: "پمپ‌ها", href: "/category/pump" },
+    accessories: { title: "لوازم جانبی", href: "/category/accessories" },
+  }[family.mainCategory] || { title: "محصولات", href: "/" }) : { title: "محصولات", href: "/" };
+  const inquiryLink = selectedVariant && family
+    ? `${whatsappLink}?text=${encodeURIComponent(`سلام، برای ${family.name} با کد ${selectedVariant.sku} درخواست استعلام دارم.`)}`
+    : whatsappLink;
+  const quickSpecs = selectedVariant && family ? (
+    family.mainCategory === "gearbox"
+      ? [
+          { icon: Cog, label: "مدل", value: selectedVariant.modelType || "-" },
+          { icon: Gauge, label: "نسبت تبدیل", value: selectedVariant.ratio || "-" },
+          { icon: Ruler, label: "فریم ورودی", value: selectedVariant.inputFrame || "-" },
+          { icon: FileText, label: "سایز", value: selectedVariant.size || "-" },
+        ]
+      : family.mainCategory === "pump"
+        ? [
+            { icon: Cog, label: "نوع پمپ", value: selectedVariant.pumpType || "-" },
+            { icon: Ruler, label: "دهانه خروجی", value: selectedVariant.outletSize || "-" },
+            { icon: Gauge, label: "حداکثر هد", value: selectedVariant.headMeter ? `${faNum(selectedVariant.headMeter)} متر` : "-" },
+            { icon: Zap, label: "توان", value: selectedVariant.power || "-" },
+          ]
+        : family.mainCategory === "accessories"
+          ? [
+              { icon: Cog, label: "نوع قطعه", value: selectedVariant.flangeType || "-" },
+              { icon: ShieldCheck, label: "برند", value: selectedVariant.brand || "-" },
+              { icon: Ruler, label: "سایز فریم", value: selectedVariant.size || "-" },
+              { icon: FileText, label: "جنس", value: selectedVariant.bodyMaterial || "-" },
+            ]
+          : [
+              { icon: Zap, label: "توان", value: selectedVariant.power || "-" },
+              { icon: Gauge, label: "دور", value: selectedVariant.speed ? `${faNum(selectedVariant.speed)} RPM` : "-" },
+              { icon: Ruler, label: "سایز فریم", value: selectedVariant.size || "-" },
+              { icon: FileText, label: "نوع نصب", value: selectedVariant.mountingType || "-" },
+            ]
+  ) : [];
 
   if (loading) {
     return (
@@ -172,24 +233,21 @@ export default function ProductDetailClient({
           <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 flex-wrap">
             <Link href="/" className="hover:text-blue-600 transition-colors">خانه</Link>
             <ChevronLeft size={13} className="text-gray-400" />
-            <Link href="/electromotors" className="hover:text-blue-600 transition-colors">الکتروموتورها</Link>
-            <ChevronLeft size={13} className="text-gray-400" />
-            <Link
-              href={`/electromotors/${family.category === "single-phase" ? "single-phase" : "three-phase"}`}
-              className="hover:text-blue-600 transition-colors"
-            >
-              {family.category === "single-phase" ? "تک‌فاز" : "سه‌فاز"}
-            </Link>
+            <Link href={categoryInfo.href} className="hover:text-blue-600 transition-colors">{categoryInfo.title}</Link>
             <ChevronLeft size={13} className="text-gray-400" />
             <span className="text-blue-950 font-semibold">{family.name}</span>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl w-full mx-auto px-4 py-8 overflow-hidden">
+        <div className="lg:hidden mb-6">
+          <h1 className="text-2xl font-bold leading-relaxed text-gray-900">{family.name}</h1>
+          <p className="mt-1 text-sm text-gray-500">{categoryInfo.title}</p>
+        </div>
         <div className="grid lg:grid-cols-2 gap-10">
           {/* ─── LEFT: Image + Variant Selector ─── */}
-          <div>
+          <div className="min-w-0">
             {/* Product image. Local image paths are served from /public. */}
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl h-80 lg:h-[420px] flex items-center justify-center mb-6 relative overflow-hidden">
               <ProductImage
@@ -200,12 +258,12 @@ export default function ProductDetailClient({
               />
               <Badge
                 className={`absolute top-4 right-4 ${
-                  family.category === "single-phase"
+                  family.mainCategory === "electromotor" && family.category === "single-phase"
                     ? "bg-amber-500 text-white"
                     : "bg-blue-600 text-white"
                 }`}
               >
-                {family.phase}
+                {family.phase || categoryInfo.title}
               </Badge>
             </div>
 
@@ -229,7 +287,7 @@ export default function ProductDetailClient({
                             if (nextVariant) setSelectedVariantId(nextVariant.id);
                           }}
                           aria-pressed={isSelected}
-                          className={`relative px-4 py-2.5 rounded-lg text-sm font-medium num-en transition-all ${
+                          className={`relative min-h-11 min-w-11 px-4 py-2.5 rounded-lg text-sm font-medium num-en transition-all ${
                             isSelected
                               ? "bg-blue-700 text-white shadow-md shadow-blue-200 ring-2 ring-blue-300"
                               : hasInStock
@@ -253,22 +311,17 @@ export default function ProductDetailClient({
           </div>
 
           {/* ─── RIGHT: Product Info ─── */}
-          <div>
+          <div className="min-w-0">
             {/* Product Name */}
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-              الکتروموتور {family.phase} STK
-            </h1>
-            <p className="text-gray-500 mb-6">
-              پوسته {family.shellType} · {uniqueSpeeds.length === 1 ? `${faNum(uniqueSpeeds[0])} دور بر دقیقه` : `${faNum(uniqueSpeeds.length)} سرعت مختلف`}
-            </p>
+            <h2 className="hidden lg:block text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+              {family.name}
+            </h2>
+            <p className="text-gray-500 mb-6">{family.mainCategory === "electromotor" ? `پوسته ${family.shellType} · ${uniqueSpeeds.length === 1 ? `${faNum(uniqueSpeeds[0])} دور بر دقیقه` : `${faNum(uniqueSpeeds.length)} سرعت مختلف`}` : categoryInfo.title}</p>
 
             {/* Quick Specs */}
             {selectedVariant && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                <QuickSpec icon={Zap} label="توان" value={selectedVariant.power || "-"} />
-                <QuickSpec icon={Gauge} label="دور" value={selectedVariant.speed ? `${faNum(selectedVariant.speed)} RPM` : "-"} />
-                <QuickSpec icon={Ruler} label="سایز فریم" value={selectedVariant.size || "-"} />
-                <QuickSpec icon={FileText} label="ولتاژ" value={selectedVariant.voltage || "-"} />
+                {quickSpecs.map((spec) => <QuickSpec key={spec.label} icon={spec.icon} label={spec.label} value={String(spec.value)} />)}
               </div>
             )}
 
@@ -320,7 +373,7 @@ export default function ProductDetailClient({
                   تماس برای مشاوره
                 </Button>
               </a>
-              <a href={whatsappLink} target="_blank" rel="noopener">
+              <a href={inquiryLink} target="_blank" rel="noopener">
                 <Button size="lg" variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8">
                   <MessageCircle size={16} className="ml-1.5" />
                   واتساپ
@@ -338,13 +391,20 @@ export default function ProductDetailClient({
               </Card>
             )}
 
+            {selectedVariant && (
+              <div className="mb-6">
+                <h2 className="font-semibold text-gray-800 mb-3">مشخصات فنی انتخاب‌شده</h2>
+                <ProductSpecsTable category={family.mainCategory} shellType={family.shellType} variant={selectedVariant} />
+              </div>
+            )}
+
             {/* Features */}
             <div className="grid grid-cols-2 gap-3 mb-6">
               {[
                 { icon: ShieldCheck, label: "گارانتی اصالت", desc: "تضمین کیفیت" },
                 { icon: Truck, label: "ارسال سریع", desc: "به سراسر ایران" },
-                { icon: Cog, label: "پوسته چدنی", desc: "مقاوم و بادوام" },
-                { icon: Zap, label: "بهینه مصرف", desc: "رده انرژی استاندارد" },
+                { icon: Cog, label: "ساخت صنعتی", desc: "مقاوم و بادوام" },
+                { icon: Zap, label: "انتخاب تخصصی", desc: "متناسب با کاربرد" },
               ].map((f) => (
                 <div key={f.label} className="flex items-center gap-2.5 bg-gray-50 rounded-lg px-3 py-2.5">
                   <f.icon size={16} className="text-blue-600 shrink-0" />
@@ -422,7 +482,7 @@ export default function ProductDetailClient({
                     تماس با کارشناس
                   </Button>
                 </a>
-                <a href={whatsappLink} target="_blank" rel="noopener">
+                <a href={inquiryLink} target="_blank" rel="noopener">
                   <Button variant="outline" className="border-blue-200 bg-white text-blue-700 hover:bg-blue-50 hover:text-blue-800">
                     <MessageCircle size={16} className="ml-1.5" />
                     استعلام در واتساپ
@@ -433,11 +493,13 @@ export default function ProductDetailClient({
           </Card>
         </div>
 
+        {relatedProducts.length > 0 && <section className="mt-12" aria-labelledby="related-products"><h2 id="related-products" className="text-xl font-bold text-gray-900 mb-6">محصولات مرتبط</h2><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">{relatedProducts.map(product => <ProductCard key={product.id} family={product} />)}</div></section>}
+
         {/* Back link */}
         <div className="mt-8 text-center">
-          <Link href="/electromotors" className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 transition-colors font-medium">
+          <Link href={categoryInfo.href} className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 transition-colors font-medium">
             <ArrowRight size={14} />
-            بازگشت به کاتالوگ الکتروموتورها
+            بازگشت به کاتالوگ {categoryInfo.title}
           </Link>
         </div>
       </div>

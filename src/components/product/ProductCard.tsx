@@ -18,6 +18,19 @@ export interface Variant {
   price: number;
   inStock: boolean;
   sortOrder: number;
+  mountingType?: string;
+  gearboxType?: string;
+  modelType?: string;
+  ratio?: string;
+  inputFrame?: string;
+  pumpType?: string;
+  outletSize?: string;
+  headMeter?: number;
+  floater?: string;
+  brand?: string;
+  bodyMaterial?: string;
+  flangeType?: string;
+  flangeLength?: string;
 }
 
 export interface ProductFamilyData {
@@ -25,6 +38,7 @@ export interface ProductFamilyData {
   slug: string;
   name: string;
   nameEn: string;
+  mainCategory: string;
   category: string;
   phase: string;
   shellType: string;
@@ -81,6 +95,23 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
     uniqueSizes.length > 0
       ? `${faNum(uniqueSizes[0])} – ${faNum(uniqueSizes[uniqueSizes.length - 1])}`
       : "";
+  const visibleSizes = uniqueSizes.slice(0, 6);
+  const hiddenSizeCount = Math.max(0, uniqueSizes.length - visibleSizes.length);
+
+  const categoryLabel = {
+    electromotor: family.phase || "الکتروموتور",
+    gearbox: "گیربکس",
+    pump: "پمپ",
+    accessories: "لوازم جانبی",
+  }[family.mainCategory] || family.phase || "محصول صنعتی";
+
+  const specs = family.mainCategory === "gearbox"
+    ? [["مدل", activeVariant?.modelType], ["نسبت", activeVariant?.ratio], ["فریم ورودی", activeVariant?.inputFrame]]
+    : family.mainCategory === "pump"
+      ? [["نوع", activeVariant?.pumpType], ["دهانه", activeVariant?.outletSize], ["هد", activeVariant?.headMeter ? `${activeVariant.headMeter} m` : ""]]
+      : family.mainCategory === "accessories"
+        ? [["نوع قطعه", activeVariant?.flangeType], ["برند", activeVariant?.brand], ["سایز", activeVariant?.size]]
+        : [["توان", activeVariant?.power], ["سرعت", activeVariant?.speed ? `${faNum(activeVariant.speed)} RPM` : ""], ["پوسته / بدنه", family.shellType]];
 
   return (
     <Card className="overflow-hidden border-gray-200 hover:shadow-xl hover:border-blue-300 transition-all group flex flex-col bg-white">
@@ -100,7 +131,7 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
               : "bg-blue-600 hover:bg-blue-700 text-white"
           }`}
         >
-          {family.phase}
+          {categoryLabel}
         </Badge>
         {/* Variant count badge */}
         <Badge className="absolute top-3 left-3 text-[10px] px-2 py-0.5 bg-white/90 text-gray-600 border border-gray-200/80 shadow-xs">
@@ -118,7 +149,7 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
 
         {/* Subtitle: Shell Type + Speed + Size Range */}
         <p className="text-xs text-gray-400 mb-3.5">
-          پوسته {family.shellType}
+          {family.mainCategory === "electromotor" ? `پوسته ${family.shellType}` : categoryLabel}
           {uniqueSpeeds.length > 0 && ` · ${faNum(uniqueSpeeds[0])} دور`}
           {sizeRange && ` · سایز ${sizeRange}`}
         </p>
@@ -130,7 +161,7 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
               انتخاب توان / سایز:
             </p>
             <div className="flex flex-wrap gap-1.5">
-              {uniqueSizes.map((size) => {
+              {visibleSizes.map((size) => {
                 const sizeVariant = variantsBySize.get(size);
                 const hasInStock = Boolean(sizeVariant?.inStock);
                 const isSelected = effectiveSelectedSize === size;
@@ -141,7 +172,7 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
                     type="button"
                     onClick={() => setSelectedSize(size)}
                     aria-pressed={isSelected}
-                    className={`relative px-2.5 py-1 rounded-md text-xs font-semibold num-en transition-all ${
+                    className={`relative min-h-10 min-w-10 px-2.5 py-1 rounded-md text-xs font-semibold num-en transition-all ${
                       isSelected
                         ? "bg-blue-700 text-white shadow-xs ring-2 ring-blue-300"
                         : hasInStock
@@ -158,30 +189,23 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
                   </button>
                 );
               })}
+              {hiddenSizeCount > 0 && (
+                <span className="inline-flex min-h-10 items-center rounded-md border border-dashed border-gray-300 px-2.5 text-xs font-semibold text-gray-500 num-en" title={`${hiddenSizeCount} سایز دیگر`}>
+                  +{faNum(hiddenSizeCount)}
+                </span>
+              )}
             </div>
           </div>
         )}
 
         {/* Dynamic Specs (3 compact items) */}
         <div className="grid grid-cols-3 gap-1.5 mb-3.5">
-          <div className="bg-gray-50/80 border border-gray-100 rounded-lg px-2 py-1.5 text-center">
-            <p className="text-[9px] text-gray-400 font-medium">توان</p>
-            <p className="text-[11px] font-bold text-gray-800 num-en">
-              {activeVariant?.power || "-"}
-            </p>
-          </div>
-          <div className="bg-gray-50/80 border border-gray-100 rounded-lg px-2 py-1.5 text-center">
-            <p className="text-[9px] text-gray-400 font-medium">سرعت</p>
-            <p className="text-[11px] font-bold text-gray-800 num-en">
-              {activeVariant?.speed ? `${faNum(activeVariant.speed)} RPM` : "-"}
-            </p>
-          </div>
-          <div className="bg-gray-50/80 border border-gray-100 rounded-lg px-2 py-1.5 text-center">
-            <p className="text-[9px] text-gray-400 font-medium">پوسته / بدنه</p>
-            <p className="text-[11px] font-bold text-gray-800">
-              {family.shellType || family.phase || "-"}
-            </p>
-          </div>
+          {specs.map(([label, value]) => (
+            <div key={label as string} className="bg-gray-50/80 border border-gray-100 rounded-lg px-2 py-1.5 text-center">
+              <p className="text-[9px] text-gray-400 font-medium">{label}</p>
+              <p className="text-[11px] font-bold text-gray-800 num-en">{value || "-"}</p>
+            </div>
+          ))}
         </div>
 
         {/* Stock Status */}

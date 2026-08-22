@@ -41,7 +41,7 @@ export function SiteFooter() {
                 <span className="text-white font-bold text-base">{siteSettings.site_name}</span>
               </div>
               <p className="text-sm leading-relaxed text-gray-400">
-                ارائه دهنده تخصصی انواع الکتروموتورهای صنعتی تک‌فاز و سه‌فاز پوسته چدنی و آلومینیومی با بالاترین استانداردهای کیفی و مشاوره فنی رایگان.
+                تأمین‌کننده تخصصی الکتروموتور، گیربکس، پمپ و لوازم جانبی صنعتی همراه با اطلاعات فنی دقیق و مشاوره رایگان.
               </p>
             </div>
             <div>
@@ -118,11 +118,11 @@ export function SiteFooter() {
             <span className="text-[10px] font-medium">واتساپ</span>
           </a>
           <Link
-            href="/electromotors"
+            href="/#products"
             className="flex flex-col items-center py-2.5 text-gray-600 active:bg-gray-50"
           >
             <MessageCircle size={18} className="mb-0.5 text-orange-500" />
-            <span className="text-[10px] font-medium">کاتالوگ موتورها</span>
+            <span className="text-[10px] font-medium">همه محصولات</span>
           </Link>
         </div>
       </div>

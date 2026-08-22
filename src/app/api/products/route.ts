@@ -15,6 +15,9 @@ export async function GET(request: NextRequest) {
   const category = (searchParams.get("category") || "").trim().toLowerCase();
   const phase = (searchParams.get("phase") || "").trim().toLowerCase();
   const shellType = (searchParams.get("shellType") || "").trim().toLowerCase();
+  const subCategory = (searchParams.get("subCategory") || "").trim().toLowerCase();
+  const level1 = (searchParams.get("level1") || "").trim();
+  const level2 = (searchParams.get("level2") || "").trim();
   const speed = searchParams.get("speed") || "";
   const powerRange = searchParams.get("powerRange") || "";
   const search = (searchParams.get("search") || "").trim();
@@ -23,6 +26,10 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(requestedLimit, MAX_PAGE_SIZE);
 
   const and: Prisma.ProductFamilyWhereInput[] = [];
+
+  if (subCategory) and.push({ OR: [{ category: subCategory }, { subCategory }] });
+  if (level1) and.push({ OR: [{ level1Value: level1 }, { category: level1 }, { phase: level1 }] });
+  if (level2) and.push({ OR: [{ level2Value: level2 }, { shellType: level2 }, { brand: level2 }] });
 
   // Category & Phase filters
   if (category && category !== "all") {
@@ -129,6 +136,7 @@ export async function GET(request: NextRequest) {
         slug: true,
         name: true,
         nameEn: true,
+        mainCategory: true,
         category: true,
         phase: true,
         shellType: true,
@@ -148,6 +156,19 @@ export async function GET(request: NextRequest) {
             price: true,
             inStock: true,
             sortOrder: true,
+            sku: true,
+            gearboxType: true,
+            modelType: true,
+            ratio: true,
+            inputFrame: true,
+            pumpType: true,
+            outletSize: true,
+            headMeter: true,
+            floater: true,
+            brand: true,
+            bodyMaterial: true,
+            flangeType: true,
+            flangeLength: true,
           },
         },
       },
@@ -166,6 +187,7 @@ export async function GET(request: NextRequest) {
       slug: family.slug,
       name: family.name,
       nameEn: family.nameEn,
+      mainCategory: family.mainCategory,
       category: family.category,
       phase: family.phase,
       shellType: family.shellType,

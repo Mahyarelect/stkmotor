@@ -75,7 +75,8 @@ export function ElectromotorsClient({ initialSlugs = [] }: { initialSlugs: strin
   const fetchProducts = useCallback(
     async (pageNumber = 1, append = false) => {
       const requestId = ++requestSequence.current;
-      append ? setLoadingMore(true) : setLoading(true);
+      if (append) setLoadingMore(true);
+      else setLoading(true);
 
       try {
         const params = new URLSearchParams();
@@ -116,7 +117,8 @@ export function ElectromotorsClient({ initialSlugs = [] }: { initialSlugs: strin
         }
       } finally {
         if (requestId === requestSequence.current) {
-          append ? setLoadingMore(false) : setLoading(false);
+          if (append) setLoadingMore(false);
+          else setLoading(false);
         }
       }
     },

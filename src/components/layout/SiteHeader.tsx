@@ -80,11 +80,11 @@ export function SiteHeader() {
                 <Cog size={22} className="text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-blue-900 tracking-tight">
+                <span className="block text-lg font-bold text-blue-900 tracking-tight">
                   {siteSettings.site_name}
-                </h1>
+                </span>
                 <p className="text-[10px] text-gray-400 -mt-0.5">
-                  الکتروموتور پوسته چدنی و آلومینیومی
+                  تجهیزات صنعتی، انتقال قدرت و سیالات
                 </p>
               </div>
             </Link>
@@ -171,7 +171,7 @@ export function SiteHeader() {
 
             {/* Mobile menu button */}
             <button
-              className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              className="md:hidden min-h-11 min-w-11 p-2 text-gray-600 hover:bg-gray-100 rounded-lg flex items-center justify-center"
               onClick={() => {
                 setMobileMenuOpen(!mobileMenuOpen);
                 setMobileExpandedCat(null);
@@ -213,7 +213,7 @@ export function SiteHeader() {
                             mobileExpandedCat === cat.slug ? null : cat.slug
                           )
                         }
-                        className="p-1 text-gray-400 hover:text-blue-700"
+                        className="min-h-11 min-w-11 p-2 text-gray-400 hover:text-blue-700 flex items-center justify-center"
                         aria-label={`نمایش زیردسته‌های ${cat.name}`}
                       >
                         <ChevronDown

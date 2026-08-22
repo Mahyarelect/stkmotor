@@ -48,6 +48,9 @@ interface SiteStats {
   speeds: string[];
   sizes: string[];
   powerRanges: string[];
+  gearboxFamilies: number;
+  pumpFamilies: number;
+  accessoriesFamilies: number;
 }
 
 function faNum(n: number | string): string {
@@ -88,7 +91,8 @@ export default function HomePage() {
   const fetchProducts = useCallback(
     async (pageNumber = 1, append = false) => {
       const requestId = ++requestSequence.current;
-      append ? setLoadingMore(true) : setLoading(true);
+      if (append) setLoadingMore(true);
+      else setLoading(true);
       try {
         const params = new URLSearchParams();
         if (categoryFilter !== "all") params.set("category", categoryFilter);
@@ -117,7 +121,8 @@ export default function HomePage() {
         }
       } finally {
         if (requestId === requestSequence.current) {
-          append ? setLoadingMore(false) : setLoading(false);
+          if (append) setLoadingMore(false);
+          else setLoading(false);
         }
       }
     },
@@ -170,21 +175,21 @@ export default function HomePage() {
               <Zap size={12} className="ml-1" />
               نماینده رسمی STK Motors
             </Badge>
-            <h2 className="text-3xl md:text-5xl font-extrabold leading-tight mb-6">
-              الکتروموتورهای صنعتی
+            <h1 className="text-3xl md:text-5xl font-extrabold leading-tight mb-6">
+              تجهیزات صنعتی برای حرکت، انتقال و سیالات
               <br />
-              <span className="text-blue-300">تک‌فاز و سه‌فاز پوسته چدنی</span>
-            </h2>
+              <span className="text-blue-300">الکتروموتور، گیربکس، پمپ و قطعات جانبی</span>
+            </h1>
             <p className="text-blue-100/80 text-base md:text-lg leading-relaxed mb-8 max-w-xl">
-              ارائه دهنده انواع الکتروموتورهای صنعتی استاندارد با توان‌ها و دورهای متنوع. مشاوره فنی تخصصی و امکان استعلام قیمت برای تمامی مدل‌ها.
+              مجموعه یکپارچه تجهیزات صنعتی با مشخصات فنی دقیق، مدل‌های متنوع و امکان استعلام مستقیم از کارشناسان STK Motors.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/electromotors">
+              <Link href="#products">
                 <Button
                   size="lg"
                   className="bg-white text-blue-900 hover:bg-blue-50 font-semibold px-8 shadow-sm"
                 >
-                  مشاهده کاتالوگ الکتروموتورها
+                  مشاهده همه محصولات
                   <ChevronLeft size={18} className="mr-1" />
                 </Button>
               </Link>
@@ -252,11 +257,11 @@ export default function HomePage() {
           {/* Section Header */}
           <div className="text-center mb-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              کاتالوگ الکتروموتور STK
+              کاتالوگ محصولات STK
             </h3>
             <p className="text-gray-500 text-sm">
               {stats
-                ? `${faNum(stats.families)} مدل الکتروموتور با ${faNum(stats.variants)} سایز مختلف`
+                ? `${faNum(stats.families)} خانواده محصول با ${faNum(stats.variants)} مدل و واریانت`
                 : "در حال بارگذاری..."}
             </p>
           </div>
@@ -277,6 +282,10 @@ export default function HomePage() {
                   className="pr-9 text-sm"
                 />
               </div>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-full sm:w-44 text-sm"><SelectValue placeholder="دسته محصول" /></SelectTrigger>
+                <SelectContent><SelectItem value="all">همه دسته‌ها</SelectItem>{CATALOG_CATEGORIES.map(cat => <SelectItem key={cat.slug} value={cat.slug}>{cat.name}</SelectItem>)}</SelectContent>
+              </Select>
               {/* Power / HP Filter (Primary Filter) */}
               <Select value={powerFilter} onValueChange={setPowerFilter}>
                 <SelectTrigger className="w-full sm:w-44 text-sm">
@@ -329,6 +338,7 @@ export default function HomePage() {
             loadingMore={loadingMore}
             onLoadMore={() => fetchProducts(catalogMeta.page + 1, true)}
             onResetFilters={hasFilters ? handleResetFilters : undefined}
+            itemLabel="خانواده محصول"
           />
         </div>
       </section>
