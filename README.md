@@ -45,11 +45,14 @@ The site runs at [http://localhost:3000](http://localhost:3000), and the admin l
 
 ```bash
 npm install
+node scripts/prepare-local-env.mjs
 npm run db:generate
 npm run db:push
 npm run db:seed
 npm run dev
 ```
+
+`npm run dev` also prepares a missing local `.env` automatically, but database commands require the preparation step above when run manually.
 
 The startup helpers create a local `.env` when needed. Important variables are:
 

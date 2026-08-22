@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, RotateCcw } from "lucide-react";
+import { AlertTriangle, Search, RotateCcw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ interface ProductGridProps {
   hasMore: boolean;
   loadingMore: boolean;
   onLoadMore: () => void;
+  error?: string | null;
+  onRetry?: () => void;
   onResetFilters?: () => void;
   itemLabel?: string;
 }
@@ -30,6 +32,8 @@ export function ProductGrid({
   hasMore,
   loadingMore,
   onLoadMore,
+  error,
+  onRetry,
   onResetFilters,
   itemLabel = "محصول",
 }: ProductGridProps) {
@@ -47,6 +51,26 @@ export function ProductGrid({
             </CardContent>
           </Card>
         ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div role="alert" className="text-center py-16 px-4 bg-white rounded-2xl border border-red-200 shadow-xs">
+        <div className="w-16 h-16 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
+          <AlertTriangle size={28} />
+        </div>
+        <h4 className="text-lg font-bold text-gray-900 mb-2">
+          بارگذاری کاتالوگ انجام نشد
+        </h4>
+        <p className="text-gray-500 text-sm max-w-md mx-auto mb-6">{error}</p>
+        {onRetry && (
+          <Button onClick={onRetry} className="bg-blue-700 hover:bg-blue-800 text-white">
+            <RotateCcw size={14} className="ml-1.5" />
+            تلاش دوباره
+          </Button>
+        )}
       </div>
     );
   }

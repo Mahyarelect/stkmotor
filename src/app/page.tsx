@@ -69,6 +69,7 @@ export default function HomePage() {
   const [stats, setStats] = useState<SiteStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
   const [catalogMeta, setCatalogMeta] = useState<CatalogMeta>({
     total: 0,
     page: 1,
@@ -92,7 +93,10 @@ export default function HomePage() {
     async (pageNumber = 1, append = false) => {
       const requestId = ++requestSequence.current;
       if (append) setLoadingMore(true);
-      else setLoading(true);
+      else {
+        setLoading(true);
+        setCatalogError(null);
+      }
       try {
         const params = new URLSearchParams();
         if (categoryFilter !== "all") params.set("category", categoryFilter);
@@ -116,8 +120,11 @@ export default function HomePage() {
         });
       } catch (err) {
         if (requestId === requestSequence.current) {
-          console.error("Failed to fetch products:", err);
-          if (!append) setProducts([]);
+          console.warn("Failed to fetch products:", err);
+          if (!append) {
+            setProducts([]);
+            setCatalogError("ارتباط با پایگاه داده برقرار نشد. تنظیمات سرور را بررسی کنید و دوباره تلاش کنید.");
+          }
         }
       } finally {
         if (requestId === requestSequence.current) {
@@ -135,9 +142,12 @@ export default function HomePage() {
 
   useEffect(() => {
     fetch("/api/stats")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`Stats request failed: ${r.status}`);
+        return r.json();
+      })
       .then(setStats)
-      .catch(console.error);
+      .catch((error) => console.warn("Failed to fetch catalog stats:", error));
   }, []);
 
   const hasFilters =
@@ -333,10 +343,12 @@ export default function HomePage() {
           <ProductGrid
             products={products}
             loading={loading}
+            error={catalogError}
             total={catalogMeta.total}
             hasMore={catalogMeta.hasMore}
             loadingMore={loadingMore}
             onLoadMore={() => fetchProducts(catalogMeta.page + 1, true)}
+            onRetry={() => fetchProducts(1, false)}
             onResetFilters={hasFilters ? handleResetFilters : undefined}
             itemLabel="خانواده محصول"
           />

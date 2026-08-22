@@ -6,6 +6,7 @@ import { PrismaClient } from "@prisma/client";
 
 const root = process.cwd();
 const seed = JSON.parse(await readFile(resolve(root, "prisma/seed-data.json"), "utf8"));
+const packageJson = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
 const databasePath = resolve(root, "db/custom.db").replaceAll("\\", "/");
 process.env.DATABASE_URL = `file:${databasePath}`;
 
@@ -17,6 +18,10 @@ const expectedCategoryCounts = {
 };
 
 describe("catalog seed integrity", () => {
+  test("local development prepares required environment variables", () => {
+    assert.match(packageJson.scripts.dev, /prepare-local-env\.mjs/);
+  });
+
   test("cleaned source CSV totals match the canonical seed", async () => {
     const files = {
       electromotor: "data/csv/electromotor/all_electromotors_clean.csv",

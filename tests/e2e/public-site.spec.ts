@@ -48,6 +48,20 @@ test("catalog filter is shareable and changes results", async ({ page }) => {
   await expect(page.getByLabel("فیلترهای فعال").getByText("NMRV", { exact: true })).toBeVisible();
 });
 
+test("catalog API failure shows a retryable error instead of an empty state", async ({ page }) => {
+  await page.route("**/api/products?**", (route) =>
+    route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ error: "database unavailable" }) })
+  );
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "بارگذاری کاتالوگ انجام نشد" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "تلاش دوباره" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "محصولی با این مشخصات یافت نشد" })).toHaveCount(0);
+
+  await page.unroute("**/api/products?**");
+  await page.getByRole("button", { name: "تلاش دوباره" }).click();
+  await expect(page.getByRole("heading", { name: /الکتروموتور تک‌فاز پوسته چدنی 1400 دور/ })).toBeVisible();
+});
+
 test("product variant selection updates the selected state", async ({ page }) => {
   await page.goto("/product/worm-gearbox-vf");
   await expect(page.getByRole("heading", { level: 1, name: /گیربکس حلزونی سری VF/ })).toBeVisible();
