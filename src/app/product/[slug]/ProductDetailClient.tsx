@@ -22,6 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { ProductImage } from "@/components/ProductImage";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
 
 /* ─────────────────────────── Types ─────────────────────────── */
@@ -160,16 +162,26 @@ export default function ProductDetailClient({
   }
 
   return (
-    <div className="min-h-screen bg-white" dir="rtl">
+    <div className="min-h-screen bg-white flex flex-col" dir="rtl">
+      {/* ─── Header ─── */}
+      <SiteHeader />
+
       {/* ─── Breadcrumb ─── */}
-      <div className="bg-gray-50 border-b border-gray-200">
+      <div className="bg-gray-50/80 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 flex-wrap">
             <Link href="/" className="hover:text-blue-600 transition-colors">خانه</Link>
-            <ChevronLeft size={14} />
-            <Link href="/#products" className="hover:text-blue-600 transition-colors">محصولات</Link>
-            <ChevronLeft size={14} />
-            <span className="text-gray-800 font-medium">{family.name}</span>
+            <ChevronLeft size={13} className="text-gray-400" />
+            <Link href="/electromotors" className="hover:text-blue-600 transition-colors">الکتروموتورها</Link>
+            <ChevronLeft size={13} className="text-gray-400" />
+            <Link
+              href={`/electromotors/${family.category === "single-phase" ? "single-phase" : "three-phase"}`}
+              className="hover:text-blue-600 transition-colors"
+            >
+              {family.category === "single-phase" ? "تک‌فاز" : "سه‌فاز"}
+            </Link>
+            <ChevronLeft size={13} className="text-gray-400" />
+            <span className="text-blue-950 font-semibold">{family.name}</span>
           </div>
         </div>
       </div>
@@ -423,12 +435,15 @@ export default function ProductDetailClient({
 
         {/* Back link */}
         <div className="mt-8 text-center">
-          <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 transition-colors">
+          <Link href="/electromotors" className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 transition-colors font-medium">
             <ArrowRight size={14} />
-            بازگشت به کاتالوگ محصولات
+            بازگشت به کاتالوگ الکتروموتورها
           </Link>
         </div>
       </div>
+
+      {/* ─── Footer ─── */}
+      <SiteFooter />
     </div>
   );
 }

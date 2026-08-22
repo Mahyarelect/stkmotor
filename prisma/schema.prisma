@@ -7,44 +7,99 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model ProductFamily {
-  id          String    @id @default(cuid())
-  slug        String    @unique
-  name        String
-  nameEn      String    @default("")
-  category    String    // "single-phase" or "three-phase"
-  phase       String    @default("") // "تک‌فاز" or "سه‌فاز"
-  shellType   String    @default("چدنی")
-  description String    @default("")
-  imageUrl    String    @default("")
-  sortOrder   Int       @default(0)
-  variants    ProductVariant[]
-  createdAt   DateTime  @default(now())
+model Category {
+  id           String          @id @default(cuid())
+  slug         String          @unique
+  name         String
+  nameEn       String          @default("")
+  description  String          @default("")
+  icon         String          @default("Package")
+  sortOrder    Int             @default(0)
+  filterConfig String          @default("{}") // JSON config for dynamic facet hierarchy
+  families     ProductFamily[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
 
+model ProductFamily {
+  id             String           @id @default(cuid())
+  slug           String           @unique
+  name           String
+  nameEn         String           @default("")
+  mainCategory   String           @default("electromotor") // "electromotor", "gearbox", "pump", "accessories"
+  category       String           @default("single-phase") // legacy / sub-slug (e.g. "single-phase", "three-phase", "worm", "cubic")
+  subCategory    String           @default("")             // detailed subcategory
+  phase          String           @default("")             // "تک‌فاز" or "سه‌فاز"
+  shellType      String           @default("")             // "چدنی", "آلومینیومی"
+  brand          String           @default("")             // "STK", "موتوژن", "الکتروژن", "چینی"
+  level1Value    String           @default("")             // Primary filter value
+  level2Value    String           @default("")             // Secondary filter value
+  description    String           @default("")
+  imageUrl       String           @default("")
+  specifications String           @default("{}")           // JSON technical specs
+  sortOrder      Int              @default(0)
+  categoryId     String?
+  categoryRef    Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  variants       ProductVariant[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+
+  @@index([mainCategory, sortOrder])
   @@index([category, sortOrder])
+  @@index([mainCategory, subCategory])
+  @@index([level1Value, level2Value])
 }
 
 model ProductVariant {
-  id         String  @id @default(cuid())
-  familyId   String
-  sku        String  @unique
-  size       String  @default("")  // frame size: 80, 90, 100, 112, 132, etc.
-  power      String  @default("")  // "0.5HP", "2HP", "0.09kw", etc.
-  powerKw    Float   @default(0)  // normalized power in kW for sorting/filtering
-  speed      String  @default("")  // "1400", "3000", "1000", "750"
-  voltage    String  @default("")  // "220V", "380V"
-  price      BigInt  @default(0)
-  weight     String  @default("") // kg
-  dimensions String @default("")  // e.g. "300×200×150mm"
-  inStock    Boolean @default(true)
-  sortOrder  Int     @default(0)
-  family     ProductFamily @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  id           String        @id @default(cuid())
+  familyId     String
+  sku          String        @unique
+  name         String        @default("")
+  size         String        @default("") // frame size: 80, 90, 100, 112, 132, etc.
+  power        String        @default("") // "0.5HP", "2HP", "0.09kw", etc.
+  powerKw      Float         @default(0)  // normalized power in kW
+  speed        String        @default("") // "1400", "3000", "1000", "750"
+  voltage      String        @default("") // "220V", "380V"
+  mountingType String        @default("") // "B3", "B35", "B34", "FC", "F", "N/A/P" (Note: B5 excluded per user instruction)
+  
+  // Gearbox attributes
+  gearboxType  String        @default("") // "حلزونی", "مکعبی", "شافت مستقیم"
+  modelType    String        @default("") // "VF", "MVF", "VF-FC", "MVF-FC", "VF-VF", "MVF-VF"
+  ratio        String        @default("") // "7.5", "10", "15", "20", "25", "30", "40", "50", "60", "80", "100"
+  inputFrame   String        @default("") // "56", "63", "71", "80", "90", "100", "112", "132", "160"
+  inputType    String        @default("") // "شافت‌دار", "فلنج‌دار (هالو شافت)"
+
+  // Pump attributes
+  pumpType     String        @default("") // "بشقابی", "دو پروانه", "کف‌کش", "لجن‌کش", "شناور", "پمپ دنده‌ای", "پمپ اسید"
+  outletSize   String        @default("") // "1.0", "1.25", "1.5", "2.0", "3.0", "4.0" (inch)
+  headMeter    Float         @default(0)  // max head in meters
+  floater      String        @default("") // "فلوتردار", "ساده"
+
+  // Accessories / Flange attributes
+  brand        String        @default("") // "موتوژن", "الکتروژن", "چینی"
+  bodyMaterial String        @default("") // "چدن", "آلومینیوم", "استیل"
+  flangeType   String        @default("") // "فلنج", "نیم‌فلنج", "براکت عقب", "درب ترمینال", "فلنج خروجی"
+  flangeLength String        @default("") // "استاندارد", "بلند", "کوتاه"
+
+  price        BigInt        @default(0)
+  weight       String        @default("")
+  dimensions   String        @default("")
+  inStock      Boolean       @default(true)
+  attributes   String        @default("{}") // Additional JSON key-values
+  sortOrder    Int           @default(0)
+  family       ProductFamily @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @default(now()) @updatedAt
 
   @@index([familyId])
   @@index([familyId, sortOrder])
   @@index([familyId, size])
   @@index([speed])
   @@index([powerKw])
+  @@index([modelType])
+  @@index([ratio])
+  @@index([inputFrame])
+  @@index([outletSize])
 }
 
 model AdminUser {

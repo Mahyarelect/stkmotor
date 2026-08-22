@@ -12,7 +12,9 @@ function positiveInt(value: string | null, fallback: number) {
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const category = searchParams.get("category") || "";
+  const category = (searchParams.get("category") || "").trim().toLowerCase();
+  const phase = (searchParams.get("phase") || "").trim().toLowerCase();
+  const shellType = (searchParams.get("shellType") || "").trim().toLowerCase();
   const speed = searchParams.get("speed") || "";
   const powerRange = searchParams.get("powerRange") || "";
   const search = (searchParams.get("search") || "").trim();
@@ -21,7 +23,50 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(requestedLimit, MAX_PAGE_SIZE);
 
   const and: Prisma.ProductFamilyWhereInput[] = [];
-  if (category && category !== "all") and.push({ category });
+
+  // Phase filter (also supports legacy category=single-phase / category=three-phase)
+  const targetPhase = phase || (category === "single-phase" || category === "three-phase" ? category : "");
+  if (targetPhase && targetPhase !== "all") {
+    if (targetPhase === "single" || targetPhase === "single-phase" || targetPhase.includes("تک")) {
+      and.push({
+        OR: [
+          { category: "single-phase" },
+          { phase: { contains: "تک" } },
+          { phase: "single-phase" },
+        ],
+      });
+    } else if (targetPhase === "three" || targetPhase === "three-phase" || targetPhase.includes("سه")) {
+      and.push({
+        OR: [
+          { category: "three-phase" },
+          { phase: { contains: "سه" } },
+          { phase: "three-phase" },
+        ],
+      });
+    }
+  }
+
+  // Shell type filter (cast-iron vs aluminum)
+  if (shellType && shellType !== "all") {
+    if (shellType === "cast-iron" || shellType === "castiron" || shellType.includes("چدن")) {
+      and.push({
+        OR: [
+          { shellType: "چدنی" },
+          { shellType: "cast-iron" },
+          { name: { contains: "چدنی" } },
+        ],
+      });
+    } else if (shellType === "aluminum" || shellType === "aluminium" || shellType.includes("آلومینیوم") || shellType.includes("الومینیوم")) {
+      and.push({
+        OR: [
+          { shellType: "آلومینیومی" },
+          { shellType: "الومینیومی" },
+          { shellType: "aluminum" },
+          { name: { contains: "آلومینیوم" } },
+        ],
+      });
+    }
+  }
 
   const variantFilters: Prisma.ProductVariantWhereInput[] = [];
   if (speed && speed !== "all") variantFilters.push({ speed });

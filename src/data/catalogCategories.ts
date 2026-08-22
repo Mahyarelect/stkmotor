@@ -38,11 +38,11 @@ export const CATALOG_CATEGORIES: CatalogCategory[] = [
   {
     name: "الکتروموتور",
     slug: "electromotor",
-    href: "/category/electromotor",
+    href: "/electromotors",
     icon: Cog,
     subCategories: [
-      { name: "الکتروموتور تک فاز", slug: "single-phase", href: "/category/electromotor/single-phase" },
-      { name: "الکتروموتور سه فاز", slug: "three-phase", href: "/category/electromotor/three-phase" },
+      { name: "الکتروموتور تک‌فاز", slug: "single-phase", href: "/electromotors/single-phase" },
+      { name: "الکتروموتور سه‌فاز", slug: "three-phase", href: "/electromotors/three-phase" },
     ],
   },
   {
