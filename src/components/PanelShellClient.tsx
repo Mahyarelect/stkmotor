@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
+  Layers,
   Settings,
   LogOut,
   Menu,
@@ -26,6 +27,11 @@ const NAV_ITEMS = [
     href: "/panel/dashboard",
     label: "داشبورد",
     icon: LayoutDashboard,
+  },
+  {
+    href: "/panel/categories",
+    label: "دسته‌بندی‌ها",
+    icon: Layers,
   },
   {
     href: "/panel/families",
