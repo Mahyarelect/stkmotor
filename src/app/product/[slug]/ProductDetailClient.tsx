@@ -35,6 +35,7 @@ interface Variant {
   powerKw: number;
   speed: string;
   mountingType?: string;
+  voltage?: string;
   price: number;
   weight: string;
   dimensions: string;
@@ -82,14 +83,6 @@ export default function ProductDetailClient({
 
   const slugRef = useRef<string>("");
 
-  // Resolve params
-  useEffect(() => {
-    params.then((p) => {
-      slugRef.current = p.slug;
-      fetchProduct(p.slug);
-    });
-  }, []);
-
   async function fetchProduct(slug: string) {
     setLoading(true);
     try {
@@ -104,6 +97,14 @@ export default function ProductDetailClient({
     }
     setLoading(false);
   }
+
+  // Resolve params
+  useEffect(() => {
+    params.then((p) => {
+      slugRef.current = p.slug;
+      fetchProduct(p.slug);
+    });
+  }, [params]);
 
   const selectedVariant = family?.variants.find((v) => v.id === selectedVariantId);
 
@@ -268,7 +269,7 @@ export default function ProductDetailClient({
                 <QuickSpec icon={Zap} label="توان" value={selectedVariant.power || "-"} />
                 <QuickSpec icon={Gauge} label="دور" value={selectedVariant.speed ? `${faNum(selectedVariant.speed)} RPM` : "-"} />
                 <QuickSpec icon={Ruler} label="سایز فریم" value={selectedVariant.size || "-"} />
-                <QuickSpec icon={FileText} label="ولتاژ" value={selectedVariant.voltage || "-"} />
+                <QuickSpec icon={FileText} label="ولتاژ" value={selectedVariant.voltage || (family.phase === "تک‌فاز" ? "220V" : family.phase === "سه‌فاز" ? "380V" : family.phase) || "-"} />
               </div>
             )}
 

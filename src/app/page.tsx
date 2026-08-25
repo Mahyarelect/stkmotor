@@ -88,7 +88,11 @@ export default function HomePage() {
   const fetchProducts = useCallback(
     async (pageNumber = 1, append = false) => {
       const requestId = ++requestSequence.current;
-      append ? setLoadingMore(true) : setLoading(true);
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
       try {
         const params = new URLSearchParams();
         if (categoryFilter !== "all") params.set("category", categoryFilter);
@@ -117,7 +121,11 @@ export default function HomePage() {
         }
       } finally {
         if (requestId === requestSequence.current) {
-          append ? setLoadingMore(false) : setLoading(false);
+          if (append) {
+            setLoadingMore(false);
+          } else {
+            setLoading(false);
+          }
         }
       }
     },
