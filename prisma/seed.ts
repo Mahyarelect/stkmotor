@@ -38,6 +38,7 @@ interface SeedVariant {
   power: string;
   powerKw: number;
   speed: string;
+  voltage?: string;
   mountingType: string;
   gearboxType: string;
   modelType: string;
@@ -241,6 +242,7 @@ async function main() {
         power: v.power,
         powerKw: v.powerKw,
         speed: v.speed,
+        voltage: v.voltage || "",
         mountingType: v.mountingType,
         gearboxType: v.gearboxType,
         modelType: v.modelType,
@@ -267,6 +269,7 @@ async function main() {
         power: v.power,
         powerKw: v.powerKw,
         speed: v.speed,
+        voltage: v.voltage || "",
         mountingType: v.mountingType,
         gearboxType: v.gearboxType,
         modelType: v.modelType,

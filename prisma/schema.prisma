@@ -19,6 +19,9 @@ model Category {
   families     ProductFamily[]
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
+
+  @@index([slug])
+  @@index([sortOrder])
 }
 
 model ProductFamily {
@@ -48,6 +51,8 @@ model ProductFamily {
   @@index([category, sortOrder])
   @@index([mainCategory, subCategory])
   @@index([level1Value, level2Value])
+  @@index([categoryId])
+  @@index([brand])
 }
 
 model ProductVariant {
@@ -55,10 +60,11 @@ model ProductVariant {
   familyId     String
   sku          String        @unique
   name         String        @default("")
-  size         String        @default("") // frame size: 80, 90, 100, 112, 132, etc.
+  size         String        @default("") // frame size: 56, 63, 71, 80, 90, 100, 112, 132, 160, etc.
   power        String        @default("") // "0.5HP", "2HP", "0.09kw", etc.
   powerKw      Float         @default(0)  // normalized power in kW
   speed        String        @default("") // "1400", "3000", "1000", "750"
+  voltage      String        @default("") // "220V", "380V", "220/380V", "380/660V"
   mountingType String        @default("") // "B3", "B35", "B34", "FC", "F", "N/A/P" (Note: B5 excluded per user instruction)
   
   // Gearbox attributes
@@ -76,7 +82,7 @@ model ProductVariant {
 
   // Accessories / Flange attributes
   brand        String        @default("") // "موتوژن", "الکتروژن", "چینی"
-  bodyMaterial String        @default("") // "چدن", "آلومینیوم", "استیل"
+  bodyMaterial String        @default("") // "چدن", "آلومینیوم", "استیل", "پلیمر"
   flangeType   String        @default("") // "فلنج", "نیم‌فلنج", "براکت عقب", "درب ترمینال", "فلنج خروجی"
   flangeLength String        @default("") // "استاندارد", "بلند", "کوتاه"
 
@@ -95,10 +101,18 @@ model ProductVariant {
   @@index([familyId, size])
   @@index([speed])
   @@index([powerKw])
+  @@index([voltage])
+  @@index([mountingType])
+  @@index([gearboxType])
   @@index([modelType])
   @@index([ratio])
   @@index([inputFrame])
+  @@index([pumpType])
   @@index([outletSize])
+  @@index([headMeter])
+  @@index([brand])
+  @@index([flangeType])
+  @@index([inStock, sortOrder])
 }
 
 model AdminUser {
