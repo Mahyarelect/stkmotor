@@ -1,0 +1,48 @@
+# Dependency and build output
+node_modules
+.next
+out
+build
+dist
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Environment and secrets
+.env
+.env*.local
+.env.local
+.env.development
+.env.test
+
+# IDE & Editor files
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Test and coverage artifacts
+coverage
+test-results
+playwright-report
+.playwright
+tests
+
+# Logs and runtime artifacts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log
+
+# Project specific non-production folders
+download
+upload
+mini-services
+.zscripts
+tool-results
+worklog.md

@@ -66,6 +66,60 @@ ADMIN_NAME="Site administrator"
 
 Never commit `.env`, and always replace development credentials before deployment.
 
+## Docker Deployment
+
+The project includes an optimized multi-stage Docker build with a non-root security profile and persistent SQLite storage.
+
+### Quick Start with Docker Compose
+
+```bash
+# Build and run container in background
+docker compose up --build -d
+
+# View real-time logs
+docker compose logs -f
+
+# Check container health status
+docker compose ps
+
+# Stop container
+docker compose down
+```
+
+The application will be available at [http://localhost:3000](http://localhost:3000).
+
+### Production Environment Variables
+
+You can configure production environment variables in a `.env` file or pass them directly to Docker Compose:
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `PORT` | Listening HTTP port | `3000` |
+| `DATABASE_URL` | SQLite file connection string | `file:/app/db/custom.db` |
+| `JWT_SECRET` | Secret key for JWT admin authentication (min 32 chars) | Generated / Custom |
+| `ADMIN_USERNAME` | Administrator panel username | `admin` |
+| `ADMIN_PASSWORD` | Administrator panel password | `Admin123456!` |
+| `ADMIN_NAME` | Administrator display name | `مدیر سایت` |
+
+### Cloud & VPS Deployment (Liara, ArvanCloud, etc.)
+
+For single-container cloud hosting:
+
+```bash
+# Build production image
+docker build -t stkmotor:latest .
+
+# Run with persistent volume for SQLite
+docker run -d \
+  --name stkmotor-app \
+  -p 3000:3000 \
+  -v $(pwd)/db:/app/db \
+  -e JWT_SECRET="your-strong-production-jwt-secret-min-32-chars" \
+  -e ADMIN_PASSWORD="your-secure-admin-password" \
+  --restart unless-stopped \
+  stkmotor:latest
+```
+
 ## Useful commands
 
 | Command | Purpose |
