@@ -12,16 +12,40 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOSTNAME=0.0.0.0
-      - DATABASE_URL=file:/app/db/custom.db
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-stkuser}:${POSTGRES_PASSWORD:-stkpassword}@db:5432/${POSTGRES_DB:-stkmotor}?schema=public
       - JWT_SECRET=${JWT_SECRET:-stkmotor-default-jwt-secret-replace-in-production-min-32-chars}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-Admin123456!}
       - ADMIN_NAME=${ADMIN_NAME:-مدیر سایت}
-    volumes:
-      - ./db:/app/db
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/stats"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 15s
+
+  db:
+    image: postgres:16-alpine
+    container_name: stkmotor-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-stkuser}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-stkpassword}
+      - POSTGRES_DB=${POSTGRES_DB:-stkmotor}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-stkuser} -d ${POSTGRES_DB:-stkmotor}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  postgres_data:
+    driver: local

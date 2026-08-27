@@ -1,6 +1,6 @@
 # ==============================================================================
-# STK Motors - Production Multi-stage Dockerfile
-# Optimized for minimal image size (< 250MB), fast startup, and non-root security.
+# STK Motors - Production Multi-stage Dockerfile (PostgreSQL)
+# Optimized for minimal image size, fast startup, and non-root security.
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
@@ -29,13 +29,13 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Generate Prisma Client and create optimized Next.js standalone bundle
+# Generate Prisma Client for PostgreSQL and create optimized Next.js standalone bundle
 RUN npx prisma generate
 RUN npm run build
 
-# Strip unused non-SQLite Prisma WASM files and source maps from standalone bundle
-RUN find /app/.next/standalone/node_modules/@prisma/client/runtime -name "*query_compiler_bg.*.wasm-base64*" ! -name "*sqlite*" -delete 2>/dev/null || true && \
-    find /app/.next/standalone/node_modules/@prisma/client/runtime -name "*query_engine_bg.*.wasm-base64*" ! -name "*sqlite*" -delete 2>/dev/null || true && \
+# Strip unused database query engine WASM files and source maps from standalone bundle
+RUN find /app/.next/standalone/node_modules/@prisma/client/runtime -name "*query_compiler_bg.*.wasm-base64*" ! -name "*postgresql*" -delete 2>/dev/null || true && \
+    find /app/.next/standalone/node_modules/@prisma/client/runtime -name "*query_engine_bg.*.wasm-base64*" ! -name "*postgresql*" -delete 2>/dev/null || true && \
     find /app/.next/standalone -name "*.map" -delete 2>/dev/null || true
 
 # ------------------------------------------------------------------------------
@@ -50,17 +50,15 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-ENV DATABASE_URL="file:/app/db/custom.db"
+ENV DATABASE_URL="postgresql://stkuser:stkpassword@db:5432/stkmotor?schema=public"
 
 # Create non-root system user for security
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs && \
-    mkdir -p /app/db && chown -R nextjs:nodejs /app/db
+    adduser --system --uid 1001 nextjs
 
 # Copy standalone bundle and essential runtime assets from builder stage
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nextjs:nodejs /app/db ./db
 
 USER nextjs
 

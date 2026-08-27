@@ -29,8 +29,8 @@ function writeValue(name, value) {
   }
 }
 
-if (!readValue("DATABASE_URL")) {
-  writeValue("DATABASE_URL", "file:../db/custom.db");
+if (!readValue("DATABASE_URL") || readValue("DATABASE_URL").startsWith("file:")) {
+  writeValue("DATABASE_URL", "postgresql://stkuser:stkpassword@127.0.0.1:5432/stkmotor?schema=public");
 }
 
 const currentSecret = readValue("JWT_SECRET");

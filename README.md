@@ -57,7 +57,7 @@ npm run dev
 The startup helpers create a local `.env` when needed. Important variables are:
 
 ```dotenv
-DATABASE_URL="file:../db/custom.db"
+DATABASE_URL="postgresql://stkuser:stkpassword@127.0.0.1:5432/stkmotor?schema=public"
 JWT_SECRET="replace-with-a-long-random-secret"
 ADMIN_USERNAME="admin"
 ADMIN_PASSWORD="change-this-before-production"
@@ -68,25 +68,25 @@ Never commit `.env`, and always replace development credentials before deploymen
 
 ## Docker Deployment
 
-The project includes an optimized multi-stage Docker build with a non-root security profile and persistent SQLite storage.
+The project includes an optimized multi-stage Docker build with a non-root security profile and an integrated **PostgreSQL 16** database container.
 
 ### Quick Start with Docker Compose
 
 ```bash
-# Build and run container in background
+# Build and run application and PostgreSQL database in background
 docker compose up --build -d
 
 # View real-time logs
 docker compose logs -f
 
-# Check container health status
+# Check container health status (both app and db)
 docker compose ps
 
-# Stop container
+# Stop containers
 docker compose down
 ```
 
-The application will be available at [http://localhost:3000](http://localhost:3000).
+The application will be available at [http://localhost:3000](http://localhost:3000) and PostgreSQL on port `5432`.
 
 ### Production Environment Variables
 
@@ -95,7 +95,10 @@ You can configure production environment variables in a `.env` file or pass them
 | Variable | Description | Default |
 | --- | --- | --- |
 | `PORT` | Listening HTTP port | `3000` |
-| `DATABASE_URL` | SQLite file connection string | `file:/app/db/custom.db` |
+| `POSTGRES_USER` | PostgreSQL username | `stkuser` |
+| `POSTGRES_PASSWORD` | PostgreSQL password | `stkpassword` |
+| `POSTGRES_DB` | PostgreSQL database name | `stkmotor` |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://stkuser:stkpassword@db:5432/stkmotor?schema=public` |
 | `JWT_SECRET` | Secret key for JWT admin authentication (min 32 chars) | Generated / Custom |
 | `ADMIN_USERNAME` | Administrator panel username | `admin` |
 | `ADMIN_PASSWORD` | Administrator panel password | `Admin123456!` |
@@ -103,17 +106,17 @@ You can configure production environment variables in a `.env` file or pass them
 
 ### Cloud & VPS Deployment (Liara, ArvanCloud, etc.)
 
-For single-container cloud hosting:
+For cloud hosting with an external managed PostgreSQL database:
 
 ```bash
 # Build production image
 docker build -t stkmotor:latest .
 
-# Run with persistent volume for SQLite
+# Run container connected to PostgreSQL
 docker run -d \
   --name stkmotor-app \
   -p 3000:3000 \
-  -v $(pwd)/db:/app/db \
+  -e DATABASE_URL="postgresql://user:pass@postgres-host:5432/dbname?schema=public" \
   -e JWT_SECRET="your-strong-production-jwt-secret-min-32-chars" \
   -e ADMIN_PASSWORD="your-secure-admin-password" \
   --restart unless-stopped \

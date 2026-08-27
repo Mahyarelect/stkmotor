@@ -7,8 +7,8 @@ import { PrismaClient } from "@prisma/client";
 const root = process.cwd();
 const seed = JSON.parse(await readFile(resolve(root, "prisma/seed-data.json"), "utf8"));
 const packageJson = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
-const databasePath = resolve(root, "db/custom.db").replaceAll("\\", "/");
-process.env.DATABASE_URL = `file:${databasePath}`;
+const defaultDatabaseUrl = "postgresql://stkuser:stkpassword@127.0.0.1:5432/stkmotor?schema=public";
+process.env.DATABASE_URL = process.env.DATABASE_URL || defaultDatabaseUrl;
 
 const expectedCategoryCounts = {
   electromotor: 265,
@@ -103,7 +103,7 @@ describe("runtime database integrity", () => {
   });
 
   test("database has no orphaned variants", async () => {
-    const rows = await db.$queryRawUnsafe("SELECT COUNT(*) AS count FROM ProductVariant v LEFT JOIN ProductFamily f ON f.id = v.familyId WHERE f.id IS NULL");
+    const rows = await db.$queryRawUnsafe('SELECT COUNT(*)::text AS count FROM "ProductVariant" v LEFT JOIN "ProductFamily" f ON f.id = v."familyId" WHERE f.id IS NULL');
     assert.equal(Number(rows[0].count), 0);
   });
 });
