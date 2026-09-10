@@ -7,6 +7,7 @@ import { PrismaClient } from "@prisma/client";
 const root = process.cwd();
 const seed = JSON.parse(await readFile(resolve(root, "prisma/seed-data.json"), "utf8"));
 const packageJson = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
+const mediaManifest = JSON.parse(await readFile(resolve(root, "src/data/product-media.json"), "utf8"));
 const defaultDatabaseUrl = "postgresql://stkuser:stkpassword@127.0.0.1:5432/stkmotor?schema=public";
 process.env.DATABASE_URL = process.env.DATABASE_URL || defaultDatabaseUrl;
 
@@ -84,6 +85,42 @@ describe("catalog seed integrity", () => {
       assert.ok(Number.isFinite(variant.powerKw) && variant.powerKw >= 0);
       assert.ok(Number.isSafeInteger(variant.price) && variant.price >= 0);
       assert.equal(typeof variant.inStock, "boolean");
+    }
+  });
+});
+
+describe("product media integrity", () => {
+  test("uploaded media only references canonical product SKUs", () => {
+    const canonicalSkus = new Set(seed.variants.map((variant) => String(variant.sku)));
+    const mediaSkus = Object.keys(mediaManifest);
+    assert.equal(mediaSkus.length, 100);
+    assert.deepEqual(mediaSkus.filter((sku) => !canonicalSkus.has(sku)), []);
+  });
+
+  test("all mapped media files exist and associations stay unique", async () => {
+    const { stat } = await import("node:fs/promises");
+    let imageAssociations = 0;
+    let videoAssociations = 0;
+    for (const media of Object.values(mediaManifest)) {
+      assert.equal(new Set(media.images).size, media.images.length);
+      assert.equal(new Set(media.videos).size, media.videos.length);
+      imageAssociations += media.images.length;
+      videoAssociations += media.videos.length;
+
+      for (const publicUrl of [...media.images, ...media.videos]) {
+        assert.match(publicUrl, /^\/media\/products\/assets\/[a-f0-9]{20}\.(webp|mp4)$/);
+        const file = resolve(root, "public", publicUrl.slice(1));
+        assert.ok((await stat(file)).size > 0, `${publicUrl} must not be empty`);
+      }
+    }
+    assert.deepEqual({ imageAssociations, videoAssociations }, { imageAssociations: 236, videoAssociations: 49 });
+  });
+
+  test("the three supplied electromotor fallback images are available", async () => {
+    const { stat } = await import("node:fs/promises");
+    for (let index = 1; index <= 3; index += 1) {
+      const file = resolve(root, `public/media/products/fallback/electromotor-${index}.png`);
+      assert.ok((await stat(file)).size > 0);
     }
   });
 });

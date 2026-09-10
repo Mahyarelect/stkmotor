@@ -1,13 +1,12 @@
 import { defineConfig } from "@playwright/test";
 import { existsSync } from "node:fs";
-import { resolve } from "node:path";
 
 const chromePaths = [
   "C:/Program Files/Google/Chrome/Application/chrome.exe",
   "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
 ];
 const hasSystemChrome = process.platform === "win32" && chromePaths.some(existsSync);
-const databasePath = resolve(process.cwd(), "db/custom.db").replaceAll("\\", "/");
+const databaseUrl = process.env.DATABASE_URL || "postgresql://stkuser:stkpassword@127.0.0.1:5432/stkmotor?schema=public";
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -32,7 +31,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: {
-      DATABASE_URL: `file:${databasePath}`,
+      DATABASE_URL: databaseUrl,
       JWT_SECRET: "test-only-secret-with-at-least-32-characters",
       NEXT_DIST_DIR: ".next-test",
       PORT: "3100",

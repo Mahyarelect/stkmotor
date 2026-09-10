@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { resolvedProductMedia } from "@/lib/product-media";
 
 const DEFAULT_PAGE_SIZE = 18;
 const MAX_PAGE_SIZE = 48;
@@ -205,6 +206,11 @@ export async function GET(request: NextRequest) {
       const key = variant.size || variant.id;
       if (!bySize.has(key)) bySize.set(key, variant);
     }
+    const variants = Array.from(bySize.values()).map((variant) => ({
+      ...variant,
+      price: Number(variant.price),
+      media: resolvedProductMedia(variant.sku, family.mainCategory, family.imageUrl),
+    }));
     return {
       id: family.id,
       slug: family.slug,
@@ -214,13 +220,13 @@ export async function GET(request: NextRequest) {
       category: family.category,
       phase: family.phase,
       shellType: family.shellType,
-      imageUrl: family.imageUrl,
+      imageUrl:
+        variants.find((variant) => variant.media.images[0]?.includes("/media/products/assets/"))?.media.images[0] ||
+        variants.find((variant) => variant.media.images[0])?.media.images[0] ||
+        family.imageUrl,
       sortOrder: family.sortOrder,
       variantCount: family._count.variants,
-      variants: Array.from(bySize.values()).map((variant) => ({
-        ...variant,
-        price: Number(variant.price),
-      })),
+      variants,
     };
   });
 

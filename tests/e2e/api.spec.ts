@@ -74,6 +74,21 @@ test("single-product API returns variants and handles unknown slugs", async ({ r
   expect((await request.get("/api/products/not-a-real-product")).status()).toBe(404);
 });
 
+test("product APIs expose valid SKU-specific image and video media", async ({ request }) => {
+  const family = await (await request.get("/api/products/single-phase-aluminum-1400")).json();
+  const variantsWithUploadedMedia = family.variants.filter(
+    (variant: { media: { images: string[]; videos: string[] } }) =>
+      variant.media.images.some((src) => src.includes("/media/products/assets/"))
+  );
+  expect(variantsWithUploadedMedia.length).toBeGreaterThan(0);
+  expect(family.variants.some((variant: { media: { videos: string[] } }) => variant.media.videos.length > 0)).toBe(true);
+
+  const fallbackFamily = await (await request.get("/api/products/three-phase-aluminum-750")).json();
+  expect(fallbackFamily.variants.every((variant: { media: { images: string[] } }) =>
+    variant.media.images[0]?.startsWith("/media/products/fallback/electromotor-")
+  )).toBe(true);
+});
+
 test("authentication API rejects malformed and incomplete payloads safely", async ({ request }) => {
   const missing = await request.post("/api/auth", { data: {} });
   expect(missing.status()).toBe(400);

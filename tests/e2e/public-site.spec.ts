@@ -72,6 +72,18 @@ test("product variant selection updates the selected state", async ({ page }) =>
   await expect(target).toHaveAttribute("aria-pressed", "true");
 });
 
+test("product detail renders its SKU image gallery and playable videos", async ({ page }) => {
+  await page.goto("/product/single-phase-aluminum-1400");
+  const gallery = page.getByRole("region", { name: /رسانه‌های/ });
+  const primaryImage = gallery.locator("img").first();
+  await expect(primaryImage).toBeVisible();
+  await expect.poll(() => primaryImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+  const videoChoice = gallery.getByRole("button", { name: /ویدیو/ }).first();
+  await expect(videoChoice).toBeVisible();
+  await videoChoice.click();
+  await expect(gallery.locator("video[controls]")).toBeVisible();
+});
+
 test("mobile navigation, filter drawer, and layouts remain usable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");

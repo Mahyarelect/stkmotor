@@ -7,7 +7,8 @@ Persian RTL catalog and administration panel for industrial products. The applic
 - Responsive Persian storefront with desktop and mobile navigation.
 - Multi-category catalog pages and shareable URL-based filters.
 - Category-specific product cards, specifications, pricing, availability, and WhatsApp inquiry links.
-- SQLite database managed through Prisma.
+- PostgreSQL database managed through Prisma.
+- SKU-specific image galleries and product videos with electromotor fallbacks.
 - Protected administration panel for families, variants, and public settings.
 - Branded loading, not-found, and application-error states.
 - Automated data-integrity, API, responsive UI, navigation, filter, and crash-regression tests.
@@ -17,6 +18,7 @@ Persian RTL catalog and administration panel for industrial products. The applic
 - Node.js 20 or newer.
 - npm.
 - Chrome, or a Playwright-supported Chromium installation, for browser tests.
+- Docker Desktop (or another PostgreSQL 16 instance) for local data and tests.
 
 ## Quick start
 
@@ -40,11 +42,13 @@ chmod +x start-local.sh
 ```
 
 The site runs at [http://localhost:3000](http://localhost:3000), and the admin login is at [http://localhost:3000/panel](http://localhost:3000/panel).
+The startup helper starts the PostgreSQL service through Docker Compose, waits for it to become healthy, synchronizes the schema and catalog, and then starts Next.js.
 
 ## Manual setup
 
 ```bash
 npm install
+docker compose up -d --wait db
 node scripts/prepare-local-env.mjs
 npm run db:generate
 npm run db:push
@@ -132,7 +136,7 @@ docker run -d \
 | `npm start` | Run the previously created standalone build |
 | `npm run typecheck` | Run strict TypeScript validation |
 | `npm run lint` | Run ESLint |
-| `npm run test:unit` | Validate seed data and SQLite integrity |
+| `npm run test:unit` | Validate seed data, PostgreSQL integrity, and product media |
 | `npm run test:e2e` | Run API and browser regression tests on port 3100 |
 | `npm test` | Run all automated tests |
 | `npm run check` | Run typecheck, lint, all tests, and production build |
@@ -169,9 +173,19 @@ Failure artifacts are written to `test-results/` and the HTML report to `playwri
 - `/panel` — administrator login.
 - `/api/products`, `/api/products/[slug]`, `/api/stats` — public catalog APIs.
 
+## Product media
+
+Product images and videos live in `public/media/products/`, while `src/data/product-media.json` maps each file to its exact SKU. The importer validates every filename against the canonical catalog, de-duplicates files by content hash, and refuses unmatched media:
+
+```bash
+node scripts/import-product-media.mjs --images <image-directory> --videos <video-directory> --fallback <motor-1.png> --fallback <motor-2.png> --fallback <motor-3.png>
+```
+
+The current catalog includes media for 100 SKUs: 236 image associations and 49 video associations. The three fallback photos are only used for electromotors without an uploaded image; unrelated pumps, gearboxes, and accessories never receive a motor image.
+
 ## Data
 
-The canonical import is stored in `prisma/seed-data.json` and is mirrored in `db/custom.db`:
+The canonical import is stored in `prisma/seed-data.json` and synchronized to PostgreSQL:
 
 | Category | Families | Variants |
 | --- | ---: | ---: |
@@ -187,7 +201,7 @@ Cleaned source CSV files are under `data/csv/`. Import and cleanup scripts shoul
 
 - Set a strong `JWT_SECRET` and administrator password.
 - Serve the standalone output behind HTTPS and a reverse proxy such as the included Caddy configuration.
-- Back up `db/custom.db` before schema or bulk catalog changes.
+- Back up the PostgreSQL database before schema or bulk catalog changes.
 - Run `npm run check` before every deployment.
 - Review `npm audit` findings deliberately; avoid automatic forced upgrades without regression testing.
 

@@ -10,6 +10,7 @@ interface ProductImageProps {
   className?: string;
   placeholderClassName?: string;
   iconSize?: number;
+  loading?: "eager" | "lazy";
 }
 
 export function ProductImage({
@@ -18,6 +19,7 @@ export function ProductImage({
   className = "h-full w-full object-contain",
   placeholderClassName = "text-gray-300",
   iconSize = 40,
+  loading = "lazy",
 }: ProductImageProps) {
   const normalizedSrc = normalizeProductImageUrl(src);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export function ProductImage({
       src={normalizedSrc}
       alt={alt}
       className={className}
-      loading="lazy"
+      loading={loading}
       decoding="async"
       onError={() => setFailedSrc(normalizedSrc)}
     />

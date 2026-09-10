@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { resolvedProductMedia } from "@/lib/product-media";
 
 // GET /api/products/[slug] — single product family with all variants
 export async function GET(
@@ -22,12 +23,18 @@ export async function GET(
   }
 
   // Serialize BigInt
+  const variants = family.variants.map((v) => ({
+    ...v,
+    price: Number(v.price),
+    media: resolvedProductMedia(v.sku, family.mainCategory, family.imageUrl),
+  }));
   const serialized = {
     ...family,
-    variants: family.variants.map((v) => ({
-      ...v,
-      price: Number(v.price),
-    })),
+    imageUrl:
+      variants.find((variant) => variant.media.images[0]?.includes("/media/products/assets/"))?.media.images[0] ||
+      variants.find((variant) => variant.media.images[0])?.media.images[0] ||
+      family.imageUrl,
+    variants,
   };
 
   return NextResponse.json(serialized);

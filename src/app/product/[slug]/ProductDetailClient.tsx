@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   Ruler,
   FileText,
+  Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -56,6 +57,10 @@ interface Variant {
   dimensions: string;
   inStock: boolean;
   sortOrder: number;
+  media: {
+    images: string[];
+    videos: string[];
+  };
 }
 
 interface ProductFamily {
@@ -111,7 +116,12 @@ export default function ProductDetailClient({
         .then((response) => response.ok ? response.json() : { products: [] })
         .then((result) => setRelatedProducts((result.products || []).filter((item: ProductFamilyData) => item.slug !== data.slug).slice(0, 3)))
         .catch(() => setRelatedProducts([]));
-      const first = data.variants.find((v: Variant) => v.inStock) || data.variants[0];
+      const first =
+        data.variants.find((v: Variant) => v.inStock && v.media.videos.length > 0) ||
+        data.variants.find((v: Variant) => v.inStock && v.media.images[0]?.includes("/media/products/assets/")) ||
+        data.variants.find((v: Variant) => v.media.videos.length > 0) ||
+        data.variants.find((v: Variant) => v.inStock) ||
+        data.variants[0];
       if (first) setSelectedVariantId(first.id);
     } catch (err) {
       console.error(err);
@@ -248,13 +258,13 @@ export default function ProductDetailClient({
         <div className="grid lg:grid-cols-2 gap-10">
           {/* ─── LEFT: Image + Variant Selector ─── */}
           <div className="min-w-0">
-            {/* Product image. Local image paths are served from /public. */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl h-80 lg:h-[420px] flex items-center justify-center mb-6 relative overflow-hidden">
-              <ProductImage
-                src={family.imageUrl}
-                alt={family.name}
-                className="h-full w-full object-contain p-6"
-                iconSize={56}
+            <div className="relative mb-6">
+              <ProductMediaGallery
+                key={selectedVariant?.sku || family.slug}
+                name={family.name}
+                sku={selectedVariant?.sku || ""}
+                images={selectedVariant?.media.images || (family.imageUrl ? [family.imageUrl] : [])}
+                videos={selectedVariant?.media.videos || []}
               />
               <Badge
                 className={`absolute top-4 right-4 ${
@@ -432,7 +442,7 @@ export default function ProductDetailClient({
                   </tr>
                 </thead>
                 <tbody>
-                  {family.variants.map((v, i) => (
+                  {family.variants.map((v) => (
                     <tr
                       key={v.id}
                       className={`border-t border-gray-100 cursor-pointer transition-colors ${
@@ -514,6 +524,77 @@ function QuickSpec({ icon: Icon, label, value }: { icon: React.ElementType; labe
       <p className="text-[10px] text-gray-400">{label}</p>
       <p className="text-sm font-bold text-gray-800 num-en">{value}</p>
     </div>
+  );
+}
+
+function ProductMediaGallery({
+  name,
+  sku,
+  images,
+  videos,
+}: {
+  name: string;
+  sku: string;
+  images: string[];
+  videos: string[];
+}) {
+  const items = [
+    ...images.map((src) => ({ src, type: "image" as const })),
+    ...videos.map((src) => ({ src, type: "video" as const })),
+  ];
+  const [activeIndex, setActiveIndex] = useState(0);
+  const active = items[activeIndex] || items[0];
+
+  return (
+    <section aria-label={`رسانه‌های ${name}`}>
+      <div className="flex h-80 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 lg:h-[420px]">
+        {active?.type === "video" ? (
+          <video
+            key={active.src}
+            src={active.src}
+            className="h-full w-full bg-slate-950 object-contain"
+            controls
+            playsInline
+            preload="metadata"
+            aria-label={`ویدیوی ${name} با کد ${sku}`}
+          />
+        ) : (
+          <ProductImage
+            src={active?.src}
+            alt={`${name}${sku ? ` - کد ${sku}` : ""}`}
+            className="h-full w-full object-contain p-5 sm:p-6"
+            iconSize={56}
+            loading="eager"
+          />
+        )}
+      </div>
+
+      {items.length > 1 && (
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-2" role="list" aria-label="انتخاب تصویر یا ویدیو">
+          {items.map((item, index) => (
+            <button
+              key={`${item.type}-${item.src}`}
+              type="button"
+              onClick={() => setActiveIndex(index)}
+              aria-label={`${item.type === "image" ? "تصویر" : "ویدیو"} ${faNum(index + 1)} از ${faNum(items.length)}`}
+              aria-pressed={activeIndex === index}
+              className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 bg-gray-50 transition-colors sm:h-20 sm:w-20 ${
+                activeIndex === index ? "border-blue-600 ring-2 ring-blue-100" : "border-gray-200 hover:border-blue-300"
+              }`}
+            >
+              {item.type === "image" ? (
+                <ProductImage src={item.src} alt="" className="h-full w-full object-contain p-1" iconSize={18} />
+              ) : (
+                <span className="flex h-full w-full flex-col items-center justify-center bg-slate-900 text-white">
+                  <Play size={20} fill="currentColor" />
+                  <span className="mt-1 text-[9px]">ویدیو</span>
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 

@@ -31,6 +31,10 @@ export interface Variant {
   bodyMaterial?: string;
   flangeType?: string;
   flangeLength?: string;
+  media?: {
+    images: string[];
+    videos: string[];
+  };
 }
 
 export interface ProductFamilyData {
@@ -118,7 +122,11 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
       {/* Product Image Header */}
       <div className="relative bg-gradient-to-br from-gray-50 to-slate-100 h-40 sm:h-44 flex items-center justify-center overflow-hidden border-b border-gray-100">
         <ProductImage
-          src={family.imageUrl}
+          src={
+            activeVariant?.media?.images[0]?.includes("/media/products/assets/")
+              ? activeVariant.media.images[0]
+              : family.imageUrl || activeVariant?.media?.images[0]
+          }
           alt={family.name}
           className="h-full w-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.04]"
           iconSize={40}
