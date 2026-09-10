@@ -116,7 +116,7 @@ describe("product media integrity", () => {
     assert.deepEqual({ imageAssociations, videoAssociations }, { imageAssociations: 236, videoAssociations: 49 });
   });
 
-  test("the three supplied electromotor fallback images are available", async () => {
+  test("the three supplied catalog fallback images are available", async () => {
     const { stat } = await import("node:fs/promises");
     for (let index = 1; index <= 3; index += 1) {
       const file = resolve(root, `public/media/products/fallback/electromotor-${index}.png`);

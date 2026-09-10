@@ -83,10 +83,12 @@ test("product APIs expose valid SKU-specific image and video media", async ({ re
   expect(variantsWithUploadedMedia.length).toBeGreaterThan(0);
   expect(family.variants.some((variant: { media: { videos: string[] } }) => variant.media.videos.length > 0)).toBe(true);
 
-  const fallbackFamily = await (await request.get("/api/products/three-phase-aluminum-750")).json();
-  expect(fallbackFamily.variants.every((variant: { media: { images: string[] } }) =>
-    variant.media.images[0]?.startsWith("/media/products/fallback/electromotor-")
-  )).toBe(true);
+  for (const slug of ["three-phase-aluminum-750", "worm-gearbox-vf", "pump-surface-electropump", "flange-motogen"]) {
+    const fallbackFamily = await (await request.get(`/api/products/${slug}`)).json();
+    expect(fallbackFamily.variants.every((variant: { media: { images: string[] } }) =>
+      variant.media.images[0]?.startsWith("/media/products/fallback/electromotor-")
+    )).toBe(true);
+  }
 });
 
 test("authentication API rejects malformed and incomplete payloads safely", async ({ request }) => {

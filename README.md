@@ -8,7 +8,7 @@ Persian RTL catalog and administration panel for industrial products. The applic
 - Multi-category catalog pages and shareable URL-based filters.
 - Category-specific product cards, specifications, pricing, availability, and WhatsApp inquiry links.
 - PostgreSQL database managed through Prisma.
-- SKU-specific image galleries and product videos with electromotor fallbacks.
+- SKU-specific image galleries and product videos with catalog-wide fallback images.
 - Protected administration panel for families, variants, and public settings.
 - Branded loading, not-found, and application-error states.
 - Automated data-integrity, API, responsive UI, navigation, filter, and crash-regression tests.
@@ -181,7 +181,7 @@ Product images and videos live in `public/media/products/`, while `src/data/prod
 node scripts/import-product-media.mjs --images <image-directory> --videos <video-directory> --fallback <motor-1.png> --fallback <motor-2.png> --fallback <motor-3.png>
 ```
 
-The current catalog includes media for 100 SKUs: 236 image associations and 49 video associations. The three fallback photos are only used for electromotors without an uploaded image; unrelated pumps, gearboxes, and accessories never receive a motor image.
+The current catalog includes media for 100 SKUs: 236 image associations and 49 video associations. Any variant without its own uploaded image uses one of the three supplied fallback photos, selected deterministically by SKU so every product card and detail page has an image.
 
 ## Data
 

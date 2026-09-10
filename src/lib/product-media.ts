@@ -21,14 +21,12 @@ export function productMediaForSku(sku?: string | null): ProductMedia {
 
 export function productImageForVariant(
   sku: string | null | undefined,
-  mainCategory: string,
+  _mainCategory: string,
   familyImage?: string | null
 ): string {
   const uploadedImage = productMediaForSku(sku).images[0];
   if (uploadedImage) return uploadedImage;
   if (familyImage?.trim()) return familyImage;
-  if (mainCategory !== "electromotor") return "";
-
   const value = [...String(sku || "")].reduce((sum, digit) => sum + Number(digit || 0), 0);
   return ELECTROMOTOR_FALLBACKS[value % ELECTROMOTOR_FALLBACKS.length];
 }

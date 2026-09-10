@@ -81,7 +81,10 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
   );
 
   const firstVariant =
-    family.variants.find((variant) => variant.inStock) || family.variants[0];
+    family.variants.find((variant) => variant.inStock && variant.media?.images[0]?.includes("/media/products/assets/")) ||
+    family.variants.find((variant) => variant.media?.images[0]?.includes("/media/products/assets/")) ||
+    family.variants.find((variant) => variant.inStock) ||
+    family.variants[0];
   const [selectedSize, setSelectedSize] = useState(firstVariant?.size || "");
   const activeVariant =
     variantsBySize.get(selectedSize) || firstVariant || family.variants[0];
@@ -122,11 +125,7 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
       {/* Product Image Header */}
       <div className="relative bg-gradient-to-br from-gray-50 to-slate-100 h-40 sm:h-44 flex items-center justify-center overflow-hidden border-b border-gray-100">
         <ProductImage
-          src={
-            activeVariant?.media?.images[0]?.includes("/media/products/assets/")
-              ? activeVariant.media.images[0]
-              : family.imageUrl || activeVariant?.media?.images[0]
-          }
+          src={activeVariant?.media?.images[0] || family.imageUrl}
           alt={family.name}
           className="h-full w-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.04]"
           iconSize={40}
