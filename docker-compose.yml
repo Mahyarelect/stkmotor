@@ -20,6 +20,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - product_uploads:/app/public/products
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/stats"]
       interval: 30s
@@ -48,4 +50,6 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  product_uploads:
     driver: local

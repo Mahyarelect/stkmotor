@@ -9,7 +9,7 @@ Persian RTL catalog and administration panel for industrial products. The applic
 - Category-specific product cards, specifications, pricing, availability, and WhatsApp inquiry links.
 - PostgreSQL database managed through Prisma.
 - SKU-specific image galleries and product videos with catalog-wide fallback images.
-- Protected administration panel for families, variants, and public settings.
+- Protected administration panel for families, variants, product media, bulk pricing, price history, and public settings.
 - Branded loading, not-found, and application-error states.
 - Automated data-integrity, API, responsive UI, navigation, filter, and crash-regression tests.
 
@@ -171,6 +171,7 @@ Failure artifacts are written to `test-results/` and the HTML report to `playwri
 - `/category/[category]/[[...slug]]` — gearbox, pump, and accessory catalogs.
 - `/product/[slug]` — product specifications and variants.
 - `/panel` — administrator login.
+- `/panel/pricing` — CSV/XLSX price import, filtered bulk adjustments, previews, and audit history.
 - `/api/products`, `/api/products/[slug]`, `/api/stats` — public catalog APIs.
 
 ## Product media
@@ -182,6 +183,12 @@ node scripts/import-product-media.mjs --images <image-directory> --videos <video
 ```
 
 The current catalog includes media for 100 SKUs: 236 image associations and 49 video associations. Any variant without its own uploaded image uses one of the three supplied fallback photos, selected deterministically by SKU so every product card and detail page has an image.
+
+Administrators can also upload JPEG, PNG, or WebP images in the product create/edit forms. Uploads are validated, resized to fit within 1600×1600, converted to WebP, and stored under `public/products/<slug>/`. Docker Compose persists these runtime uploads in the `product_uploads` volume.
+
+## Bulk pricing
+
+The pricing page accepts CSV or XLSX files up to 10 MB and 5,000 rows. Files need `SKU` and `price` columns; Persian equivalents such as `کد کالا` and `قیمت جدید` are accepted. Every import first produces a comparison preview and reports missing SKUs, invalid rows, duplicates, and unchanged prices. Percentage or fixed-amount updates can also be filtered by category and brand. Applied changes are recorded individually with old/new values, method, administrator, and timestamp.
 
 ## Data
 

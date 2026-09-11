@@ -131,3 +131,20 @@ model SiteSetting {
   label String @default("")
   group String @default("general") // "general", "contact", "social"
 }
+
+model PriceChangeLog {
+  id          String   @id @default(cuid())
+  sku         String
+  productName String   @default("")
+  category    String   @default("")
+  oldPrice    BigInt
+  newPrice    BigInt
+  source      String
+  note        String   @default("")
+  adminId     String   @default("")
+  adminName   String   @default("")
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([sku, createdAt])
+}

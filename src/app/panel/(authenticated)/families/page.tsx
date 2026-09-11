@@ -27,6 +27,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { ProductImageUploader } from "@/components/admin/ProductImageUploader";
 
 interface Family {
   id: string;
@@ -249,14 +250,11 @@ export default function FamiliesPage() {
                   />
                 </div>
                 <div className="col-span-2">
-                  <Label>مسیر تصویر (داخل public)</Label>
-                  <Input
+                  <Label className="mb-1 block">تصویر محصول</Label>
+                  <ProductImageUploader
+                    slug={form.slug}
                     value={form.imageUrl}
-                    onChange={(e) =>
-                      setForm({ ...form, imageUrl: e.target.value })
-                    }
-                    placeholder="products/motor.webp"
-                    dir="ltr"
+                    onChange={(imageUrl) => setForm({ ...form, imageUrl })}
                   />
                 </div>
                 <div className="col-span-2">

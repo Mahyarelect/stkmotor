@@ -105,3 +105,26 @@ test("admin login is reachable and protected APIs reject anonymous access", asyn
   const response = await request.get("/api/admin/families");
   expect(response.status()).toBe(401);
 });
+
+test("admin pricing preview and product image uploader are usable", async ({ page }) => {
+  await page.goto("/panel");
+  await page.getByLabel("نام کاربری").fill("admin");
+  await page.getByLabel("رمز عبور").fill("Admin123456!");
+  await page.getByRole("button", { name: "ورود به پنل" }).click();
+  await expect(page).toHaveURL(/\/panel\/dashboard/);
+
+  await page.getByRole("button", { name: "مدیریت قیمت‌ها" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "مدیریت قیمت‌ها" })).toBeVisible();
+  await page.locator("select").first().selectOption("accessories");
+  await page.locator('input[type="number"]').fill("1");
+  await page.getByRole("button", { name: "ساخت پیش‌نمایش" }).click();
+  await expect(page.getByText(/پیش‌نمایش \d+ تغییر از 94 محصول آماده شد/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "تأیید و ثبت" })).toBeVisible();
+
+  const familyResponse = await page.request.get("/api/admin/families");
+  const families = await familyResponse.json();
+  await page.goto(`/panel/families/${families[0].id}`);
+  await page.getByRole("button", { name: "ویرایش" }).click();
+  await expect(page.getByRole("button", { name: /تصویر را بکشید و رها کنید/ })).toBeVisible();
+  await expect(page.locator('input[type="file"][accept*="image/webp"]')).toHaveCount(1);
+});

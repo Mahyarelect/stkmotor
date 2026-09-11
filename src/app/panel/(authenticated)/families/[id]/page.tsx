@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ProductImageUploader } from "@/components/admin/ProductImageUploader";
 import {
   Table,
   TableBody,
@@ -355,15 +356,12 @@ export default function FamilyDetailPage() {
                   dir="ltr"
                 />
               </div>
-              <div>
-                <Label className="text-xs">آدرس تصویر</Label>
-                <Input
+              <div className="sm:col-span-2">
+                <Label className="mb-1 block text-xs">تصویر محصول</Label>
+                <ProductImageUploader
+                  slug={editForm.slug}
                   value={editForm.imageUrl}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, imageUrl: e.target.value })
-                  }
-                  className="mt-1"
-                  dir="ltr"
+                  onChange={(imageUrl) => setEditForm({ ...editForm, imageUrl })}
                 />
               </div>
               <div className="sm:col-span-2">

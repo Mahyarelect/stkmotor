@@ -104,3 +104,33 @@ test("authentication API rejects malformed and incomplete payloads safely", asyn
   });
   expect(malformed.status()).toBe(400);
 });
+
+test("admin pricing and upload APIs reject anonymous requests", async ({ request }) => {
+  expect((await request.get("/api/admin/pricing")).status()).toBe(401);
+  expect((await request.post("/api/admin/pricing", { data: { type: "bulk", action: "preview", adjustmentType: "percentage", value: 10 } })).status()).toBe(401);
+  expect((await request.post("/api/admin/upload", { multipart: { slug: "test", file: { name: "test.png", mimeType: "image/png", buffer: Buffer.from("not-an-image") } } })).status()).toBe(401);
+});
+
+test("authenticated admins can preview pricing and upload optimized product images", async ({ request }) => {
+  const login = await request.post("/api/auth", { data: { username: "admin", password: "Admin123456!" } });
+  expect(login.status()).toBe(200);
+
+  const preview = await request.post("/api/admin/pricing", {
+    data: { type: "bulk", action: "preview", adjustmentType: "percentage", value: 1, category: "accessories" },
+  });
+  expect(preview.status()).toBe(200);
+  const previewBody = await preview.json();
+  expect(previewBody.summary.matched).toBeGreaterThan(0);
+  expect(Array.isArray(previewBody.changes)).toBe(true);
+
+  const onePixelPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64");
+  const upload = await request.post("/api/admin/upload", {
+    multipart: { slug: "e2e-upload-test", file: { name: "motor.png", mimeType: "image/png", buffer: onePixelPng } },
+  });
+  expect(upload.status()).toBe(201);
+  const uploaded = await upload.json();
+  expect(uploaded.url).toMatch(/^\/products\/e2e-upload-test\/.+\.webp$/);
+  expect(uploaded.width).toBe(1);
+  expect(uploaded.height).toBe(1);
+  expect((await request.delete(`/api/admin/upload?url=${encodeURIComponent(uploaded.url)}`)).status()).toBe(200);
+});
