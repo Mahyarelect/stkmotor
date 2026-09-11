@@ -52,8 +52,11 @@ for (const [category, subCategory, total] of [
 for (const [category, filter] of [
   ["gearbox", "level1=حلزونی"],
   ["gearbox", "level1=حلزونی&level2=شافت‌دار"],
+  ["gearbox", "level1=حلزونی&level2=فلنج‌دار"],
+  ["pump", "level1=الکتروپمپ"],
   ["pump", "level1=کف‌کش"],
   ["accessories", "level1=فلنج&level2=موتوژن"],
+  ["accessories", "level1=درب%20ترمینال"],
   ["electromotor", "level1=تک‌فاز&level2=چدنی"],
 ] as const) {
   test(`specialized ${category} facets (${filter}) return matching results`, async ({ request }) => {
