@@ -15,14 +15,14 @@ const FILTERS: Record<string, { level1: Option[]; level2: Record<string, Option[
   },
   gearbox: {
     level1: [{ value: "حلزونی", label: "حلزونی" }, { value: "مکعبی", label: "مکعبی" }, { value: "شافت مستقیم", label: "شافت مستقیم" }],
-    level2: { "حلزونی": [{ value: "شافت‌دار", label: "VF شافت‌دار" }, { value: "فلنج‌دار (هالو شافت)", label: "MVF فلنج‌دار" }], "مکعبی": [], "شافت مستقیم": [] },
+    level2: { "حلزونی": [{ value: "شافت‌دار", label: "VF شافت‌دار" }, { value: "فلنج‌دار", label: "MVF فلنج‌دار" }], "مکعبی": [], "شافت مستقیم": [] },
   },
   pump: {
     level1: [{ value: "الکتروپمپ", label: "الکتروپمپ" }, { value: "کف‌کش", label: "کف‌کش" }, { value: "لجن‌کش", label: "لجن‌کش" }, { value: "شناور", label: "شناور" }, { value: "پمپ دنده‌ای", label: "دنده‌ای" }, { value: "کله پمپ اسید", label: "پمپ اسید" }],
     level2: {},
   },
   accessories: {
-    level1: [{ value: "فلنج", label: "فلنج" }, { value: "براکت عقب", label: "براکت عقب" }, { value: "فلنج خروجی", label: "فلنج خروجی" }],
+    level1: [{ value: "فلنج", label: "فلنج" }, { value: "براکت عقب", label: "براکت عقب" }, { value: "فلنج خروجی", label: "فلنج خروجی" }, { value: "درب ترمینال", label: "درب ترمینال" }],
     level2: { "فلنج": [{ value: "موتوژن", label: "موتوژن" }, { value: "الکتروژن", label: "الکتروژن" }, { value: "چینی", label: "چینی" }] },
   },
 };
