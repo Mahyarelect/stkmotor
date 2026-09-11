@@ -39,16 +39,47 @@ export async function GET(request: NextRequest) {
   }
 
   if (level1) {
-    if (category === "gearbox") variantFilters.push({ gearboxType: level1 });
-    else if (category === "pump") variantFilters.push({ pumpType: level1 });
-    else if (category === "accessories") variantFilters.push({ flangeType: level1 });
-    else and.push({ OR: [{ level1Value: level1 }, { category: level1 }, { phase: level1 }] });
+    if (category === "gearbox") {
+      if (level1 === "حلزونی") {
+        variantFilters.push({ gearboxType: { contains: "حلزونی" } });
+      } else {
+        variantFilters.push({ gearboxType: level1 });
+      }
+    } else if (category === "pump") {
+      if (level1 === "الکتروپمپ") {
+        and.push({
+          OR: [
+            { slug: "pump-surface-electropump" },
+            { category: "surface-pump" },
+            { name: { contains: "الکتروپمپ" } },
+          ],
+        });
+      } else {
+        variantFilters.push({ pumpType: level1 });
+      }
+    } else if (category === "accessories") {
+      if (level1 === "فلنج") {
+        variantFilters.push({ flangeType: { contains: "فلنج" } });
+      } else if (level1.includes("ترمینال")) {
+        variantFilters.push({ flangeType: { contains: "ترمینال" } });
+      } else {
+        variantFilters.push({ flangeType: level1 });
+      }
+    } else {
+      and.push({ OR: [{ level1Value: level1 }, { category: level1 }, { phase: level1 }] });
+    }
   }
 
   if (level2) {
-    if (category === "gearbox") variantFilters.push({ inputType: level2 });
-    else if (category === "accessories") variantFilters.push({ brand: level2 });
-    else if (category === "electromotor") {
+    if (category === "gearbox") {
+      if (level2.includes("فلنج")) {
+        variantFilters.push({ inputType: { contains: "فلنج" } });
+      } else {
+        variantFilters.push({ inputType: level2 });
+      }
+    } else if (category === "accessories") {
+      variantFilters.push({ brand: level2 });
+    } else if (category === "electromotor") {
       if (level2.includes("چدن")) and.push({ OR: [{ shellType: { contains: "چدن" } }, { name: { contains: "چدن" } }] });
       else if (level2.includes("آلومینیوم") || level2.includes("الومینیوم")) {
         and.push({ OR: [{ shellType: { contains: "لومینیوم" } }, { name: { contains: "لومینیوم" } }] });
