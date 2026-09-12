@@ -28,6 +28,11 @@ import { ProductCard, ProductFamilyData } from "@/components/product/ProductCard
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
+import {
+  ProductLeadModal,
+  ProductLeadFloatingButton,
+  ProductLeadTriggerButton,
+} from "@/components/product/ProductLeadModal";
 
 /* ─────────────────────────── Types ─────────────────────────── */
 interface Variant {
@@ -102,6 +107,7 @@ export default function ProductDetailClient({
   const [loading, setLoading] = useState(true);
   const [selectedVariantId, setSelectedVariantId] = useState<string>("");
   const [relatedProducts, setRelatedProducts] = useState<ProductFamilyData[]>([]);
+  const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
 
   const slugRef = useRef<string>("");
 
@@ -373,14 +379,18 @@ export default function ProductDetailClient({
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap gap-3 mb-8">
+              <ProductLeadTriggerButton
+                onClick={() => setIsLeadModalOpen(true)}
+                className="px-6 rounded-xl"
+              />
               <a href={phoneLink}>
-                <Button size="lg" className="bg-blue-700 hover:bg-blue-800 text-white font-semibold px-8">
+                <Button size="lg" variant="outline" className="border-blue-200 text-blue-800 hover:bg-blue-50 font-semibold px-6 rounded-xl">
                   <Phone size={16} className="ml-1.5" />
-                  تماس برای مشاوره
+                  تماس تلفنی
                 </Button>
               </a>
               <a href={inquiryLink} target="_blank" rel="noopener">
-                <Button size="lg" variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8">
+                <Button size="lg" variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 rounded-xl">
                   <MessageCircle size={16} className="ml-1.5" />
                   واتساپ
                 </Button>
@@ -509,6 +519,31 @@ export default function ProductDetailClient({
           </Link>
         </div>
       </div>
+
+      {/* ─── Lead Capture Ad Popup & Floating Button ─── */}
+      <ProductLeadModal
+        productTitle={family.name}
+        productSlug={family.slug}
+        productSku={selectedVariant?.sku}
+        variantDetails={
+          selectedVariant
+            ? [
+                selectedVariant.power ? `توان: ${selectedVariant.power}` : null,
+                selectedVariant.speed ? `دور: ${selectedVariant.speed} RPM` : null,
+                selectedVariant.size ? `سایز فریم: ${selectedVariant.size}` : null,
+                selectedVariant.mountingType ? `نحوه نصب: ${selectedVariant.mountingType}` : null,
+              ]
+                .filter(Boolean)
+                .join(" | ")
+            : ""
+        }
+        isOpen={isLeadModalOpen}
+        onOpenChange={setIsLeadModalOpen}
+        autoTriggerDelayMs={5000}
+        enableExitIntent={true}
+      />
+
+      <ProductLeadFloatingButton onClick={() => setIsLeadModalOpen(true)} />
 
       {/* ─── Footer ─── */}
       <SiteFooter />
