@@ -137,3 +137,44 @@ test("authenticated admins can preview pricing and upload optimized product imag
   expect(uploaded.height).toBe(1);
   expect((await request.delete(`/api/admin/upload?url=${encodeURIComponent(uploaded.url)}`)).status()).toBe(200);
 });
+
+test("leads API validates input and accepts product inquiries for Didar CRM", async ({ request }) => {
+  // Test invalid phone
+  const badPhone = await request.post("/api/leads", {
+    data: {
+      fullName: "تست آزمایشی",
+      phone: "12345",
+    },
+  });
+  expect(badPhone.status()).toBe(400);
+  const badPhoneBody = await badPhone.json();
+  expect(badPhoneBody.success).toBe(false);
+
+  // Test missing name
+  const badName = await request.post("/api/leads", {
+    data: {
+      fullName: "",
+      phone: "09121111111",
+    },
+  });
+  expect(badName.status()).toBe(400);
+
+  // Test valid lead submission with Persian digits and punctuation
+  const valid = await request.post("/api/leads", {
+    data: {
+      fullName: "مهدی تستی",
+      phone: "۰۹۹۹.۹۹۹.۹۹۹۹",
+      company: "شرکت تست",
+      message: "تست ارسال استعلام به CRM با اعداد فارسی و نقطه",
+      productTitle: "الکتروموتور تست STK",
+      productSku: "STK-TEST",
+      productUrl: "http://localhost:3000/product/test",
+      variantDetails: "توان: 5.5kW",
+    },
+  });
+  expect(valid.status()).toBe(200);
+  const validBody = await valid.json();
+  expect(validBody.success).toBe(true);
+  expect(validBody.contactId).toBeTruthy();
+});
+

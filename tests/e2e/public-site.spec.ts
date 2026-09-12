@@ -14,8 +14,13 @@ function watchRuntimeErrors(page: Page) {
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
     if (message.type() === "error") {
+      const text = message.text();
+      // Ignore transient third-party external resource connection failures (e.g. Google Fonts)
+      if (text.includes("fonts.googleapis.com") || text.includes("fonts.gstatic.com")) {
+        return;
+      }
       const source = message.location().url;
-      errors.push(source ? `${message.text()} (${source})` : message.text());
+      errors.push(source ? `${text} (${source})` : text);
     }
   });
   return errors;
@@ -128,3 +133,62 @@ test("admin pricing preview and product image uploader are usable", async ({ pag
   await expect(page.getByRole("button", { name: /تصویر را بکشید و رها کنید/ })).toBeVisible();
   await expect(page.locator('input[type="file"][accept*="image/webp"]')).toHaveCount(1);
 });
+
+test("product page displays lead capture popup form and accepts inquiries", async ({ page }) => {
+  await page.goto("/product/worm-gearbox-vf");
+
+  // Verify the trigger button is visible in the CTA section
+  const triggerBtn = page.getByRole("button", { name: /استعلام آنلاین قیمت و پیش‌فاکتور/ });
+  await expect(triggerBtn).toBeVisible();
+
+  // Verify floating button is visible
+  const floatingBtn = page.getByRole("button", { name: /استعلام فوری قیمت و پیش فاکتور/ });
+  await expect(floatingBtn).toBeVisible();
+
+  // Click trigger to open modal
+  await triggerBtn.click();
+
+  // Modal dialog should appear
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "دریافت پیش‌فاکتور رسمی و بهترین قیمت روز" })).toBeVisible();
+
+  // Fill in the form
+  await page.getByLabel(/نام و نام خانوادگی/).fill("مهدی تستی");
+  await page.getByLabel(/شماره همراه/).fill("09121111111");
+  await page.getByLabel(/نام شرکت/).fill("کارگاه تولیدی تست");
+  await page.getByLabel(/توضیحات/).fill("درخواست پیش‌فاکتور ۲ دستگاه");
+
+  // Mock /api/leads so e2e test doesn't depend on external network latency
+  await page.route("**/api/leads", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: true,
+        message: "درخواست شما با موفقیت در سیستم ثبت شد!",
+        contactId: "mock-contact-id",
+        dealId: "mock-deal-id",
+      }),
+    });
+  });
+
+  // Submit the form
+  await page.getByRole("button", { name: /ثبت درخواست و تماس کارشناس/ }).click();
+
+  // Verify success confirmation view is shown
+  await expect(page.getByRole("heading", { name: "درخواست شما با موفقیت در سیستم ثبت شد!" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "بستن پنجره" })).toBeVisible();
+
+  // Verify reset/new inquiry button is available on success screen
+  const newInquiryBtn = page.getByRole("button", { name: /ثبت استعلام جدید یا محصول دیگر/ });
+  await expect(newInquiryBtn).toBeVisible();
+  await newInquiryBtn.click();
+
+  // After clicking reset, the form is visible again
+  await expect(page.getByRole("button", { name: /ثبت درخواست و تماس کارشناس/ })).toBeVisible();
+
+  // Close modal via close button
+  await page.getByRole("button", { name: "بستن" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+
