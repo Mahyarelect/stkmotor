@@ -38,6 +38,7 @@ import {
 interface Variant {
   id: string;
   sku: string;
+  name?: string;
   size: string;
   power: string;
   powerKw: number;
@@ -179,35 +180,278 @@ export default function ProductDetailClient({
   const inquiryLink = selectedVariant && family
     ? `${whatsappLink}?text=${encodeURIComponent(`سلام، برای ${family.name} با کد ${selectedVariant.sku} درخواست استعلام دارم.`)}`
     : whatsappLink;
-  const quickSpecs = selectedVariant && family ? (
-    family.mainCategory === "gearbox"
-      ? [
-          { icon: Cog, label: "مدل", value: selectedVariant.modelType || "-" },
-          { icon: Gauge, label: "نسبت تبدیل", value: selectedVariant.ratio || "-" },
-          { icon: Ruler, label: "فریم ورودی", value: selectedVariant.inputFrame || "-" },
-          { icon: FileText, label: "سایز", value: selectedVariant.size || "-" },
-        ]
-      : family.mainCategory === "pump"
-        ? [
-            { icon: Cog, label: "نوع پمپ", value: selectedVariant.pumpType || "-" },
-            { icon: Ruler, label: "دهانه خروجی", value: selectedVariant.outletSize || "-" },
-            { icon: Gauge, label: "حداکثر هد", value: selectedVariant.headMeter ? `${faNum(selectedVariant.headMeter)} متر` : "-" },
-            { icon: Zap, label: "توان", value: selectedVariant.power || "-" },
-          ]
-        : family.mainCategory === "accessories"
-          ? [
-              { icon: Cog, label: "نوع قطعه", value: selectedVariant.flangeType || "-" },
-              { icon: ShieldCheck, label: "برند", value: selectedVariant.brand || "-" },
-              { icon: Ruler, label: "سایز فریم", value: selectedVariant.size || "-" },
-              { icon: FileText, label: "جنس", value: selectedVariant.bodyMaterial || "-" },
-            ]
-          : [
-              { icon: Zap, label: "توان", value: selectedVariant.power || "-" },
-              { icon: Gauge, label: "دور", value: selectedVariant.speed ? `${faNum(selectedVariant.speed)} RPM` : "-" },
-              { icon: Ruler, label: "سایز فریم", value: selectedVariant.size || "-" },
-              { icon: FileText, label: "نوع نصب", value: selectedVariant.mountingType || "-" },
-            ]
-  ) : [];
+  interface TableColumn {
+    id: string;
+    label: string;
+    align?: "right" | "center";
+    render: (v: Variant) => React.ReactNode;
+  }
+
+  const tableTitle = useMemo(() => {
+    if (!family) return "جدول مشخصات واریانت‌ها";
+    switch (family.mainCategory) {
+      case "gearbox":
+        return "جدول مشخصات تیپ‌ها و نسبت‌های گیربکس";
+      case "pump":
+        return "جدول مشخصات و مدل‌های پمپ";
+      case "accessories":
+        return "جدول مشخصات قطعات و سایزها";
+      default:
+        return "جدول مشخصات تمامی سایزها و توان‌ها";
+    }
+  }, [family]);
+
+  const quickSpecs = useMemo(() => {
+    if (!selectedVariant || !family) return [];
+    const cat = family.mainCategory;
+    const v = selectedVariant;
+
+    const candidates: Array<{ icon: any; label: string; value?: string }> = [];
+
+    if (cat === "gearbox") {
+      if (v.size) candidates.push({ icon: FileText, label: "تیپ / سایز", value: v.size });
+      if (v.modelType) candidates.push({ icon: Cog, label: "مدل", value: v.modelType });
+      if (v.ratio) candidates.push({ icon: Gauge, label: "نسبت تبدیل", value: `1:${v.ratio}` });
+      if (v.inputFrame) candidates.push({ icon: Ruler, label: "فریم ورودی", value: v.inputFrame });
+      if (v.inputType) candidates.push({ icon: Cog, label: "نوع ورودی", value: v.inputType });
+      if (v.mountingType) candidates.push({ icon: FileText, label: "نحوه نصب", value: v.mountingType });
+    } else if (cat === "pump") {
+      if (v.pumpType) candidates.push({ icon: Cog, label: "نوع پمپ", value: v.pumpType });
+      if (v.power) candidates.push({ icon: Zap, label: "توان", value: v.power });
+      if (v.outletSize) candidates.push({ icon: Ruler, label: "دهانه خروجی", value: `${v.outletSize} اینچ` });
+      if (v.headMeter) candidates.push({ icon: Gauge, label: "حداکثر هد", value: `${faNum(v.headMeter)} متر` });
+      if (v.floater) candidates.push({ icon: ShieldCheck, label: "فلوتر", value: v.floater });
+      if (v.bodyMaterial) candidates.push({ icon: FileText, label: "جنس بدنه", value: v.bodyMaterial });
+    } else if (cat === "accessories") {
+      if (v.flangeType) candidates.push({ icon: Cog, label: "نوع قطعه", value: v.flangeType });
+      if (v.brand) candidates.push({ icon: ShieldCheck, label: "برند سازگار", value: v.brand });
+      if (v.size || v.power) candidates.push({ icon: Ruler, label: "سایز متناسب", value: v.size || v.power });
+      if (v.bodyMaterial) candidates.push({ icon: FileText, label: "جنس بدنه", value: v.bodyMaterial });
+      if (v.flangeLength) candidates.push({ icon: FileText, label: "طول فلنج", value: v.flangeLength });
+    } else {
+      if (v.power) candidates.push({ icon: Zap, label: "توان", value: v.power });
+      if (v.speed) candidates.push({ icon: Gauge, label: "دور موتور", value: `${faNum(v.speed)} RPM` });
+      if (v.size && v.size !== v.power) candidates.push({ icon: Ruler, label: "سایز فریم", value: v.size });
+      if (v.mountingType) candidates.push({ icon: FileText, label: "نحوه نصب", value: v.mountingType });
+      if (family.shellType || v.bodyMaterial) {
+        candidates.push({ icon: ShieldCheck, label: "جنس پوسته", value: family.shellType || v.bodyMaterial || "" });
+      }
+    }
+
+    const filtered = candidates.filter(
+      (item): item is { icon: any; label: string; value: string } =>
+        Boolean(item.value && item.value.trim() !== "")
+    );
+    return filtered.slice(0, 4);
+  }, [selectedVariant, family]);
+
+  const tableColumns = useMemo<TableColumn[]>(() => {
+    if (!family || !family.variants || family.variants.length === 0) return [];
+    const cat = family.mainCategory;
+    const variants = family.variants;
+
+    const hasAny = (key: keyof Variant) =>
+      variants.some((v) => {
+        const val = v[key];
+        return val !== undefined && val !== null && String(val).trim() !== "" && val !== 0 && val !== "0";
+      });
+
+    const cols: TableColumn[] = [];
+
+    if (cat === "gearbox") {
+      cols.push({
+        id: "size",
+        label: "تیپ / سایز",
+        render: (v) => <span className="font-semibold text-gray-800 num-en">{v.size || "-"}</span>,
+      });
+      if (hasAny("modelType")) {
+        cols.push({
+          id: "modelType",
+          label: "مدل",
+          render: (v) => <span className="num-en font-medium text-gray-700">{v.modelType || "-"}</span>,
+        });
+      }
+      if (hasAny("ratio")) {
+        cols.push({
+          id: "ratio",
+          label: "نسبت تبدیل",
+          render: (v) => <span className="num-en text-blue-700 font-medium">{v.ratio ? `1:${v.ratio}` : "-"}</span>,
+        });
+      }
+      if (hasAny("inputFrame")) {
+        cols.push({
+          id: "inputFrame",
+          label: "فریم ورودی",
+          render: (v) => <span className="num-en text-gray-700">{v.inputFrame || "-"}</span>,
+        });
+      }
+      if (hasAny("inputType")) {
+        cols.push({
+          id: "inputType",
+          label: "نوع ورودی",
+          render: (v) => <span className="text-gray-700">{v.inputType || "-"}</span>,
+        });
+      }
+      if (hasAny("mountingType")) {
+        cols.push({
+          id: "mountingType",
+          label: "نحوه نصب",
+          render: (v) => <span className="text-gray-700">{v.mountingType || "-"}</span>,
+        });
+      }
+    } else if (cat === "pump") {
+      cols.push({
+        id: "name",
+        label: "مدل / مشخصه",
+        render: (v) => <span className="font-semibold text-gray-800">{v.name || v.size}</span>,
+      });
+      if (hasAny("pumpType")) {
+        cols.push({
+          id: "pumpType",
+          label: "نوع پمپ",
+          render: (v) => <span className="text-gray-700">{v.pumpType || "-"}</span>,
+        });
+      }
+      if (hasAny("power")) {
+        cols.push({
+          id: "power",
+          label: "توان",
+          render: (v) => <span className="num-en font-medium text-gray-800">{v.power || "-"}</span>,
+        });
+      }
+      if (hasAny("outletSize")) {
+        cols.push({
+          id: "outletSize",
+          label: "دهانه خروجی",
+          render: (v) => <span className="num-en text-gray-700">{v.outletSize ? `${v.outletSize} اینچ` : "-"}</span>,
+        });
+      }
+      if (hasAny("headMeter")) {
+        cols.push({
+          id: "headMeter",
+          label: "حداکثر هد",
+          render: (v) => <span className="num-en text-gray-700">{v.headMeter ? `${faNum(v.headMeter)} متر` : "-"}</span>,
+        });
+      }
+      if (hasAny("floater")) {
+        cols.push({
+          id: "floater",
+          label: "فلوتر",
+          render: (v) => <span className="text-gray-700">{v.floater || "-"}</span>,
+        });
+      }
+      if (hasAny("bodyMaterial")) {
+        cols.push({
+          id: "bodyMaterial",
+          label: "جنس بدنه",
+          render: (v) => <span className="text-gray-700">{v.bodyMaterial || "-"}</span>,
+        });
+      }
+    } else if (cat === "accessories") {
+      cols.push({
+        id: "flangeType",
+        label: "نوع قطعه",
+        render: (v) => <span className="font-semibold text-gray-800">{v.flangeType || v.name || "-"}</span>,
+      });
+      if (hasAny("brand")) {
+        cols.push({
+          id: "brand",
+          label: "برند سازگار",
+          render: (v) => <span className="text-gray-700">{v.brand || "-"}</span>,
+        });
+      }
+      cols.push({
+        id: "size",
+        label: "سایز متناسب",
+        render: (v) => <span className="num-en font-medium text-gray-800">{v.size || v.power || "-"}</span>,
+      });
+      if (hasAny("bodyMaterial")) {
+        cols.push({
+          id: "bodyMaterial",
+          label: "جنس بدنه",
+          render: (v) => <span className="text-gray-700">{v.bodyMaterial || "-"}</span>,
+        });
+      }
+      if (hasAny("flangeLength")) {
+        cols.push({
+          id: "flangeLength",
+          label: "طول فلنج",
+          render: (v) => <span className="text-gray-700">{v.flangeLength || "-"}</span>,
+        });
+      }
+    } else {
+      // Electromotor
+      cols.push({
+        id: "power",
+        label: "توان",
+        render: (v) => (
+          <span className="font-semibold text-gray-800 num-en">
+            {v.power || (v.powerKw ? `${v.powerKw} kW` : "-")}
+          </span>
+        ),
+      });
+      if (hasAny("speed")) {
+        cols.push({
+          id: "speed",
+          label: "دور موتور",
+          render: (v) => <span className="num-en text-gray-700">{v.speed ? `${faNum(v.speed)} RPM` : "-"}</span>,
+        });
+      }
+      const hasDistinctSize = variants.some((v) => v.size && v.size !== v.power);
+      if (hasDistinctSize) {
+        cols.push({
+          id: "size",
+          label: "سایز فریم",
+          render: (v) => <span className="num-en text-gray-700">{v.size || "-"}</span>,
+        });
+      }
+      if (hasAny("mountingType")) {
+        cols.push({
+          id: "mountingType",
+          label: "نحوه نصب",
+          render: (v) => <span className="num-en text-gray-700">{v.mountingType || "-"}</span>,
+        });
+      }
+      if (family.shellType || hasAny("bodyMaterial")) {
+        cols.push({
+          id: "shell",
+          label: "جنس پوسته",
+          render: (v) => <span>{v.bodyMaterial || family.shellType || "-"}</span>,
+        });
+      }
+    }
+
+    cols.push({
+      id: "price",
+      label: "قیمت",
+      render: (v) => (
+        <span className="font-semibold text-gray-900">
+          {v.price > 0 ? formatPrice(v.price) : <span className="text-gray-400">تماس بگیرید</span>}
+        </span>
+      ),
+    });
+
+    cols.push({
+      id: "status",
+      label: "وضعیت",
+      align: "center",
+      render: (v) =>
+        v.inStock ? (
+          <Badge className="bg-emerald-100 text-emerald-700 text-[10px]">موجود</Badge>
+        ) : (
+          <Badge className="bg-gray-100 text-gray-400 text-[10px]">استعلام</Badge>
+        ),
+    });
+
+    cols.push({
+      id: "sku",
+      label: "کد کالا",
+      align: "center",
+      render: (v) => <span className="text-xs text-gray-400 num-en">{v.sku}</span>,
+    });
+
+    return cols;
+  }, [family]);
 
   if (loading) {
     return (
@@ -436,45 +680,48 @@ export default function ProductDetailClient({
 
         {/* ─── Full Specs Table ─── */}
         <div className="mt-12">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">جدول مشخصات تمامی سایزها</h3>
-          <Card className="overflow-hidden border-gray-200">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-900">{tableTitle}</h3>
+            <span className="text-xs text-gray-500 font-medium">
+              {faNum(family.variants.length)} مدل / واریانت
+            </span>
+          </div>
+          <Card className="overflow-hidden border-gray-200 shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50 text-gray-600">
-                    <th className="text-right px-4 py-3 font-medium">سایز فریم</th>
-                    <th className="text-right px-4 py-3 font-medium">توان</th>
-                    <th className="text-right px-4 py-3 font-medium">دور</th>
-                    <th className="text-right px-4 py-3 font-medium">نحوه نصب</th>
-                    <th className="text-right px-4 py-3 font-medium">قیمت</th>
-                    <th className="text-center px-4 py-3 font-medium">وضعیت</th>
-                    <th className="text-center px-4 py-3 font-medium">کد SKU</th>
+                  <tr className="bg-gray-50 text-gray-700 border-b border-gray-200">
+                    {tableColumns.map((col) => (
+                      <th
+                        key={col.id}
+                        className={`px-4 py-3.5 font-semibold text-xs ${
+                          col.align === "center" ? "text-center" : "text-right"
+                        }`}
+                      >
+                        {col.label}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-gray-100">
                   {family.variants.map((v) => (
                     <tr
                       key={v.id}
-                      className={`border-t border-gray-100 cursor-pointer transition-colors ${
-                        v.id === selectedVariantId ? "bg-blue-50" : "hover:bg-gray-50"
+                      className={`cursor-pointer transition-colors ${
+                        v.id === selectedVariantId ? "bg-blue-50/70" : "hover:bg-gray-50/80"
                       }`}
                       onClick={() => setSelectedVariantId(v.id)}
                     >
-                      <td className="px-4 py-3 font-medium num-en">{v.size}</td>
-                      <td className="px-4 py-3 num-en">{v.power || "-"}</td>
-                      <td className="px-4 py-3 num-en">{v.speed ? `${faNum(v.speed)} RPM` : "-"}</td>
-                      <td className="px-4 py-3 num-en">{v.mountingType || "-"}</td>
-                      <td className="px-4 py-3 font-semibold">
-                        {v.price > 0 ? formatPrice(v.price) : <span className="text-gray-400">تماس بگیرید</span>}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        {v.inStock ? (
-                          <Badge className="bg-emerald-100 text-emerald-700 text-[10px]">موجود</Badge>
-                        ) : (
-                          <Badge className="bg-gray-100 text-gray-400 text-[10px]">استعلام</Badge>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-center text-xs text-gray-400 num-en">{v.sku}</td>
+                      {tableColumns.map((col) => (
+                        <td
+                          key={col.id}
+                          className={`px-4 py-3 ${
+                            col.align === "center" ? "text-center" : "text-right"
+                          }`}
+                        >
+                          {col.render(v)}
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
