@@ -17,6 +17,10 @@ services:
       - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-Admin123456!}
       - ADMIN_NAME=${ADMIN_NAME:-مدیر سایت}
+      - DIDAR_API_KEY=${DIDAR_API_KEY:-96n9yze8bh44j8xpghr5pbs4gs6s5rv3}
+      - DIDAR_PIPELINE_ID=${DIDAR_PIPELINE_ID:-5e5b295e-155c-4f79-a3b6-c23e39ab9ec9}
+      - DIDAR_STAGE_ID=${DIDAR_STAGE_ID:-9548e842-86f2-4db3-aa51-b41b16b4767d}
+      - DIDAR_OWNER_ID=${DIDAR_OWNER_ID:-6b60f98f-7594-40e4-ba9c-2d3e53876d7b}
     depends_on:
       db:
         condition: service_healthy

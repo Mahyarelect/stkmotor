@@ -52,6 +52,22 @@ if (!readValue("ADMIN_NAME")) {
   writeValue("ADMIN_NAME", "مدیر سایت");
 }
 
+if (!readValue("DIDAR_API_KEY")) {
+  writeValue("DIDAR_API_KEY", "96n9yze8bh44j8xpghr5pbs4gs6s5rv3");
+}
+
+if (!readValue("DIDAR_PIPELINE_ID")) {
+  writeValue("DIDAR_PIPELINE_ID", "5e5b295e-155c-4f79-a3b6-c23e39ab9ec9");
+}
+
+if (!readValue("DIDAR_STAGE_ID")) {
+  writeValue("DIDAR_STAGE_ID", "9548e842-86f2-4db3-aa51-b41b16b4767d");
+}
+
+if (!readValue("DIDAR_OWNER_ID")) {
+  writeValue("DIDAR_OWNER_ID", "6b60f98f-7594-40e4-ba9c-2d3e53876d7b");
+}
+
 writeFileSync(envPath, text, "utf8");
 
 console.log("[env] Local environment is ready.");
