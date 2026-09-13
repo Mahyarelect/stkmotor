@@ -44,7 +44,7 @@ export function DynamicCategoryFilter({ category, value, onChange, onReset }: {
   });
   const controls = (
     <div className="grid gap-3">
-      <div className="relative"><Search size={16} className="absolute right-3 top-3 text-gray-400" /><Input value={value.search} onChange={(e) => set("search", e.target.value)} placeholder="جستجوی نام یا کد محصول" className="pr-9" /></div>
+      <div className="relative"><Search size={16} className="absolute right-3 top-3 text-gray-400" /><Input value={value.search} onChange={(e) => set("search", e.target.value)} placeholder="جستجوی نام، کد یا مشخصات فنی" className="pr-9" /></div>
       <Select value={value.level1 || "all"} onValueChange={(v) => set("level1", v === "all" ? "" : v)}><SelectTrigger><SelectValue placeholder="انتخاب نوع" /></SelectTrigger><SelectContent><SelectItem value="all">همه انواع</SelectItem>{config.level1.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select>
       {level2Options.length > 0 && <Select value={value.level2 || "all"} onValueChange={(v) => set("level2", v === "all" ? "" : v)}><SelectTrigger><SelectValue placeholder="انتخاب مشخصه دوم" /></SelectTrigger><SelectContent><SelectItem value="all">همه گزینه‌ها</SelectItem>{level2Options.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select>}
       {category === "electromotor" && <Select value={value.speed || "all"} onValueChange={(v) => set("speed", v === "all" ? "" : v)}><SelectTrigger><SelectValue placeholder="دور موتور" /></SelectTrigger><SelectContent><SelectItem value="all">همه دورها</SelectItem>{["750", "1000", "1400", "3000"].map(v => <SelectItem key={v} value={v}>{v} RPM</SelectItem>)}</SelectContent></Select>}

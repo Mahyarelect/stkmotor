@@ -26,7 +26,12 @@ export async function GET(
   const variants = family.variants.map((v) => ({
     ...v,
     price: Number(v.price),
-    media: resolvedProductMedia(v.sku, family.mainCategory, family.imageUrl),
+    media: resolvedProductMedia(
+      v.sku,
+      family.mainCategory,
+      family.imageUrl,
+      `${family.category} ${family.phase}`
+    ),
   }));
   const serialized = {
     ...family,

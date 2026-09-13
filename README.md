@@ -182,7 +182,9 @@ Product images and videos live in `public/media/products/`, while `src/data/prod
 node scripts/import-product-media.mjs --images <image-directory> --videos <video-directory> --fallback <motor-1.png> --fallback <motor-2.png> --fallback <motor-3.png>
 ```
 
-The current catalog includes media for 100 SKUs: 236 image associations and 49 video associations. Any variant without its own uploaded image uses one of the three supplied fallback photos, selected deterministically by SKU so every product card and detail page has an image.
+The current catalog includes media for 100 SKUs: 236 image associations and 49 video associations. Three-phase electromotors without their own uploaded image use one of the three supplied fallback photos, selected deterministically by SKU. Other product groups use only their own uploaded/family image and otherwise show the neutral product placeholder.
+
+Catalog search normalizes Persian and Arabic letter variants, Persian/Arabic digits, spacing, and zero-width joiners. Multiple words can match across product names and technical variant fields such as SKU, power, speed, voltage, mounting, gearbox/pump type, ratio, brand, material, and flange details.
 
 Administrators can also upload JPEG, PNG, or WebP images in the product create/edit forms. Uploads are validated, resized to fit within 1600×1600, converted to WebP, and stored under `public/products/<slug>/`. Docker Compose persists these runtime uploads in the `product_uploads` volume.
 
