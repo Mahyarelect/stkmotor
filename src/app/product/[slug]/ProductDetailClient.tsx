@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { ProductImage } from "@/components/ProductImage";
+import { ProductImageZoom } from "@/components/product/ProductImageZoom";
 import { ProductSpecsTable } from "@/components/product/ProductSpecsTable";
 import { ProductCard, ProductFamilyData } from "@/components/product/ProductCard";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -868,12 +869,18 @@ function ProductMediaGallery({
             aria-label={`ویدیوی ${name} با کد ${sku}`}
           />
         ) : (
-          <ProductImage
+          <ProductImageZoom
             src={active?.src}
             alt={`${name}${sku ? ` - کد ${sku}` : ""}`}
             className="h-full w-full object-contain p-5 sm:p-6"
             iconSize={56}
             loading="eager"
+            images={images}
+            initialIndex={activeIndex}
+            onThumbnailSelect={(idx) => setActiveIndex(idx)}
+            allImages={images}
+            activeIndex={activeIndex}
+            onSelectImage={(idx) => setActiveIndex(idx)}
           />
         )}
       </div>

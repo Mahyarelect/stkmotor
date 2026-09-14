@@ -12,7 +12,7 @@ const ARABIC_TO_PERSIAN_CHARS: Record<string, string> = {
   "أ": "ا",
   "إ": "ا",
   "ؤ": "ا",
-  "ئ": "ا",
+  "ئ": "ی",
 };
 
 const PERSIAN_ARABIC_DIGITS: Record<string, string> = {
@@ -51,8 +51,8 @@ export function normalizePersianText(input: string): string {
   // Temporarily protect decimal point using a unicode private char
   text = text.replace(/(\d)\.(\d)/g, "$1\uE000$2");
 
-  // 3. Normalize Arabic characters
-  text = text.replace(/[يكةآأإؤئ]/g, (char) => ARABIC_TO_PERSIAN_CHARS[char] || char);
+  // 3. Normalize Arabic characters (including alef maksura \u0649 and yeh-hamza \u0626)
+  text = text.replace(/[يكىةآأإؤئ]/g, (char) => ARABIC_TO_PERSIAN_CHARS[char] || char);
 
   // 4. Remove Arabic/Persian diacritics and tatweel/kashida
   text = text.replace(/[\u064B-\u065F\u0670\u0640]/g, "");
@@ -110,9 +110,29 @@ export function getCompoundVariations(term: string): string[] {
   const normalized = normalizePersianText(term);
   if (!normalized) return [];
 
-  const variations = new Set<string>([normalized]);
+  const rawTrimmed = term.trim();
+  const variations = new Set<string>([normalized, rawTrimmed]);
 
   for (const v of Array.from(variations)) {
+    // Alef Madda variations (آلومینیوم vs الومینیوم, آب vs اب, etc.)
+    if (v.includes("الومینیوم")) {
+      variations.add(v.replace(/الومینیوم/g, "آلومینیوم"));
+      variations.add(v.replace(/الومینیوم/g, "آلومینیومی"));
+      variations.add(v.replace(/الومینیوم/g, "الومینیومی"));
+    }
+    if (v.includes("آلومینیوم")) {
+      variations.add(v.replace(/آلومینیوم/g, "الومینیوم"));
+      variations.add(v.replace(/آلومینیوم/g, "آلومینیومی"));
+      variations.add(v.replace(/آلومینیوم/g, "الومینیومی"));
+    }
+    if (v.startsWith("ا") && !v.startsWith("الومینیوم")) {
+      variations.add("آ" + v.slice(1));
+    }
+    if (v.startsWith("آ") && !v.startsWith("آلومینیوم")) {
+      variations.add("ا" + v.slice(1));
+    }
+
+    // Single / Three phase
     if (v.includes("تکفاز")) {
       variations.add(v.replace(/تکفاز/g, "تک‌فاز"));
       variations.add(v.replace(/تکفاز/g, "تک فاز"));
@@ -121,6 +141,8 @@ export function getCompoundVariations(term: string): string[] {
       variations.add(v.replace(/سهفاز/g, "سه‌فاز"));
       variations.add(v.replace(/سهفاز/g, "سه فاز"));
     }
+
+    // Pump types
     if (v.includes("کفکش")) {
       variations.add(v.replace(/کفکش/g, "کف‌کش"));
       variations.add(v.replace(/کفکش/g, "کف کش"));
@@ -129,6 +151,38 @@ export function getCompoundVariations(term: string): string[] {
       variations.add(v.replace(/لجنکش/g, "لجن‌کش"));
       variations.add(v.replace(/لجنکش/g, "لجن کش"));
     }
+    if (v.includes("دوپروانه")) {
+      variations.add(v.replace(/دوپروانه/g, "دو پروانه"));
+      variations.add(v.replace(/دوپروانه/g, "دو‌پروانه"));
+    }
+
+    // Flange and gearbox compounds
+    if (v.includes("نیمفلنج")) {
+      variations.add(v.replace(/نیمفلنج/g, "نیم فلنج"));
+      variations.add(v.replace(/نیمفلنج/g, "نیم‌فلنج"));
+    }
+    if (v.includes("شافتمستقیم")) {
+      variations.add(v.replace(/شافتمستقیم/g, "شافت مستقیم"));
+      variations.add(v.replace(/شافتمستقیم/g, "شافت‌مستقیم"));
+    }
+    if (v.includes("شافتدار")) {
+      variations.add(v.replace(/شافتدار/g, "شافت دار"));
+      variations.add(v.replace(/شافتدار/g, "شافت‌دار"));
+    }
+    if (v.includes("فلنجدار")) {
+      variations.add(v.replace(/فلنجدار/g, "فلنج دار"));
+      variations.add(v.replace(/فلنجدار/g, "فلنج‌دار"));
+    }
+    if (v.includes("فلوتردار")) {
+      variations.add(v.replace(/فلوتردار/g, "فلوتر دار"));
+      variations.add(v.replace(/فلوتردار/g, "فلوتر‌دار"));
+    }
+    if (v.includes("پایهدار")) {
+      variations.add(v.replace(/پایهدار/g, "پایه دار"));
+      variations.add(v.replace(/پایهدار/g, "پایه‌دار"));
+    }
+
+    // Category compounds
     if (v.includes("الکتروموتور")) {
       variations.add(v.replace(/الکتروموتور/g, "الکترو موتور"));
       variations.add(v.replace(/الکتروموتور/g, "الکترو‌موتور"));
@@ -137,14 +191,18 @@ export function getCompoundVariations(term: string): string[] {
       variations.add(v.replace(/الکتروپمپ/g, "الکترو پمپ"));
       variations.add(v.replace(/الکتروپمپ/g, "الکترو‌پمپ"));
     }
+
+    // Materials
     if (v.includes("چدن")) {
       variations.add(v.replace(/چدن/g, "چدنی"));
     }
-    if (v.includes("الومینیوم")) {
-      variations.add(v.replace(/الومینیوم/g, "آلومینیوم"));
-      variations.add(v.replace(/الومینیوم/g, "آلومینیومی"));
+
+    // Gasoil / Special variants
+    if (v.includes("گازویل") || v.includes("گازوایل") || v.includes("گازوئیل") || v.includes("گازوییل")) {
+      variations.add(v.replace(/گازویل|گازوایل|گازوییل/g, "گازوئیل"));
+      variations.add(v.replace(/گازوئیل/g, "گازویل"));
     }
   }
 
-  return Array.from(variations);
+  return Array.from(variations).filter(Boolean);
 }

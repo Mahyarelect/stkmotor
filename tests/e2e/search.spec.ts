@@ -149,3 +149,58 @@ test.describe("Variant Deep Linking via SKU", () => {
     await expect(whatsappLink).toHaveAttribute("href", /10000014/);
   });
 });
+
+test.describe("Header Search Bar & Autocomplete Dropdown", () => {
+  test("typing in prominent header search bar displays instant dropdown and navigates", async ({ page }) => {
+    await page.goto("/");
+    const headerInput = page.getByPlaceholder("جستجوی محصول، توان، دور، تیپ گیربکس یا کد فنی...");
+    await expect(headerInput).toBeVisible();
+
+    await headerInput.fill("گیربکس");
+    const dropdown = page.locator("#header-search-results");
+    await expect(dropdown).toBeVisible({ timeout: 8000 });
+
+    const option = dropdown.getByRole("option").first();
+    await expect(option).toBeVisible();
+    await option.click();
+
+    await expect(page).toHaveURL(/\/product\/.*sku=/);
+  });
+});
+
+test.describe("Product Image Magnifier / Zoom Effect", () => {
+  test("interactive inner lens zoom on desktop hover and fullscreen modal on click", async ({ page }) => {
+    await page.goto("/product/cubic-gearbox-nmrv?sku=10000021");
+
+    // If lead inquiry modal appears, dismiss it
+    const leadClose = page.getByRole("button", { name: "بستن" });
+    if (await leadClose.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await leadClose.click();
+    }
+
+    const zoomContainer = page.locator('[data-testid="product-image-zoom-container"]');
+    await expect(zoomContainer).toBeVisible();
+
+    // Hover to activate desktop inner lens
+    await zoomContainer.hover();
+    const zoomBadge = zoomContainer.getByText(/ذره‌بین|بزرگنمایی/);
+    await expect(zoomBadge.first()).toBeVisible();
+
+    // Click to open fullscreen zoom modal
+    await zoomContainer.click();
+    const modal = page.getByRole("dialog", { name: "بزرگنمایی تمام‌صفحه تصویر" });
+    await expect(modal).toBeVisible();
+
+    // Verify modal controls
+    await expect(page.getByRole("button", { name: "افزایش بزرگنمایی" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "کاهش بزرگنمایی" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "بازنشانی بزرگنمایی" })).toBeVisible();
+
+    // Close modal via close button
+    const closeBtn = page.getByRole("button", { name: "بستن بزرگنمایی" });
+    await expect(closeBtn).toBeVisible();
+    await closeBtn.click();
+    await expect(modal).toHaveCount(0);
+  });
+});
+

@@ -52,8 +52,10 @@ export const CANONICAL_SPEEDS: Record<string, string> = {
 };
 
 export const GEARBOX_SERIES = ["VF", "MVF", "NMRV", "FC", "VF-FC", "MVF-FC", "VF-VF", "MVF-VF", "CHM"];
-export const GEARBOX_SIZES = ["30", "44", "49", "62", "63", "86", "110", "130", "150"];
-export const GEARBOX_RATIOS = ["7.5", "10", "15", "20", "25", "30", "40", "50", "60", "80", "100"];
+export const GEARBOX_SIZES = [
+  "25", "28", "30", "32", "40", "44", "48", "49", "50", "60", "62", "63", "75", "86", "90", "100", "110", "130", "150", "185", "210", "250", "300"
+];
+export const GEARBOX_RATIOS = ["5", "7.5", "10", "15", "20", "25", "30", "40", "50", "60", "80", "100", "160"];
 
 export const PUMP_TYPES: Record<string, string> = {
   "کفکش": "کف‌کش",
@@ -86,6 +88,8 @@ export const CATEGORY_SYNONYMS: Record<string, string> = {
   "لجنکش": "pump",
   "لوازم جانبی": "accessories",
   "فلنج": "accessories",
+  "نیمفلنج": "accessories",
+  "نیم فلنج": "accessories",
   "براکت": "accessories",
   "درب ترمینال": "accessories",
   "خازن": "accessories",
@@ -94,10 +98,13 @@ export const CATEGORY_SYNONYMS: Record<string, string> = {
 export const BRAND_SYNONYMS: Record<string, string> = {
   "موتوژن": "موتوژن",
   "ژن": "موتوژن",
+  "الکتروژن": "الکتروژن",
   "جمکو": "جمکو",
   "الیک": "الیک",
   "کایجیلی": "کایجیلی",
   "استریم": "استریم",
+  "پنتاکس": "پنتاکس",
+  "سامر": "سامر",
   "چینی": "چینی",
 };
 

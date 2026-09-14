@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { telHref, useSiteSettings } from "@/hooks/use-site-settings";
 import { CATALOG_CATEGORIES } from "@/data/catalogCategories";
 import { GlobalSearchDialog } from "@/components/search/GlobalSearchDialog";
+import { HeaderSearchBar } from "@/components/search/HeaderSearchBar";
 
 export function SiteHeader() {
   const siteSettings = useSiteSettings();
@@ -159,17 +160,23 @@ export function SiteHeader() {
               ))}
             </nav>
 
-            {/* Desktop CTA & Search Trigger */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* Desktop Search Bar (Permanent & Prominent) */}
+            <div className="hidden md:flex items-center flex-1 max-w-xs lg:max-w-sm xl:max-w-md mx-3">
+              <HeaderSearchBar />
+            </div>
+
+            {/* Desktop CTA & Quick Search Trigger */}
+            <div className="hidden md:flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-gray-50/80 hover:bg-gray-100 hover:border-gray-300 text-gray-500 hover:text-gray-900 transition-colors text-xs cursor-pointer"
+                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-gray-50/80 hover:bg-gray-100 hover:border-gray-300 text-gray-500 hover:text-gray-900 transition-colors text-xs cursor-pointer"
                 aria-label="جستجوی سریع محصولات"
+                title="جستجوی پیشرفته (⌘K)"
               >
                 <Search size={14} className="text-gray-400" />
-                <span>جستجوی محصول...</span>
-                <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-gray-400 bg-white border border-gray-200 rounded shadow-2xs">
+                <span className="hidden xl:inline">جستجوی سریع</span>
+                <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-gray-400 bg-white border border-gray-200 rounded shadow-2xs">
                   ⌘K
                 </kbd>
               </button>
@@ -212,18 +219,13 @@ export function SiteHeader() {
         {/* Mobile Nav — Product Categories Accordion */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-2 max-h-[70vh] overflow-y-auto">
-            {/* Quick Search Button in Mobile Drawer */}
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                setSearchOpen(true);
-              }}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 text-xs hover:bg-gray-100 hover:text-gray-800 transition-colors cursor-pointer"
-            >
-              <Search size={16} className="text-gray-400 shrink-0" />
-              <span>جستجوی محصول، توان، دور یا کد فنی...</span>
-            </button>
+            {/* Interactive Search Bar in Mobile Drawer */}
+            <div className="pt-1 pb-2">
+              <HeaderSearchBar
+                isMobileDrawer={true}
+                onNavigate={() => setMobileMenuOpen(false)}
+              />
+            </div>
 
             <Link
               href="/"
