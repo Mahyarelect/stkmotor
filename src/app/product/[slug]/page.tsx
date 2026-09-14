@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import ProductDetailClient from "./ProductDetailClient";
 
@@ -7,17 +8,23 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  // Dynamic metadata would be ideal here, but for now keep it simple
   return {
-    title: `الکتروموتور | STK Motors`,
-    description: "مشخصات کامل الکتروموتور پوسته چدنی STK - مشاهده جزئیات فنی و استعلام قیمت",
+    title: `تجهیزات صنعتی | STK Motors`,
+    description: "مشخصات کامل تجهیزات صنعتی STK - مشاهده جزئیات فنی و استعلام قیمت",
   };
 }
 
-export default function ProductDetailPage({
+export default async function ProductDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ sku?: string }>;
 }) {
-  return <ProductDetailClient params={params} />;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center text-sm text-gray-500">در حال بارگذاری مشخصات محصول...</div>}>
+      <ProductDetailClient params={params} initialSku={resolvedSearchParams?.sku} />
+    </Suspense>
+  );
 }

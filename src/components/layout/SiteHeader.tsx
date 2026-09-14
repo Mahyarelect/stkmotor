@@ -11,11 +11,13 @@ import {
   ChevronDown,
   Menu,
   X,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { telHref, useSiteSettings } from "@/hooks/use-site-settings";
 import { CATALOG_CATEGORIES } from "@/data/catalogCategories";
+import { GlobalSearchDialog } from "@/components/search/GlobalSearchDialog";
 
 export function SiteHeader() {
   const siteSettings = useSiteSettings();
@@ -24,6 +26,7 @@ export function SiteHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileExpandedCat, setMobileExpandedCat] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
   const dropdownTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   return (
@@ -156,8 +159,21 @@ export function SiteHeader() {
               ))}
             </nav>
 
-            {/* Desktop CTA */}
+            {/* Desktop CTA & Search Trigger */}
             <div className="hidden md:flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-gray-50/80 hover:bg-gray-100 hover:border-gray-300 text-gray-500 hover:text-gray-900 transition-colors text-xs cursor-pointer"
+                aria-label="جستجوی سریع محصولات"
+              >
+                <Search size={14} className="text-gray-400" />
+                <span>جستجوی محصول...</span>
+                <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-gray-400 bg-white border border-gray-200 rounded shadow-2xs">
+                  ⌘K
+                </kbd>
+              </button>
+
               <a href={phoneLink}>
                 <Button
                   size="sm"
@@ -169,23 +185,46 @@ export function SiteHeader() {
               </a>
             </div>
 
-            {/* Mobile menu button */}
-            <button
-              className="md:hidden min-h-11 min-w-11 p-2 text-gray-600 hover:bg-gray-100 rounded-lg flex items-center justify-center"
-              onClick={() => {
-                setMobileMenuOpen(!mobileMenuOpen);
-                setMobileExpandedCat(null);
-              }}
-              aria-label="منوی سایت"
-            >
-              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
+            {/* Mobile header buttons */}
+            <div className="md:hidden flex items-center gap-1">
+              <button
+                type="button"
+                className="min-h-11 min-w-11 p-2 text-gray-600 hover:bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer"
+                onClick={() => setSearchOpen(true)}
+                aria-label="جستجوی محصول"
+              >
+                <Search size={20} />
+              </button>
+              <button
+                className="min-h-11 min-w-11 p-2 text-gray-600 hover:bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer"
+                onClick={() => {
+                  setMobileMenuOpen(!mobileMenuOpen);
+                  setMobileExpandedCat(null);
+                }}
+                aria-label="منوی سایت"
+              >
+                {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Mobile Nav — Product Categories Accordion */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-1 max-h-[70vh] overflow-y-auto">
+          <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-2 max-h-[70vh] overflow-y-auto">
+            {/* Quick Search Button in Mobile Drawer */}
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setSearchOpen(true);
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 text-xs hover:bg-gray-100 hover:text-gray-800 transition-colors cursor-pointer"
+            >
+              <Search size={16} className="text-gray-400 shrink-0" />
+              <span>جستجوی محصول، توان، دور یا کد فنی...</span>
+            </button>
+
             <Link
               href="/"
               className="block py-2.5 text-sm font-medium text-gray-700 hover:text-blue-700"
@@ -277,6 +316,8 @@ export function SiteHeader() {
           </div>
         )}
       </header>
+
+      <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </>
   );
 }

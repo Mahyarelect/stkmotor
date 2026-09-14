@@ -148,3 +148,16 @@ model PriceChangeLog {
   @@index([createdAt])
   @@index([sku, createdAt])
 }
+
+model SearchLog {
+  id          String   @id @default(cuid())
+  query       String
+  resultCount Int      @default(0)
+  category    String   @default("")
+  ipAddress   String   @default("")
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([query])
+}
+

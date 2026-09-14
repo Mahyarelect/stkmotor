@@ -1,4 +1,7 @@
-import mediaManifest from "@/data/product-media.json";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const mediaManifest = require("../data/product-media.json");
 
 export interface ProductMedia {
   images: string[];

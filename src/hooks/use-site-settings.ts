@@ -50,6 +50,7 @@ export function telHref(phone: string) {
   return `tel:${phone.replace(/[^\d+]/g, "")}`;
 }
 
-export function whatsappHref(phone: string) {
-  return `https://wa.me/${phone.replace(/[^\d]/g, "")}`;
+export function whatsappHref(phone: string, text?: string) {
+  const base = `https://wa.me/${phone.replace(/[^\d]/g, "")}`;
+  return text ? `${base}?text=${encodeURIComponent(text)}` : base;
 }

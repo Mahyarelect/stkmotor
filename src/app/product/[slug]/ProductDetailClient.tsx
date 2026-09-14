@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowRight,
   Phone,
@@ -97,20 +98,53 @@ function faNum(n: number | string): string {
 /* ─────────────────────────── COMPONENT ─────────────────────────── */
 export default function ProductDetailClient({
   params,
+  initialSku,
 }: {
   params: Promise<{ slug: string }>;
+  initialSku?: string;
 }) {
   const siteSettings = useSiteSettings();
+  const searchParams = useSearchParams();
+  const currentSkuParam = searchParams.get("sku") || initialSku || "";
   const phoneLink = telHref(siteSettings.phone);
   const whatsappLink = whatsappHref(siteSettings.whatsapp);
 
   const [family, setFamily] = useState<ProductFamily | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedVariantId, setSelectedVariantId] = useState<string>("");
+  const [userSelectedVariantId, setUserSelectedVariantId] = useState<string>("");
+  const [prevSkuParam, setPrevSkuParam] = useState(currentSkuParam);
   const [relatedProducts, setRelatedProducts] = useState<ProductFamilyData[]>([]);
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
 
   const slugRef = useRef<string>("");
+
+  // When SKU query param changes from external navigation, reset manual selection
+  if (prevSkuParam !== currentSkuParam) {
+    setPrevSkuParam(currentSkuParam);
+    setUserSelectedVariantId("");
+  }
+
+  const matchedBySku = currentSkuParam && family?.variants
+    ? family.variants.find((v: Variant) => v.sku === currentSkuParam)
+    : null;
+
+  const defaultVariant = family?.variants
+    ? family.variants.find((v: Variant) => v.inStock && v.media.videos.length > 0) ||
+      family.variants.find((v: Variant) => v.inStock && v.media.images[0]?.includes("/media/products/assets/")) ||
+      family.variants.find((v: Variant) => v.media.videos.length > 0) ||
+      family.variants.find((v: Variant) => v.inStock) ||
+      family.variants[0]
+    : null;
+
+  const selectedVariantId =
+    userSelectedVariantId ||
+    (matchedBySku ? matchedBySku.id : null) ||
+    defaultVariant?.id ||
+    "";
+
+  const setSelectedVariantId = (id: string) => {
+    setUserSelectedVariantId(id);
+  };
 
   async function fetchProduct(slug: string) {
     setLoading(true);
@@ -123,13 +157,6 @@ export default function ProductDetailClient({
         .then((response) => response.ok ? response.json() : { products: [] })
         .then((result) => setRelatedProducts((result.products || []).filter((item: ProductFamilyData) => item.slug !== data.slug).slice(0, 3)))
         .catch(() => setRelatedProducts([]));
-      const first =
-        data.variants.find((v: Variant) => v.inStock && v.media.videos.length > 0) ||
-        data.variants.find((v: Variant) => v.inStock && v.media.images[0]?.includes("/media/products/assets/")) ||
-        data.variants.find((v: Variant) => v.media.videos.length > 0) ||
-        data.variants.find((v: Variant) => v.inStock) ||
-        data.variants[0];
-      if (first) setSelectedVariantId(first.id);
     } catch (err) {
       console.error(err);
     }
@@ -633,7 +660,7 @@ export default function ProductDetailClient({
                   تماس تلفنی
                 </Button>
               </a>
-              <a href={inquiryLink} target="_blank" rel="noopener">
+              <a href={inquiryLink} target="_blank" rel="noopener" aria-label="استعلام در واتساپ">
                 <Button size="lg" variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 rounded-xl">
                   <MessageCircle size={16} className="ml-1.5" />
                   واتساپ

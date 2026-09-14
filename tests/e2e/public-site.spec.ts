@@ -15,11 +15,16 @@ function watchRuntimeErrors(page: Page) {
   page.on("console", (message) => {
     if (message.type() === "error") {
       const text = message.text();
+      const source = message.location().url;
       // Ignore transient third-party external resource connection failures (e.g. Google Fonts)
-      if (text.includes("fonts.googleapis.com") || text.includes("fonts.gstatic.com")) {
+      if (
+        text.includes("fonts.googleapis.com") ||
+        text.includes("fonts.gstatic.com") ||
+        source?.includes("fonts.googleapis.com") ||
+        source?.includes("fonts.gstatic.com")
+      ) {
         return;
       }
-      const source = message.location().url;
       errors.push(source ? `${text} (${source})` : text);
     }
   });
