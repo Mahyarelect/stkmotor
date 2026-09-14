@@ -39,15 +39,15 @@ export function ProductGrid({
 }: ProductGridProps) {
   if (loading) {
     return (
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <Card key={i} className="overflow-hidden border-gray-200">
-            <Skeleton className="h-44 w-full" />
-            <CardContent className="p-5 space-y-3">
+          <Card key={i} className="overflow-hidden border border-slate-200/90 rounded-2xl">
+            <Skeleton className="h-56 sm:h-64 w-full" />
+            <CardContent className="p-5 space-y-3.5">
               <Skeleton className="h-6 w-3/4" />
               <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-9 w-full" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-xl" />
             </CardContent>
           </Card>
         ))}
@@ -103,7 +103,7 @@ export function ProductGrid({
 
   return (
     <div>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
         {products.map((family) => (
           <ProductCard key={family.id} family={family} />
         ))}
