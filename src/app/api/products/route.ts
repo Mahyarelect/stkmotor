@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { resolvedProductMedia } from "@/lib/product-media";
+import { catalogSearchSpellings, catalogSearchTerms } from "@/lib/catalog-search";
 
 const DEFAULT_PAGE_SIZE = 18;
 const MAX_PAGE_SIZE = 48;
@@ -9,6 +10,10 @@ const MAX_PAGE_SIZE = 48;
 function positiveInt(value: string | null, fallback: number) {
   const parsed = Number.parseInt(value || "", 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function containsAny(field: string, spellings: string[]) {
+  return spellings.map((value) => ({ [field]: { contains: value, mode: "insensitive" as const } }));
 }
 
 export async function GET(request: NextRequest) {
@@ -169,14 +174,31 @@ export async function GET(request: NextRequest) {
   if (variantFilters.length) and.push({ variants: { some: { AND: variantFilters } } });
 
   if (search) {
-    and.push({
-      OR: [
-        { name: { contains: search } },
-        { nameEn: { contains: search } },
-        { description: { contains: search } },
-        { variants: { some: { sku: { contains: search } } } },
-      ],
-    });
+    const terms = catalogSearchTerms(search);
+    for (const term of terms) {
+      const spellings = catalogSearchSpellings(term);
+      const variantFields = [
+        "sku", "name", "size", "power", "speed", "voltage", "mountingType",
+        "gearboxType", "modelType", "ratio", "inputFrame", "inputType", "pumpType",
+        "outletSize", "floater", "brand", "bodyMaterial", "flangeType", "flangeLength", "attributes",
+      ];
+      and.push({
+        OR: [
+          ...containsAny("name", spellings),
+          ...containsAny("nameEn", spellings),
+          ...containsAny("slug", spellings),
+          ...containsAny("description", spellings),
+          ...containsAny("mainCategory", spellings),
+          ...containsAny("category", spellings),
+          ...containsAny("subCategory", spellings),
+          ...containsAny("phase", spellings),
+          ...containsAny("shellType", spellings),
+          ...containsAny("brand", spellings),
+          ...containsAny("specifications", spellings),
+          { variants: { some: { OR: variantFields.flatMap((field) => containsAny(field, spellings)) } } },
+        ] as Prisma.ProductFamilyWhereInput[],
+      });
+    }
   }
 
   const where: Prisma.ProductFamilyWhereInput = and.length ? { AND: and } : {};
@@ -203,10 +225,12 @@ export async function GET(request: NextRequest) {
           orderBy: [{ inStock: "desc" }, { sortOrder: "asc" }],
           select: {
             id: true,
+            name: true,
             size: true,
             power: true,
             powerKw: true,
             speed: true,
+            voltage: true,
             mountingType: true,
             price: true,
             inStock: true,
@@ -216,6 +240,7 @@ export async function GET(request: NextRequest) {
             modelType: true,
             ratio: true,
             inputFrame: true,
+            inputType: true,
             pumpType: true,
             outletSize: true,
             headMeter: true,
@@ -224,6 +249,7 @@ export async function GET(request: NextRequest) {
             bodyMaterial: true,
             flangeType: true,
             flangeLength: true,
+            attributes: true,
           },
         },
       },
@@ -240,7 +266,12 @@ export async function GET(request: NextRequest) {
     const variants = Array.from(bySize.values()).map((variant) => ({
       ...variant,
       price: Number(variant.price),
-      media: resolvedProductMedia(variant.sku, family.mainCategory, family.imageUrl),
+      media: resolvedProductMedia(
+        variant.sku,
+        family.mainCategory,
+        family.imageUrl,
+        `${family.category} ${family.phase}`
+      ),
     }));
     return {
       id: family.id,

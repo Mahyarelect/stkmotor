@@ -34,6 +34,16 @@ test("products API paginates, caps limits, and searches technical data", async (
   const search = await (await request.get("/api/products?category=gearbox&search=NMRV")).json();
   expect(search.total).toBe(1);
   expect(search.products[0].slug).toBe("cubic-gearbox-nmrv");
+
+  const persianSku = await (await request.get(`/api/products?search=${encodeURIComponent("۱۰۱۰۰۰۵۵")}`)).json();
+  expect(persianSku.total).toBe(1);
+  expect(persianSku.products[0].slug).toBe("single-phase-cast-iron-1400");
+
+  const normalizedPersian = await (await request.get(`/api/products?search=${encodeURIComponent("كف كش")}`)).json();
+  expect(normalizedPersian.products.some((product: { slug: string }) => product.slug === "pump-submersible-sump")).toBe(true);
+
+  const technical = await (await request.get(`/api/products?search=${encodeURIComponent("فلنج موتوژن 160")}`)).json();
+  expect(technical.products.some((product: { slug: string }) => product.slug === "flange-motogen")).toBe(true);
 });
 
 for (const [category, subCategory, total] of [
@@ -86,10 +96,15 @@ test("product APIs expose valid SKU-specific image and video media", async ({ re
   expect(variantsWithUploadedMedia.length).toBeGreaterThan(0);
   expect(family.variants.some((variant: { media: { videos: string[] } }) => variant.media.videos.length > 0)).toBe(true);
 
-  for (const slug of ["three-phase-aluminum-750", "worm-gearbox-vf", "pump-surface-electropump", "flange-motogen"]) {
-    const fallbackFamily = await (await request.get(`/api/products/${slug}`)).json();
-    expect(fallbackFamily.variants.every((variant: { media: { images: string[] } }) =>
-      variant.media.images[0]?.startsWith("/media/products/fallback/electromotor-")
+  const threePhaseFallback = await (await request.get("/api/products/three-phase-aluminum-750")).json();
+  expect(threePhaseFallback.variants.every((variant: { media: { images: string[] } }) =>
+    variant.media.images[0]?.startsWith("/media/products/fallback/electromotor-")
+  )).toBe(true);
+
+  for (const slug of ["worm-gearbox-vf", "pump-surface-electropump", "flange-motogen"]) {
+    const unrelatedFamily = await (await request.get(`/api/products/${slug}`)).json();
+    expect(unrelatedFamily.variants.every((variant: { media: { images: string[] } }) =>
+      !variant.media.images.some((image) => image.includes("/fallback/electromotor-"))
     )).toBe(true);
   }
 });

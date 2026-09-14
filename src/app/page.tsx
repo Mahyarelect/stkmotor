@@ -286,7 +286,7 @@ export default function HomePage() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
                 />
                 <Input
-                  placeholder="جستجوی نام، کد محصول..."
+                  placeholder="جستجوی نام، کد یا مشخصات فنی..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pr-9 text-sm"

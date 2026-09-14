@@ -21,12 +21,18 @@ export function productMediaForSku(sku?: string | null): ProductMedia {
 
 export function productImageForVariant(
   sku: string | null | undefined,
-  _mainCategory: string,
-  familyImage?: string | null
+  mainCategory: string,
+  familyImage?: string | null,
+  phaseOrCategory?: string | null
 ): string {
   const uploadedImage = productMediaForSku(sku).images[0];
   if (uploadedImage) return uploadedImage;
   if (familyImage?.trim()) return familyImage;
+  const phase = String(phaseOrCategory || "").toLowerCase();
+  const isThreePhaseElectromotor =
+    mainCategory === "electromotor" &&
+    (phase.includes("three") || phase.includes("سه"));
+  if (!isThreePhaseElectromotor) return "";
   const value = [...String(sku || "")].reduce((sum, digit) => sum + Number(digit || 0), 0);
   return ELECTROMOTOR_FALLBACKS[value % ELECTROMOTOR_FALLBACKS.length];
 }
@@ -34,10 +40,11 @@ export function productImageForVariant(
 export function resolvedProductMedia(
   sku: string | null | undefined,
   mainCategory: string,
-  familyImage?: string | null
+  familyImage?: string | null,
+  phaseOrCategory?: string | null
 ): ProductMedia {
   const uploaded = productMediaForSku(sku);
-  const primaryImage = productImageForVariant(sku, mainCategory, familyImage);
+  const primaryImage = productImageForVariant(sku, mainCategory, familyImage, phaseOrCategory);
   return {
     images: uploaded.images.length > 0 ? uploaded.images : primaryImage ? [primaryImage] : [],
     videos: uploaded.videos,
