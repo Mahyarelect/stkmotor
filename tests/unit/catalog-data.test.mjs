@@ -90,6 +90,14 @@ describe("catalog seed integrity", () => {
 });
 
 describe("product media integrity", () => {
+  test("keeps all four requested 10100027 motor views with the rear view last", () => {
+    assert.deepEqual(mediaManifest["10100027"].images, [
+      "/media/products/fallback/electromotor-1.png",
+      "/media/products/fallback/electromotor-2.png",
+      "/media/products/fallback/electromotor-3.png",
+      "/media/products/assets/e2f4812435f52377e541.webp",
+    ]);
+  });
   test("uploaded media only references canonical product SKUs", () => {
     const canonicalSkus = new Set(seed.variants.map((variant) => String(variant.sku)));
     const mediaSkus = Object.keys(mediaManifest);
@@ -108,7 +116,7 @@ describe("product media integrity", () => {
       videoAssociations += media.videos.length;
 
       for (const publicUrl of [...media.images, ...media.videos]) {
-        assert.match(publicUrl, /^\/media\/products\/assets\/[a-f0-9]{20}\.(webp|mp4)$/);
+        assert.match(publicUrl, /^\/media\/products\/(?:assets\/[a-f0-9]{20}\.(?:webp|mp4)|fallback\/electromotor-[1-3]\.png)$/);
         const file = resolve(root, "public", publicUrl.slice(1));
         assert.ok((await stat(file)).size > 0, `${publicUrl} must not be empty`);
       }

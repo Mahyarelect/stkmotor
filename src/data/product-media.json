@@ -56,10 +56,10 @@
   },
   "10100027": {
     "images": [
-      "/media/products/assets/abbb8b20621d1f254bfc.webp",
-      "/media/products/assets/e2f4812435f52377e541.webp",
-      "/media/products/assets/e1b5f1c66ed793ae50a2.webp",
-      "/media/products/assets/edd1056b02bcca43e131.webp"
+      "/media/products/fallback/electromotor-1.png",
+      "/media/products/fallback/electromotor-2.png",
+      "/media/products/fallback/electromotor-3.png",
+      "/media/products/assets/e2f4812435f52377e541.webp"
     ],
     "videos": [
       "/media/products/assets/847cad04d47ec329fd55.mp4"
