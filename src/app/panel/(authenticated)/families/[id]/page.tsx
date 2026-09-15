@@ -20,6 +20,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ProductImageUploader } from "@/components/admin/ProductImageUploader";
+import { CATALOG_TAXONOMY, legacyCategory, phaseForCategory, taxonomyCategory } from "@/lib/catalog-taxonomy";
 import {
   Table,
   TableBody,
@@ -37,6 +38,20 @@ interface Variant {
   powerKw: number;
   speed: string;
   mountingType?: string;
+  voltage?: string;
+  gearboxType?: string;
+  modelType?: string;
+  ratio?: string;
+  inputFrame?: string;
+  inputType?: string;
+  pumpType?: string;
+  outletSize?: string;
+  headMeter?: number;
+  floater?: string;
+  brand?: string;
+  bodyMaterial?: string;
+  flangeType?: string;
+  flangeLength?: string;
   price: number;
   weight: string;
   dimensions: string;
@@ -50,6 +65,8 @@ interface Family {
   name: string;
   nameEn: string;
   category: string;
+  mainCategory: string;
+  subCategory: string;
   phase: string;
   shellType: string;
   description: string;
@@ -70,6 +87,10 @@ const EMPTY_VARIANT = {
   powerKw: 0,
   speed: "",
   mountingType: "",
+  voltage: "",
+  gearboxType: "", modelType: "", ratio: "", inputFrame: "", inputType: "",
+  pumpType: "", outletSize: "", headMeter: 0, floater: "",
+  brand: "", bodyMaterial: "", flangeType: "", flangeLength: "",
   price: 0,
   weight: "",
   dimensions: "",
@@ -93,6 +114,8 @@ export default function FamilyDetailPage() {
     name: "",
     nameEn: "",
     category: "",
+    mainCategory: "electromotor",
+    subCategory: "",
     phase: "",
     shellType: "",
     description: "",
@@ -119,6 +142,8 @@ export default function FamilyDetailPage() {
           name: data.name,
           nameEn: data.nameEn,
           category: data.category,
+          mainCategory: data.mainCategory,
+          subCategory: data.subCategory,
           phase: data.phase,
           shellType: data.shellType,
           description: data.description,
@@ -321,17 +346,9 @@ export default function FamilyDetailPage() {
                   dir="ltr"
                 />
               </div>
-              <div>
-                <Label className="text-xs">نوع فاز</Label>
-                <Input
-                  value={editForm.phase}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, phase: e.target.value })
-                  }
-                  className="mt-1"
-                />
-              </div>
-              <div>
+              <div><Label className="text-xs">دسته اصلی</Label><select value={editForm.mainCategory} onChange={(e) => { const mainCategory = e.target.value; const subCategory = taxonomyCategory(mainCategory)?.children[0]?.slug || ""; setEditForm({ ...editForm, mainCategory, subCategory, category: legacyCategory(mainCategory, subCategory), phase: phaseForCategory(mainCategory, subCategory) }); }} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">{CATALOG_TAXONOMY.map((item) => <option key={item.slug} value={item.slug}>{item.label}</option>)}</select></div>
+              <div><Label className="text-xs">زیر‌دسته</Label><select value={editForm.subCategory} onChange={(e) => { const subCategory = e.target.value; setEditForm({ ...editForm, subCategory, category: legacyCategory(editForm.mainCategory, subCategory), phase: phaseForCategory(editForm.mainCategory, subCategory) }); }} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">{taxonomyCategory(editForm.mainCategory)?.children.map((item) => <option key={item.slug} value={item.slug}>{item.label}</option>)}</select></div>
+              {editForm.mainCategory === "electromotor" && <div>
                 <Label className="text-xs">نوع پوسته</Label>
                 <Input
                   value={editForm.shellType}
@@ -340,7 +357,7 @@ export default function FamilyDetailPage() {
                   }
                   className="mt-1"
                 />
-              </div>
+              </div>}
               <div>
                 <Label className="text-xs">ترتیب</Label>
                 <Input
@@ -502,6 +519,25 @@ export default function FamilyDetailPage() {
                     dir="ltr"
                   />
                 </div>
+                {family.mainCategory === "electromotor" && <div><Label className="text-xs">ولتاژ</Label><Input value={newVariant.voltage} onChange={(e) => setNewVariant({ ...newVariant, voltage: e.target.value })} placeholder="380/660V" dir="ltr" /></div>}
+                {family.mainCategory === "gearbox" && <>
+                  <div><Label className="text-xs">نوع گیربکس</Label><Input value={newVariant.gearboxType} onChange={(e) => setNewVariant({ ...newVariant, gearboxType: e.target.value })} /></div>
+                  <div><Label className="text-xs">مدل</Label><Input value={newVariant.modelType} onChange={(e) => setNewVariant({ ...newVariant, modelType: e.target.value })} dir="ltr" /></div>
+                  <div><Label className="text-xs">نسبت تبدیل</Label><Input value={newVariant.ratio} onChange={(e) => setNewVariant({ ...newVariant, ratio: e.target.value })} dir="ltr" /></div>
+                  <div><Label className="text-xs">فریم ورودی</Label><Input value={newVariant.inputFrame} onChange={(e) => setNewVariant({ ...newVariant, inputFrame: e.target.value })} dir="ltr" /></div>
+                </>}
+                {family.mainCategory === "pump" && <>
+                  <div><Label className="text-xs">نوع پمپ</Label><Input value={newVariant.pumpType} onChange={(e) => setNewVariant({ ...newVariant, pumpType: e.target.value })} /></div>
+                  <div><Label className="text-xs">سایز خروجی (اینچ)</Label><Input value={newVariant.outletSize} onChange={(e) => setNewVariant({ ...newVariant, outletSize: e.target.value })} dir="ltr" /></div>
+                  <div><Label className="text-xs">هد (متر)</Label><Input type="number" value={newVariant.headMeter || ""} onChange={(e) => setNewVariant({ ...newVariant, headMeter: Number(e.target.value) || 0 })} dir="ltr" /></div>
+                  <div><Label className="text-xs">شناور</Label><Input value={newVariant.floater} onChange={(e) => setNewVariant({ ...newVariant, floater: e.target.value })} /></div>
+                </>}
+                {family.mainCategory === "accessories" && <>
+                  <div><Label className="text-xs">برند</Label><Input value={newVariant.brand} onChange={(e) => setNewVariant({ ...newVariant, brand: e.target.value })} /></div>
+                  <div><Label className="text-xs">جنس بدنه</Label><Input value={newVariant.bodyMaterial} onChange={(e) => setNewVariant({ ...newVariant, bodyMaterial: e.target.value })} /></div>
+                  <div><Label className="text-xs">نوع فلنج/قطعه</Label><Input value={newVariant.flangeType} onChange={(e) => setNewVariant({ ...newVariant, flangeType: e.target.value })} /></div>
+                  <div><Label className="text-xs">طول فلنج</Label><Input value={newVariant.flangeLength} onChange={(e) => setNewVariant({ ...newVariant, flangeLength: e.target.value })} /></div>
+                </>}
                 <div>
                   <Label className="text-xs">قیمت (تومان)</Label>
                   <Input

@@ -12,13 +12,14 @@ import {
   Send,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
+import { rubikaHref, telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
 import { CATALOG_CATEGORIES } from "@/data/catalogCategories";
 
 export function SiteFooter() {
   const siteSettings = useSiteSettings();
   const phoneLink = telHref(siteSettings.phone);
   const whatsappLink = whatsappHref(siteSettings.whatsapp);
+  const rubikaLink = rubikaHref(siteSettings.rubika);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
@@ -88,6 +89,8 @@ export function SiteFooter() {
                   <MapPin size={14} className="text-blue-400 shrink-0" />
                   <span>{siteSettings.address}</span>
                 </p>
+                {rubikaLink && <p className="flex items-center gap-2"><Send size={14} className="text-blue-400 shrink-0" /><a href={rubikaLink} target="_blank" rel="noopener noreferrer" className="hover:text-white">روبیکا</a></p>}
+                <p className="flex items-center gap-2"><MessageCircle size={14} className="text-emerald-400 shrink-0" /><a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="hover:text-white">واتساپ</a></p>
               </div>
             </div>
           </div>
@@ -100,7 +103,17 @@ export function SiteFooter() {
 
       {/* ─── Sticky Mobile Action Bar ─── */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] safe-area-pb">
-        <div className="grid grid-cols-3 divide-x divide-gray-200">
+        <div className={`grid ${rubikaLink ? "grid-cols-4" : "grid-cols-3"} divide-x divide-gray-200`}>
+          {rubikaLink && <a
+            href={rubikaLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-col items-center justify-center text-blue-700"
+            aria-label="روبیکا"
+          >
+            <Send size={18} className="mb-0.5" />
+            <span className="text-[10px] font-medium">روبیکا</span>
+          </a>}
           <a
             href={phoneLink}
             className="flex flex-col items-center py-2.5 text-gray-600 active:bg-gray-50"
@@ -138,6 +151,8 @@ export function SiteFooter() {
       >
         <MessageCircle size={26} className="text-white" />
       </a>
+
+      {rubikaLink && <a href={rubikaLink} target="_blank" rel="noopener noreferrer" className="hidden md:flex fixed bottom-24 left-6 z-50 w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full items-center justify-center shadow-lg shadow-blue-500/30 transition-all hover:scale-110" title="ارتباط در روبیکا" aria-label="ارتباط در روبیکا"><Send size={26} className="text-white" /></a>}
 
       {/* ─── Scroll to Top ─── */}
       {showScrollTop && (

@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     await requireAdmin();
 
     const body = await request.json();
-    const { familyId, sku, size, power, powerKw, speed, mountingType, price, weight, dimensions, inStock, sortOrder } = body;
+    const { familyId, sku, size, power, powerKw, speed, voltage, mountingType, gearboxType, modelType, ratio, inputFrame, inputType, pumpType, outletSize, headMeter, floater, brand, bodyMaterial, flangeType, flangeLength, price, weight, dimensions, inStock, sortOrder } = body;
 
     if (!familyId || !sku) {
       return NextResponse.json(
@@ -25,7 +25,21 @@ export async function POST(request: NextRequest) {
         power: power || "",
         powerKw: powerKw || 0,
         speed: speed || "",
+        voltage: voltage || "",
         mountingType: mountingType || "",
+        gearboxType: gearboxType || "",
+        modelType: modelType || "",
+        ratio: ratio || "",
+        inputFrame: inputFrame || "",
+        inputType: inputType || "",
+        pumpType: pumpType || "",
+        outletSize: outletSize || "",
+        headMeter: headMeter || 0,
+        floater: floater || "",
+        brand: brand || "",
+        bodyMaterial: bodyMaterial || "",
+        flangeType: flangeType || "",
+        flangeLength: flangeLength || "",
         price: price || 0,
         weight: weight || "",
         dimensions: dimensions || "",

@@ -11,6 +11,7 @@ const PUBLIC_SETTING_KEYS = [
   "instagram",
   "telegram",
   "whatsapp",
+  "rubika",
 ] as const;
 
 export async function GET() {

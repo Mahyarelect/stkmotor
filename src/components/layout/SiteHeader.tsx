@@ -12,10 +12,11 @@ import {
   Menu,
   X,
   Search,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { telHref, useSiteSettings } from "@/hooks/use-site-settings";
+import { rubikaHref, telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
 import { CATALOG_CATEGORIES } from "@/data/catalogCategories";
 import { GlobalSearchDialog } from "@/components/search/GlobalSearchDialog";
 import { HeaderSearchBar } from "@/components/search/HeaderSearchBar";
@@ -23,6 +24,8 @@ import { HeaderSearchBar } from "@/components/search/HeaderSearchBar";
 export function SiteHeader() {
   const siteSettings = useSiteSettings();
   const phoneLink = telHref(siteSettings.phone);
+  const rubikaLink = rubikaHref(siteSettings.rubika);
+  const whatsappLink = whatsappHref(siteSettings.whatsapp);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -52,6 +55,8 @@ export function SiteHeader() {
             </a>
           </div>
           <div className="flex items-center gap-3">
+            {rubikaLink && <a href={rubikaLink} target="_blank" rel="noopener noreferrer" className="hover:text-blue-200 transition-colors" aria-label="روبیکا"><Send size={14} /></a>}
+            <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="hover:text-blue-200 transition-colors" aria-label="واتساپ"><MessageCircle size={14} /></a>
             <a
               href={siteSettings.instagram || "#"}
               target="_blank"

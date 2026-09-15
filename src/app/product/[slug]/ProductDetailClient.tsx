@@ -29,7 +29,7 @@ import { ProductSpecsTable } from "@/components/product/ProductSpecsTable";
 import { ProductCard, ProductFamilyData } from "@/components/product/ProductCard";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
-import { telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
+import { rubikaHref, telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
 import {
   ProductLeadModal,
   ProductLeadFloatingButton,
@@ -108,7 +108,6 @@ export default function ProductDetailClient({
   const searchParams = useSearchParams();
   const currentSkuParam = searchParams.get("sku") || initialSku || "";
   const phoneLink = telHref(siteSettings.phone);
-  const whatsappLink = whatsappHref(siteSettings.whatsapp);
 
   const [family, setFamily] = useState<ProductFamily | null>(null);
   const [loading, setLoading] = useState(true);
@@ -205,9 +204,10 @@ export default function ProductDetailClient({
     pump: { title: "پمپ‌ها", href: "/category/pump" },
     accessories: { title: "لوازم جانبی", href: "/category/accessories" },
   }[family.mainCategory] || { title: "محصولات", href: "/" }) : { title: "محصولات", href: "/" };
-  const inquiryLink = selectedVariant && family
-    ? `${whatsappLink}?text=${encodeURIComponent(`سلام، برای ${family.name} با کد ${selectedVariant.sku} درخواست استعلام دارم.`)}`
-    : whatsappLink;
+  const inquiryMessage = family
+    ? `سلام، برای ${family.name}${selectedVariant?.sku ? ` با کد ${selectedVariant.sku}` : ""} درخواست استعلام قیمت دارم.`
+    : "سلام، درخواست استعلام قیمت دارم.";
+  const inquiryLink = rubikaHref(siteSettings.rubika, inquiryMessage);
   interface TableColumn {
     id: string;
     label: string;
@@ -661,11 +661,14 @@ export default function ProductDetailClient({
                   تماس تلفنی
                 </Button>
               </a>
-              <a href={inquiryLink} target="_blank" rel="noopener" aria-label="استعلام در واتساپ">
-                <Button size="lg" variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 rounded-xl">
+              <a href={inquiryLink || undefined} target="_blank" rel="noopener" aria-label="ارتباط و استعلام قیمت در روبیکا" aria-disabled={!inquiryLink} onClick={(event) => { if (!inquiryLink) event.preventDefault(); }}>
+                <Button disabled={!inquiryLink} size="lg" variant="outline" className="border-blue-300 text-blue-800 hover:bg-blue-50 px-6 rounded-xl">
                   <MessageCircle size={16} className="ml-1.5" />
-                  واتساپ
+                  ارتباط و استعلام قیمت در روبیکا
                 </Button>
+              </a>
+              <a href={whatsappHref(siteSettings.whatsapp, inquiryMessage)} target="_blank" rel="noopener" aria-label="ارتباط در واتساپ">
+                <Button size="lg" variant="ghost" className="text-emerald-700 px-4 rounded-xl"><MessageCircle size={16} className="ml-1.5" />واتساپ</Button>
               </a>
             </div>
 
@@ -764,7 +767,7 @@ export default function ProductDetailClient({
             <CardContent className="p-6 md:p-8">
               <h3 className="text-lg font-bold text-gray-900 mb-1">استعلام و مشاوره فنی</h3>
               <p className="text-sm text-gray-600 mb-5">
-                این وب‌سایت کاتالوگ محصولات است. برای دریافت اطلاعات تکمیلی یا استعلام این مدل، از تماس یا واتساپ استفاده کنید.
+                این وب‌سایت کاتالوگ محصولات است. برای دریافت اطلاعات تکمیلی یا استعلام این مدل، از تماس، روبیکا یا واتساپ استفاده کنید.
               </p>
               <div className="flex flex-wrap gap-3">
                 <a href={phoneLink}>
@@ -773,10 +776,10 @@ export default function ProductDetailClient({
                     تماس با کارشناس
                   </Button>
                 </a>
-                <a href={inquiryLink} target="_blank" rel="noopener">
-                  <Button variant="outline" className="border-blue-200 bg-white text-blue-700 hover:bg-blue-50 hover:text-blue-800">
+                <a href={inquiryLink || undefined} target="_blank" rel="noopener" aria-disabled={!inquiryLink} onClick={(event) => { if (!inquiryLink) event.preventDefault(); }}>
+                  <Button disabled={!inquiryLink} variant="outline" className="border-blue-200 bg-white text-blue-700 hover:bg-blue-50 hover:text-blue-800">
                     <MessageCircle size={16} className="ml-1.5" />
-                    استعلام در واتساپ
+                    استعلام در روبیکا
                   </Button>
                 </a>
               </div>

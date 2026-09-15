@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { ProductImageUploader } from "@/components/admin/ProductImageUploader";
+import { CATALOG_TAXONOMY, legacyCategory, phaseForCategory, taxonomyCategory } from "@/lib/catalog-taxonomy";
 
 interface Family {
   id: string;
@@ -35,6 +36,8 @@ interface Family {
   name: string;
   nameEn: string;
   category: string;
+  mainCategory: string;
+  subCategory: string;
   phase: string;
   shellType: string;
   description: string;
@@ -59,6 +62,8 @@ export default function FamiliesPage() {
     name: "",
     nameEn: "",
     category: "three-phase",
+    mainCategory: "electromotor",
+    subCategory: "three-phase",
     phase: "سه‌فاز",
     shellType: "چدنی",
     description: "",
@@ -106,6 +111,8 @@ export default function FamiliesPage() {
         name: "",
         nameEn: "",
         category: "three-phase",
+        mainCategory: "electromotor",
+        subCategory: "three-phase",
         phase: "سه‌فاز",
         shellType: "چدنی",
         description: "",
@@ -201,34 +208,32 @@ export default function FamiliesPage() {
                   />
                 </div>
                 <div>
-                  <Label>دسته‌بندی *</Label>
+                  <Label>دسته اصلی *</Label>
                   <select
-                    value={form.category}
+                    value={form.mainCategory}
                     onChange={(e) => {
-                      const cat = e.target.value;
+                      const mainCategory = e.target.value;
+                      const subCategory = taxonomyCategory(mainCategory)?.children[0]?.slug || "";
                       setForm({
                         ...form,
-                        category: cat,
-                        phase: cat === "single-phase" ? "تک‌فاز" : "سه‌فاز",
+                        mainCategory,
+                        subCategory,
+                        category: legacyCategory(mainCategory, subCategory),
+                        phase: phaseForCategory(mainCategory, subCategory),
                       });
                     }}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   >
-                    <option value="three-phase">سه‌فاز</option>
-                    <option value="single-phase">تک‌فاز</option>
+                    {CATALOG_TAXONOMY.map((category) => <option key={category.slug} value={category.slug}>{category.label}</option>)}
                   </select>
                 </div>
                 <div>
-                  <Label>نوع فاز</Label>
-                  <Input
-                    value={form.phase}
-                    onChange={(e) =>
-                      setForm({ ...form, phase: e.target.value })
-                    }
-                    placeholder="سه‌فاز"
-                  />
+                  <Label>زیر‌دسته *</Label>
+                  <select value={form.subCategory} onChange={(e) => { const subCategory = e.target.value; setForm({ ...form, subCategory, category: legacyCategory(form.mainCategory, subCategory), phase: phaseForCategory(form.mainCategory, subCategory) }); }} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    {taxonomyCategory(form.mainCategory)?.children.map((child) => <option key={child.slug} value={child.slug}>{child.label}</option>)}
+                  </select>
                 </div>
-                <div>
+                {form.mainCategory === "electromotor" && <div>
                   <Label>نوع پوسته</Label>
                   <Input
                     value={form.shellType}
@@ -237,7 +242,7 @@ export default function FamiliesPage() {
                     }
                     placeholder="چدنی"
                   />
-                </div>
+                </div>}
                 <div>
                   <Label>ترتیب نمایش</Label>
                   <Input

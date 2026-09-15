@@ -7,6 +7,8 @@ Persian RTL catalog and administration panel for industrial products. The applic
 - Responsive Persian storefront with desktop and mobile navigation.
 - Multi-category catalog pages and shareable URL-based filters.
 - Category-specific product cards, specifications, pricing, availability, and WhatsApp inquiry links.
+- Hierarchical catalog management for motors, gearboxes, pumps, and accessories with category-specific technical fields.
+- Configurable Rubika price-inquiry links (the account can remain blank until supplied) alongside WhatsApp contact links.
 - PostgreSQL database managed through Prisma.
 - SKU-specific image galleries and product videos with catalog-wide fallback images.
 - Protected administration panel for families, variants, product media, bulk pricing, price history, and public settings.

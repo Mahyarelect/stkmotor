@@ -36,6 +36,7 @@ const SETTING_DEFINITIONS = [
   { key: "instagram", label: "آدرس اینستاگرام", group: "social", placeholder: "https://instagram.com/stkmotors", icon: Instagram },
   { key: "telegram", label: "آدرس تلگرام", group: "social", placeholder: "https://t.me/stkmotors", icon: Send },
   { key: "whatsapp", label: "شماره واتساپ", group: "social", placeholder: "982112345678", icon: Send },
+  { key: "rubika", label: "شناسه یا لینک روبیکا", group: "social", placeholder: "@username یا https://rubika.ir/username", icon: Send },
 ];
 
 const GROUP_LABELS: Record<string, string> = {
@@ -177,7 +178,7 @@ export default function SettingsPage() {
                           placeholder={def.placeholder}
                           className="mt-1"
                           dir={
-                            ["email", "instagram", "telegram"].includes(def.key)
+                            ["email", "instagram", "telegram", "rubika"].includes(def.key)
                               ? "ltr"
                               : undefined
                           }

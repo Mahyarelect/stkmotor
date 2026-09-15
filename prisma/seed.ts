@@ -112,6 +112,7 @@ async function main() {
     { key: "instagram", value: "https://instagram.com/stkmotors", label: "آدرس اینستاگرام", group: "social" },
     { key: "telegram", value: "https://t.me/stkmotors", label: "آدرس کانال تلگرام", group: "social" },
     { key: "whatsapp", value: "989123456789", label: "شماره پشتیبانی واتساپ", group: "social" },
+    { key: "rubika", value: "", label: "شناسه یا لینک روبیکا", group: "social" },
   ];
 
   for (const s of defaultSettings) {

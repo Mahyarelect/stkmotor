@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     await requireAdmin();
 
     const body = await request.json();
-    const { slug, name, nameEn, category, phase, shellType, description, imageUrl, sortOrder } = body;
+    const { slug, name, nameEn, category, mainCategory, subCategory, phase, shellType, brand, description, imageUrl, sortOrder } = body;
 
     if (!slug || !name || !category) {
       return NextResponse.json(
@@ -45,8 +45,11 @@ export async function POST(request: NextRequest) {
         name,
         nameEn: nameEn || "",
         category,
+        mainCategory: mainCategory || "electromotor",
+        subCategory: subCategory || category,
         phase: phase || "",
         shellType: shellType || "چدنی",
+        brand: brand || "",
         description: description || "",
         imageUrl: normalizeProductImageUrl(imageUrl) || "",
         sortOrder: sortOrder || 0,

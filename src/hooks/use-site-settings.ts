@@ -12,6 +12,7 @@ export interface PublicSiteSettings {
   instagram: string;
   telegram: string;
   whatsapp: string;
+  rubika: string;
 }
 
 export const DEFAULT_SITE_SETTINGS: PublicSiteSettings = {
@@ -24,6 +25,7 @@ export const DEFAULT_SITE_SETTINGS: PublicSiteSettings = {
   instagram: "https://instagram.com/stkmotors",
   telegram: "https://t.me/stkmotors",
   whatsapp: "982112345678",
+  rubika: "",
 };
 
 export function useSiteSettings() {
@@ -53,4 +55,14 @@ export function telHref(phone: string) {
 export function whatsappHref(phone: string, text?: string) {
   const base = `https://wa.me/${phone.replace(/[^\d]/g, "")}`;
   return text ? `${base}?text=${encodeURIComponent(text)}` : base;
+}
+
+export function rubikaHref(account: string, text?: string) {
+  const value = account.trim();
+  if (!value) return "";
+  const normalized = value.replace(/^@/, "");
+  const base = /^https?:\/\//i.test(normalized)
+    ? normalized.replace(/\/$/, "")
+    : `https://rubika.ir/${normalized.replace(/^rubika\.ir\//i, "")}`;
+  return text ? `${base}${base.includes("?") ? "&" : "?"}text=${encodeURIComponent(text)}` : base;
 }
