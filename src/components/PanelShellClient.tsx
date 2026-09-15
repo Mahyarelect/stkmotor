@@ -13,6 +13,8 @@ import {
   Cog,
   User,
   BadgeDollarSign,
+  Compass,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -32,6 +34,16 @@ const NAV_ITEMS = [
     href: "/panel/families",
     label: "محصولات",
     icon: Package,
+  },
+  {
+    href: "/panel/landing-pages",
+    label: "صفحات فرود (CMS)",
+    icon: Compass,
+  },
+  {
+    href: "/panel/about",
+    label: "درباره ما (CMS)",
+    icon: Building2,
   },
   {
     href: "/panel/pricing",

@@ -163,6 +163,12 @@ export function SiteHeader() {
                   )}
                 </div>
               ))}
+              <Link
+                href="/about"
+                className="px-3 py-2 rounded-md hover:text-blue-700 hover:bg-gray-50 transition-colors whitespace-nowrap"
+              >
+                درباره ما
+              </Link>
             </nav>
 
             {/* Desktop Search Bar (Permanent & Prominent) */}
@@ -299,7 +305,7 @@ export function SiteHeader() {
             <Separator />
             <div className="flex gap-2 pt-1">
               <Link
-                href="/#about"
+                href="/about"
                 className="text-xs text-gray-500 hover:text-blue-600"
                 onClick={() => setMobileMenuOpen(false)}
               >

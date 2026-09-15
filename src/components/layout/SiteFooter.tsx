@@ -66,7 +66,7 @@ export function SiteFooter() {
                 <Link href="/electromotors" className="block hover:text-blue-400 transition-colors">
                   کاتالوگ الکتروموتورها
                 </Link>
-                <Link href="/#about" className="block hover:text-blue-400 transition-colors">
+                <Link href="/about" className="block hover:text-blue-400 transition-colors">
                   درباره ما
                 </Link>
                 <Link href="/#contact" className="block hover:text-blue-400 transition-colors">

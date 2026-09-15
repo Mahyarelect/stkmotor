@@ -161,3 +161,42 @@ model SearchLog {
   @@index([query])
 }
 
+model LandingPage {
+  id                  String   @id @default(cuid())
+  slug                String   @unique
+  title               String
+  subtitle            String   @default("")
+  description         String   @default("")
+  bannerUrl           String   @default("")
+  ctaText             String   @default("")
+  ctaLink             String   @default("")
+  content             String   @default("")
+  featuredFamilySlugs String   @default("[]") // JSON array of family slugs
+  isActive            Boolean  @default(true)
+  seoTitle            String   @default("")
+  seoDescription      String   @default("")
+  sortOrder           Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isActive, sortOrder])
+}
+
+model AboutPage {
+  id           String   @id @default(cuid())
+  title        String   @default("درباره گروه صنعتی STK")
+  subtitle     String   @default("پیشگام در تأمین تجهیزات صنعتی، الکتروموتور و ماشین‌آلات")
+  introText    String   @default("گروه صنعتی STK با بیش از ۳ دهه فعالیت تخصصی در بازار سعدی تهران، مرجع تأمین الکتروموتور، گیربکس‌های صنعتی و پمپ‌های آب و سیالات است.")
+  storyTitle   String   @default("داستان و تاریخچه ما")
+  storyText    String   @default("از سال ۱۳۷۲ با هدف تسهیل تأمین الکتروموتور و قطعات صنعتی برای کارگاه‌ها و کارخانجات ایران آغاز کردیم. طی ۳۰ سال تجربه، صداقت، ارائه مشخصات فنی دقیق و تضمین سلامت کالا را سرلوحه خود قرار داده‌ایم.")
+  missionTitle String   @default("ماموریت و اهداف ما")
+  missionText  String   @default("رسالت ما ایجاد بستری شفاف و قابل اعتماد جهت انتخاب، مقایسه تخصصی و خرید آسان انواع موتورهای صنعتی با مناسب‌ترین قیمت و پشتیبانی فنی بدون وقفه است.")
+  values       String   @default("[{\"title\":\"اصالت کالا\",\"description\":\"تضمین اصالت برندها و سیم‌پیچ‌های مسی استاندارد\",\"icon\":\"ShieldCheck\"},{\"title\":\"تخصص و مشاوره\",\"description\":\"تیم مهندسی مجرب برای انتخاب دقیق توان، دور و نوع نصب\",\"icon\":\"Award\"},{\"title\":\"ارسال سریع سراسری\",\"description\":\"تحویل فوری در تهران و باربری به کلیه شهرستان‌ها\",\"icon\":\"Truck\"},{\"title\":\"پشتیبانی فنی مداوم\",\"description\":\"مشاوره رایگان و همراهی در تمامی مراحل نصب و راه‌اندازی\",\"icon\":\"Headphones\"}]")
+  gallery      String   @default("[]") // JSON array: [{ url, caption }]
+  stats        String   @default("[{\"label\":\"سال سابقه و تجربه\",\"value\":\"۳۰+\"},{\"label\":\"محصول و تیپ تخصصی\",\"value\":\"۸۵۰+\"},{\"label\":\"مشتری و پروژه موفق\",\"value\":\"۵۰۰۰+\"},{\"label\":\"استان تحت پوشش\",\"value\":\"۳۱\"}]")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+
