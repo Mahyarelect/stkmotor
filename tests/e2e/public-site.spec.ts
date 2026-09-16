@@ -137,6 +137,19 @@ test("admin pricing preview and product image uploader are usable", async ({ pag
   await page.getByRole("button", { name: "ویرایش" }).click();
   await expect(page.getByRole("button", { name: /تصویر را بکشید و رها کنید/ })).toBeVisible();
   await expect(page.locator('input[type="file"][accept*="image/webp"]')).toHaveCount(1);
+
+  // Verify variant media management button opens modal
+  const mediaBtn = page.getByRole("button", { name: /مدیریت مدیا برای کد/ }).first();
+  await expect(mediaBtn).toBeVisible();
+  await mediaBtn.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "مدیریت تصاویر و ویدیوهای واریانت" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /گالری تصاویر/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /ویدیوها/ })).toBeVisible();
+  await page.getByRole("button", { name: /ویدیوها/ }).click();
+  await expect(page.getByRole("button", { name: /بارگذاری ویدیوی جدید/ })).toBeVisible();
+  await page.getByRole("button", { name: "انصراف" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
 test("product page displays lead capture popup form and accepts inquiries", async ({ page }) => {

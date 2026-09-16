@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { normalizeProductImageUrl } from "@/lib/product-image";
+import { resolvedProductMedia } from "@/lib/product-media";
 
 // GET /api/admin/families/[id] — single family with variants
 export async function GET(
@@ -23,12 +24,19 @@ export async function GET(
       return NextResponse.json({ error: "یافت نشد" }, { status: 404 });
     }
 
-    // Serialize BigInt
+    // Serialize BigInt and attach resolved media
     const serialized = {
       ...family,
       variants: family.variants.map((v) => ({
         ...v,
         price: Number(v.price),
+        media: resolvedProductMedia(
+          v.sku,
+          family.mainCategory,
+          family.imageUrl,
+          `${family.category} ${family.phase}`,
+          v.attributes
+        ),
       })),
     };
 
