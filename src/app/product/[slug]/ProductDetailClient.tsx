@@ -30,6 +30,7 @@ import { ProductCard, ProductFamilyData } from "@/components/product/ProductCard
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { rubikaHref, telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
+import { RubikaIcon } from "@/components/icons/RubikaIcon";
 import {
   ProductLeadModal,
   ProductLeadFloatingButton,
@@ -663,7 +664,7 @@ export default function ProductDetailClient({
               </a>
               <a href={inquiryLink || undefined} target="_blank" rel="noopener" aria-label="ارتباط و استعلام قیمت در روبیکا" aria-disabled={!inquiryLink} onClick={(event) => { if (!inquiryLink) event.preventDefault(); }}>
                 <Button disabled={!inquiryLink} size="lg" variant="outline" className="border-blue-300 text-blue-800 hover:bg-blue-50 px-6 rounded-xl">
-                  <MessageCircle size={16} className="ml-1.5" />
+                  <RubikaIcon size={18} className="ml-1.5" />
                   ارتباط و استعلام قیمت در روبیکا
                 </Button>
               </a>

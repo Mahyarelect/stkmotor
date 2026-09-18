@@ -11,7 +11,9 @@ import {
   Save,
   Loader2,
   Check,
+  MessageCircle,
 } from "lucide-react";
+import { RubikaIcon } from "@/components/icons/RubikaIcon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,8 +37,8 @@ const SETTING_DEFINITIONS = [
   { key: "address", label: "آدرس", group: "contact", placeholder: "تهران، ایران", icon: MapPin },
   { key: "instagram", label: "آدرس اینستاگرام", group: "social", placeholder: "https://instagram.com/stkmotors", icon: Instagram },
   { key: "telegram", label: "آدرس تلگرام", group: "social", placeholder: "https://t.me/stkmotors", icon: Send },
-  { key: "whatsapp", label: "شماره واتساپ", group: "social", placeholder: "982112345678", icon: Send },
-  { key: "rubika", label: "شناسه یا لینک روبیکا", group: "social", placeholder: "@username یا https://rubika.ir/username", icon: Send },
+  { key: "whatsapp", label: "شماره واتساپ", group: "social", placeholder: "982112345678", icon: MessageCircle },
+  { key: "rubika", label: "شناسه یا لینک روبیکا", group: "social", placeholder: "@username یا https://rubika.ir/username", icon: RubikaIcon },
 ];
 
 const GROUP_LABELS: Record<string, string> = {

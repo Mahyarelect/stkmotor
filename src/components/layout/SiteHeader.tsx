@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { rubikaHref, telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
+import { RubikaIcon } from "@/components/icons/RubikaIcon";
 import { CATALOG_CATEGORIES } from "@/data/catalogCategories";
 import { GlobalSearchDialog } from "@/components/search/GlobalSearchDialog";
 import { HeaderSearchBar } from "@/components/search/HeaderSearchBar";
@@ -24,7 +25,7 @@ import { HeaderSearchBar } from "@/components/search/HeaderSearchBar";
 export function SiteHeader() {
   const siteSettings = useSiteSettings();
   const phoneLink = telHref(siteSettings.phone);
-  const rubikaLink = rubikaHref(siteSettings.rubika);
+  const rubikaLink = rubikaHref(siteSettings.rubika) || "https://rubika.ir/stkmotors";
   const whatsappLink = whatsappHref(siteSettings.whatsapp);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -55,14 +56,33 @@ export function SiteHeader() {
             </a>
           </div>
           <div className="flex items-center gap-3">
-            {rubikaLink && <a href={rubikaLink} target="_blank" rel="noopener noreferrer" className="hover:text-blue-200 transition-colors" aria-label="روبیکا"><Send size={14} /></a>}
-            <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="hover:text-blue-200 transition-colors" aria-label="واتساپ"><MessageCircle size={14} /></a>
+            <a
+              href={rubikaLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:scale-110 transition-transform flex items-center"
+              aria-label="روبیکا"
+              title="روبیکا"
+            >
+              <RubikaIcon size={15} />
+            </a>
+            <a
+              href={whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-blue-200 transition-colors"
+              aria-label="واتساپ"
+              title="واتساپ"
+            >
+              <MessageCircle size={14} />
+            </a>
             <a
               href={siteSettings.instagram || "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-blue-200 transition-colors"
               aria-label="Instagram"
+              title="اینستاگرام"
             >
               <Instagram size={14} />
             </a>
@@ -72,6 +92,7 @@ export function SiteHeader() {
               rel="noopener noreferrer"
               className="hover:text-blue-200 transition-colors"
               aria-label="Telegram"
+              title="تلگرام"
             >
               <Send size={14} />
             </a>
@@ -319,6 +340,51 @@ export function SiteHeader() {
               >
                 تماس
               </Link>
+            </div>
+            <div className="flex items-center justify-around py-2 px-1 bg-gray-50 rounded-lg">
+              <a
+                href={rubikaLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-blue-700 transition-colors"
+                aria-label="روبیکا"
+              >
+                <RubikaIcon size={16} />
+                <span>روبیکا</span>
+              </a>
+              <span className="text-gray-300">|</span>
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 hover:text-emerald-800 transition-colors"
+                aria-label="واتساپ"
+              >
+                <MessageCircle size={15} />
+                <span>واتساپ</span>
+              </a>
+              <span className="text-gray-300">|</span>
+              <a
+                href={siteSettings.instagram || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs font-medium text-pink-700 hover:text-pink-800 transition-colors"
+                aria-label="اینستاگرام"
+              >
+                <Instagram size={15} />
+                <span>اینستاگرام</span>
+              </a>
+              <span className="text-gray-300">|</span>
+              <a
+                href={siteSettings.telegram || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs font-medium text-sky-700 hover:text-sky-800 transition-colors"
+                aria-label="تلگرام"
+              >
+                <Send size={15} />
+                <span>تلگرام</span>
+              </a>
             </div>
             <a href={phoneLink} className="block pt-1">
               <Button className="w-full bg-blue-700 hover:bg-blue-800 text-white">

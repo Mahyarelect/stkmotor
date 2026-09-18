@@ -10,16 +10,18 @@ import {
   ArrowUp,
   MessageCircle,
   Send,
+  Instagram,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { rubikaHref, telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
+import { RubikaIcon } from "@/components/icons/RubikaIcon";
 import { CATALOG_CATEGORIES } from "@/data/catalogCategories";
 
 export function SiteFooter() {
   const siteSettings = useSiteSettings();
   const phoneLink = telHref(siteSettings.phone);
   const whatsappLink = whatsappHref(siteSettings.whatsapp);
-  const rubikaLink = rubikaHref(siteSettings.rubika);
+  const rubikaLink = rubikaHref(siteSettings.rubika) || "https://rubika.ir/stkmotors";
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
@@ -44,6 +46,48 @@ export function SiteFooter() {
               <p className="text-sm leading-relaxed text-gray-400">
                 تأمین‌کننده تخصصی الکتروموتور، گیربکس، پمپ و لوازم جانبی صنعتی همراه با اطلاعات فنی دقیق و مشاوره رایگان.
               </p>
+              <div className="flex items-center gap-2.5 mt-4">
+                <a
+                  href={rubikaLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-all hover:scale-110"
+                  aria-label="روبیکا"
+                  title="روبیکا"
+                >
+                  <RubikaIcon size={18} />
+                </a>
+                <a
+                  href={siteSettings.instagram || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-pink-400 transition-all hover:scale-110"
+                  aria-label="اینستاگرام"
+                  title="اینستاگرام"
+                >
+                  <Instagram size={15} />
+                </a>
+                <a
+                  href={siteSettings.telegram || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-blue-400 transition-all hover:scale-110"
+                  aria-label="تلگرام"
+                  title="تلگرام"
+                >
+                  <Send size={15} />
+                </a>
+                <a
+                  href={whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-emerald-400 transition-all hover:scale-110"
+                  aria-label="واتساپ"
+                  title="واتساپ"
+                >
+                  <MessageCircle size={15} />
+                </a>
+              </div>
             </div>
             <div>
               <h5 className="text-white font-semibold mb-3 text-sm">دسته‌بندی محصولات</h5>
@@ -89,7 +133,10 @@ export function SiteFooter() {
                   <MapPin size={14} className="text-blue-400 shrink-0" />
                   <span>{siteSettings.address}</span>
                 </p>
-                {rubikaLink && <p className="flex items-center gap-2"><Send size={14} className="text-blue-400 shrink-0" /><a href={rubikaLink} target="_blank" rel="noopener noreferrer" className="hover:text-white">روبیکا</a></p>}
+                <p className="flex items-center gap-2">
+                  <RubikaIcon size={16} className="shrink-0" />
+                  <a href={rubikaLink} target="_blank" rel="noopener noreferrer" className="hover:text-white">روبیکا</a>
+                </p>
                 <p className="flex items-center gap-2"><MessageCircle size={14} className="text-emerald-400 shrink-0" /><a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="hover:text-white">واتساپ</a></p>
               </div>
             </div>
@@ -103,17 +150,17 @@ export function SiteFooter() {
 
       {/* ─── Sticky Mobile Action Bar ─── */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] safe-area-pb">
-        <div className={`grid ${rubikaLink ? "grid-cols-4" : "grid-cols-3"} divide-x divide-gray-200`}>
-          {rubikaLink && <a
+        <div className="grid grid-cols-4 divide-x divide-gray-200">
+          <a
             href={rubikaLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-col items-center justify-center text-blue-700"
+            className="flex flex-col items-center py-2.5 text-gray-600 active:bg-gray-50"
             aria-label="روبیکا"
           >
-            <Send size={18} className="mb-0.5" />
+            <RubikaIcon size={18} className="mb-0.5" />
             <span className="text-[10px] font-medium">روبیکا</span>
-          </a>}
+          </a>
           <a
             href={phoneLink}
             className="flex flex-col items-center py-2.5 text-gray-600 active:bg-gray-50"
@@ -127,14 +174,14 @@ export function SiteFooter() {
             rel="noopener noreferrer"
             className="flex flex-col items-center py-2.5 text-gray-600 active:bg-gray-50"
           >
-            <Send size={18} className="mb-0.5 text-emerald-600" />
+            <MessageCircle size={18} className="mb-0.5 text-emerald-600" />
             <span className="text-[10px] font-medium">واتساپ</span>
           </a>
           <Link
             href="/#products"
             className="flex flex-col items-center py-2.5 text-gray-600 active:bg-gray-50"
           >
-            <MessageCircle size={18} className="mb-0.5 text-orange-500" />
+            <Cog size={18} className="mb-0.5 text-orange-500" />
             <span className="text-[10px] font-medium">همه محصولات</span>
           </Link>
         </div>
@@ -152,7 +199,16 @@ export function SiteFooter() {
         <MessageCircle size={26} className="text-white" />
       </a>
 
-      {rubikaLink && <a href={rubikaLink} target="_blank" rel="noopener noreferrer" className="hidden md:flex fixed bottom-24 left-6 z-50 w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full items-center justify-center shadow-lg shadow-blue-500/30 transition-all hover:scale-110" title="ارتباط در روبیکا" aria-label="ارتباط در روبیکا"><Send size={26} className="text-white" /></a>}
+      <a
+        href={rubikaLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hidden md:flex fixed bottom-24 left-6 z-50 w-14 h-14 bg-gradient-to-tr from-blue-700 to-indigo-900 hover:from-blue-600 hover:to-indigo-800 rounded-full items-center justify-center shadow-lg shadow-indigo-950/40 transition-all hover:scale-110"
+        title="ارتباط در روبیکا"
+        aria-label="ارتباط در روبیکا"
+      >
+        <RubikaIcon size={28} />
+      </a>
 
       {/* ─── Scroll to Top ─── */}
       {showScrollTop && (

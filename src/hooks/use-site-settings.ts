@@ -25,7 +25,7 @@ export const DEFAULT_SITE_SETTINGS: PublicSiteSettings = {
   instagram: "https://instagram.com/stkmotors",
   telegram: "https://t.me/stkmotors",
   whatsapp: "982112345678",
-  rubika: "",
+  rubika: "https://rubika.ir/stkmotors",
 };
 
 export function useSiteSettings() {
