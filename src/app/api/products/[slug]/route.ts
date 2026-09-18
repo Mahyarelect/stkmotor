@@ -30,7 +30,8 @@ export async function GET(
       v.sku,
       family.mainCategory,
       family.imageUrl,
-      `${family.category} ${family.phase}`
+      `${family.category} ${family.phase}`,
+      v.attributes
     ),
   }));
   const serialized = {

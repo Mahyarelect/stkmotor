@@ -270,7 +270,8 @@ export async function GET(request: NextRequest) {
         variant.sku,
         family.mainCategory,
         family.imageUrl,
-        `${family.category} ${family.phase}`
+        `${family.category} ${family.phase}`,
+        variant.attributes
       ),
     }));
     return {

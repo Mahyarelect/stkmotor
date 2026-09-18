@@ -153,6 +153,81 @@ test("authenticated admins can preview pricing and upload optimized product imag
   expect((await request.delete(`/api/admin/upload?url=${encodeURIComponent(uploaded.url)}`)).status()).toBe(200);
 });
 
+test("authenticated admins can upload and assign multiple images/videos and reorder variant media", async ({ request }) => {
+  const login = await request.post("/api/auth", { data: { username: "admin", password: "Admin123456!" } });
+  expect(login.status()).toBe(200);
+
+  // 1. Fetch families to get a test variant
+  const familiesRes = await request.get("/api/admin/families");
+  expect(familiesRes.status()).toBe(200);
+  const families = await familiesRes.json();
+  expect(families.length).toBeGreaterThan(0);
+
+  const familyDetailRes = await request.get(`/api/admin/families/${families[0].id}`);
+  expect(familyDetailRes.status()).toBe(200);
+  const family = await familyDetailRes.json();
+  const variant = family.variants[0];
+  expect(variant).toBeDefined();
+
+  // 2. Upload an image for the variant
+  const onePixelPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64");
+  const imgUpload = await request.post("/api/admin/upload", {
+    multipart: { slug: family.slug, file: { name: "variant-photo.png", mimeType: "image/png", buffer: onePixelPng } },
+  });
+  expect(imgUpload.status()).toBe(201);
+  const uploadedImg = await imgUpload.json();
+
+  // 3. Upload a sample video
+  const sampleVideo = Buffer.from("fake-mp4-video-content-header-ftypisom");
+  const vidUpload = await request.post("/api/admin/upload", {
+    multipart: { slug: family.slug, file: { name: "variant-clip.mp4", mimeType: "video/mp4", buffer: sampleVideo } },
+  });
+  expect(vidUpload.status()).toBe(201);
+  const uploadedVid = await vidUpload.json();
+
+  // 4. Update variant with assigned media: 2 images (first is primary) and 1 video
+  const secondImg = "/media/products/assets/895dff27ba068dccd40a.webp";
+  const updateRes = await request.put(`/api/admin/variants/${variant.id}`, {
+    data: {
+      media: {
+        images: [uploadedImg.url, secondImg],
+        videos: [uploadedVid.url],
+      },
+    },
+  });
+  expect(updateRes.status()).toBe(200);
+  const updatedVariant = await updateRes.json();
+  expect(updatedVariant.media.images).toEqual([uploadedImg.url, secondImg]);
+  expect(updatedVariant.media.videos).toEqual([uploadedVid.url]);
+
+  // 5. Test reordering: swap image positions to make secondImg the primary image
+  const reorderRes = await request.put(`/api/admin/variants/${variant.id}`, {
+    data: {
+      media: {
+        images: [secondImg, uploadedImg.url],
+        videos: [uploadedVid.url],
+      },
+    },
+  });
+  expect(reorderRes.status()).toBe(200);
+  const reorderedVariant = await reorderRes.json();
+  expect(reorderedVariant.media.images[0]).toBe(secondImg);
+  expect(reorderedVariant.media.images[1]).toBe(uploadedImg.url);
+
+  // 6. Verify public product detail API immediately reflects the database changes
+  const publicRes = await request.get(`/api/products/${family.slug}`);
+  expect(publicRes.status()).toBe(200);
+  const publicFamily = await publicRes.json();
+  const matchedPublicVariant = publicFamily.variants.find((v: { id: string }) => v.id === variant.id);
+  expect(matchedPublicVariant).toBeDefined();
+  expect(matchedPublicVariant.media.images[0]).toBe(secondImg);
+  expect(matchedPublicVariant.media.videos).toContain(uploadedVid.url);
+
+  // 7. Cleanup uploaded files
+  await request.delete(`/api/admin/upload?url=${encodeURIComponent(uploadedImg.url)}`);
+  await request.delete(`/api/admin/upload?url=${encodeURIComponent(uploadedVid.url)}`);
+});
+
 test("leads API validates input and accepts product inquiries for Didar CRM", async ({ request }) => {
   // Test invalid phone
   const badPhone = await request.post("/api/leads", {

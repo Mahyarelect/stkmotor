@@ -12,6 +12,8 @@ import {
   Check,
   Loader2,
   Package,
+  Image as ImageIcon,
+  Film,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +23,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ProductImageUploader } from "@/components/admin/ProductImageUploader";
 import { CATALOG_TAXONOMY, legacyCategory, phaseForCategory, taxonomyCategory } from "@/lib/catalog-taxonomy";
+import { ProductImage } from "@/components/ProductImage";
+import { VariantMediaModal } from "@/components/admin/VariantMediaModal";
 import {
   Table,
   TableBody,
@@ -33,6 +37,7 @@ import {
 interface Variant {
   id: string;
   sku: string;
+  name?: string;
   size: string;
   power: string;
   powerKw: number;
@@ -57,6 +62,10 @@ interface Variant {
   dimensions: string;
   inStock: boolean;
   sortOrder: number;
+  media?: {
+    images: string[];
+    videos: string[];
+  };
 }
 
 interface Family {
@@ -129,6 +138,8 @@ export default function FamilyDetailPage() {
 
   // Delete confirm
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  // Variant media modal state
+  const [selectedVariantForMedia, setSelectedVariantForMedia] = useState<Variant | null>(null);
 
   async function fetchFamily() {
     setLoading(true);
@@ -606,6 +617,7 @@ export default function FamilyDetailPage() {
                 <TableHeader>
                   <TableRow className="bg-gray-50">
                     <TableHead className="text-right text-xs font-medium">SKU</TableHead>
+                    <TableHead className="text-center text-xs font-medium">تصاویر و مدیا</TableHead>
                     <TableHead className="text-right text-xs font-medium">سایز</TableHead>
                     <TableHead className="text-right text-xs font-medium">توان</TableHead>
                     <TableHead className="text-right text-xs font-medium">kW</TableHead>
@@ -621,6 +633,44 @@ export default function FamilyDetailPage() {
                     <TableRow key={v.id} className="text-sm">
                       <TableCell className="num-en font-mono text-xs">
                         {v.sku}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedVariantForMedia(v)}
+                          className="group inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs transition-all hover:border-blue-400 hover:bg-blue-50/50"
+                          title="مدیریت تصاویر، ترتیب و ویدیوهای این واریانت"
+                          aria-label={`مدیریت مدیا برای کد ${v.sku}`}
+                        >
+                          <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded bg-gray-100">
+                            {v.media?.images?.[0] ? (
+                              <ProductImage
+                                src={v.media.images[0]}
+                                alt=""
+                                className="h-full w-full object-contain p-0.5"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-gray-400">
+                                <ImageIcon size={14} />
+                              </div>
+                            )}
+                            {v.media?.videos && v.media.videos.length > 0 && (
+                              <span className="absolute bottom-0 right-0 rounded-tl bg-purple-600 px-0.5 text-[8px] text-white">
+                                <Film size={8} />
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-start pr-1 text-right">
+                            <span className="text-[11px] font-medium text-blue-700 group-hover:underline">
+                              {v.media?.images?.length || 0} عکس
+                            </span>
+                            {v.media?.videos && v.media.videos.length > 0 && (
+                              <span className="text-[10px] text-purple-600">
+                                {v.media.videos.length} ویدیو
+                              </span>
+                            )}
+                          </div>
+                        </button>
                       </TableCell>
                       <TableCell className="num-en">{v.size || "-"}</TableCell>
                       <TableCell className="num-en">{v.power || "-"}</TableCell>
@@ -681,6 +731,29 @@ export default function FamilyDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Variant Media Management Modal */}
+      {selectedVariantForMedia && (
+        <VariantMediaModal
+          isOpen={Boolean(selectedVariantForMedia)}
+          onClose={() => setSelectedVariantForMedia(null)}
+          variant={selectedVariantForMedia}
+          familySlug={family.slug}
+          familyName={family.name}
+          onSaved={(updated) => {
+            setFamily((prev) => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                variants: prev.variants.map((v) =>
+                  v.id === updated.id ? { ...v, media: updated.media } : v
+                ),
+              };
+            });
+            void fetchFamily();
+          }}
+        />
+      )}
     </div>
   );
 }
