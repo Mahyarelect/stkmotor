@@ -13,6 +13,7 @@ const ELECTROMOTOR_FALLBACKS = [
   "/media/products/fallback/electromotor-1.png",
   "/media/products/fallback/electromotor-2.png",
   "/media/products/fallback/electromotor-3.png",
+  "/media/products/fallback/electromotor-4.jpg",
 ];
 
 const manifest = mediaManifest as Record<string, ProductMedia>;
@@ -59,6 +60,11 @@ export function productMediaForSku(
   return manifest[sku] || EMPTY_MEDIA;
 }
 
+function isThreePhaseElectromotor(mainCategory: string, phaseOrCategory?: string | null) {
+  const phase = String(phaseOrCategory || "").toLowerCase();
+  return mainCategory === "electromotor" && (phase.includes("three") || phase.includes("سه"));
+}
+
 export function productImageForVariant(
   sku: string | null | undefined,
   mainCategory: string,
@@ -69,13 +75,8 @@ export function productImageForVariant(
   const uploadedImage = productMediaForSku(sku, attributes).images[0];
   if (uploadedImage) return uploadedImage;
   if (familyImage?.trim()) return familyImage;
-  const phase = String(phaseOrCategory || "").toLowerCase();
-  const isThreePhaseElectromotor =
-    mainCategory === "electromotor" &&
-    (phase.includes("three") || phase.includes("سه"));
-  if (!isThreePhaseElectromotor) return "";
-  const value = [...String(sku || "")].reduce((sum, digit) => sum + Number(digit || 0), 0);
-  return ELECTROMOTOR_FALLBACKS[value % ELECTROMOTOR_FALLBACKS.length];
+  if (!isThreePhaseElectromotor(mainCategory, phaseOrCategory)) return "";
+  return ELECTROMOTOR_FALLBACKS[0];
 }
 
 export function resolvedProductMedia(
@@ -87,8 +88,18 @@ export function resolvedProductMedia(
 ): ProductMedia {
   const uploaded = productMediaForSku(sku, attributes);
   const primaryImage = productImageForVariant(sku, mainCategory, familyImage, phaseOrCategory, attributes);
+  const needsThreePhaseFallbackGallery =
+    uploaded.images.length === 0 &&
+    !familyImage?.trim() &&
+    isThreePhaseElectromotor(mainCategory, phaseOrCategory);
   return {
-    images: uploaded.images.length > 0 ? uploaded.images : primaryImage ? [primaryImage] : [],
+    images: uploaded.images.length > 0
+      ? uploaded.images
+      : needsThreePhaseFallbackGallery
+        ? [...ELECTROMOTOR_FALLBACKS]
+        : primaryImage
+          ? [primaryImage]
+          : [],
     videos: uploaded.videos,
   };
 }

@@ -116,7 +116,7 @@ describe("product media integrity", () => {
       videoAssociations += media.videos.length;
 
       for (const publicUrl of [...media.images, ...media.videos]) {
-        assert.match(publicUrl, /^\/media\/products\/(?:assets\/[a-f0-9]{20}\.(?:webp|mp4)|fallback\/electromotor-[1-3]\.png)$/);
+        assert.match(publicUrl, /^\/media\/products\/(?:assets\/[a-f0-9]{20}\.(?:webp|mp4)|fallback\/electromotor-(?:[1-3]\.png|4\.jpg))$/);
         const file = resolve(root, "public", publicUrl.slice(1));
         assert.ok((await stat(file)).size > 0, `${publicUrl} must not be empty`);
       }
@@ -124,10 +124,11 @@ describe("product media integrity", () => {
     assert.deepEqual({ imageAssociations, videoAssociations }, { imageAssociations: 236, videoAssociations: 49 });
   });
 
-  test("the three supplied catalog fallback images are available", async () => {
+  test("the four supplied catalog fallback images are available in display order", async () => {
     const { stat } = await import("node:fs/promises");
-    for (let index = 1; index <= 3; index += 1) {
-      const file = resolve(root, `public/media/products/fallback/electromotor-${index}.png`);
+    const files = ["electromotor-1.png", "electromotor-2.png", "electromotor-3.png", "electromotor-4.jpg"];
+    for (const name of files) {
+      const file = resolve(root, "public/media/products/fallback", name);
       assert.ok((await stat(file)).size > 0);
     }
   });
