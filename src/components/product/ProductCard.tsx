@@ -65,31 +65,45 @@ function faNum(n: number | string): string {
 }
 
 export function ProductCard({ family }: { family: ProductFamilyData }) {
-  const variantsBySize = useMemo(() => {
+  const isRatioSelectable = useMemo(() => {
+    if (family.mainCategory !== "gearbox") return false;
+    const ratios = new Set(family.variants.map((v) => v.ratio).filter(Boolean));
+    const sizes = new Set(family.variants.map((v) => v.size).filter(Boolean));
+    return ratios.size > 1 && sizes.size <= 1;
+  }, [family.mainCategory, family.variants]);
+
+  const variantsByOption = useMemo(() => {
     const map = new Map<string, Variant>();
     for (const variant of family.variants) {
-      if (variant.size && !map.has(variant.size)) map.set(variant.size, variant);
+      const key = isRatioSelectable ? variant.ratio : variant.size;
+      if (key && (!map.has(key) || (variant.inStock && !map.get(key)?.inStock))) {
+        map.set(key, variant);
+      }
     }
     return map;
-  }, [family.variants]);
+  }, [family.variants, isRatioSelectable]);
 
-  const uniqueSizes = useMemo(
-    () =>
-      [...variantsBySize.keys()].sort(
-        (a, b) => Number.parseInt(a) - Number.parseInt(b)
-      ),
-    [variantsBySize]
-  );
+  const uniqueOptions = useMemo(() => {
+    const keys = [...variantsByOption.keys()];
+    return keys.sort((a, b) => Number.parseFloat(a) - Number.parseFloat(b));
+  }, [variantsByOption]);
 
   const firstVariant =
     family.variants.find((variant) => variant.inStock && variant.media?.images[0]?.includes("/media/products/assets/")) ||
     family.variants.find((variant) => variant.media?.images[0]?.includes("/media/products/assets/")) ||
     family.variants.find((variant) => variant.inStock) ||
     family.variants[0];
-  const [selectedSize, setSelectedSize] = useState(firstVariant?.size || "");
+
+  const defaultOption = isRatioSelectable
+    ? firstVariant?.ratio || uniqueOptions[0] || ""
+    : firstVariant?.size || uniqueOptions[0] || "";
+
+  const [selectedOption, setSelectedOption] = useState(defaultOption);
   const activeVariant =
-    variantsBySize.get(selectedSize) || firstVariant || family.variants[0];
-  const effectiveSelectedSize = activeVariant?.size || selectedSize;
+    variantsByOption.get(selectedOption) || firstVariant || family.variants[0];
+  const effectiveSelectedOption = isRatioSelectable
+    ? activeVariant?.ratio || selectedOption
+    : activeVariant?.size || selectedOption;
 
   const uniqueSpeeds = useMemo(
     () =>
@@ -99,12 +113,17 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
     [family.variants]
   );
 
-  const sizeRange =
-    uniqueSizes.length > 0
-      ? `${faNum(uniqueSizes[0])} – ${faNum(uniqueSizes[uniqueSizes.length - 1])}`
+  const sizeRange = useMemo(() => {
+    if (isRatioSelectable) {
+      return activeVariant?.size ? `تیپ ${activeVariant.size}` : "";
+    }
+    return uniqueOptions.length > 0
+      ? `${faNum(uniqueOptions[0])} – ${faNum(uniqueOptions[uniqueOptions.length - 1])}`
       : "";
-  const visibleSizes = uniqueSizes.slice(0, 6);
-  const hiddenSizeCount = Math.max(0, uniqueSizes.length - visibleSizes.length);
+  }, [isRatioSelectable, activeVariant, uniqueOptions]);
+
+  const visibleOptions = uniqueOptions.slice(0, 6);
+  const hiddenOptionCount = Math.max(0, uniqueOptions.length - visibleOptions.length);
 
   const categoryLabel = {
     electromotor: family.phase || "الکتروموتور",
@@ -134,9 +153,8 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
       if (activeVariant?.bodyMaterial) list.push(["جنس", activeVariant.bodyMaterial]);
     } else {
       if (activeVariant?.power) list.push(["توان", activeVariant.power]);
-      if (activeVariant?.speed) list.push(["دور موتور", `${faNum(activeVariant.speed)} RPM`]);
-      if (family.shellType) list.push(["جنس پوسته", family.shellType]);
-      if (activeVariant?.mountingType) list.push(["نصب", activeVariant.mountingType]);
+      if (activeVariant?.speed) list.push(["سرعت", `${faNum(activeVariant.speed)} RPM`]);
+      if (activeVariant?.size) list.push(["سایز فریم", activeVariant.size]);
     }
     const filtered = list.filter(([_, val]) => val && val.trim() !== "");
     return filtered.slice(0, 3);
@@ -172,7 +190,7 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
 
         {/* Variant count badge */}
         <span className="absolute top-3.5 left-3.5 z-20 text-[11px] font-semibold px-2.5 py-1 bg-white/95 backdrop-blur-xs text-slate-700 border border-slate-200/90 rounded-lg shadow-xs">
-          {faNum(uniqueSizes.length || family.variantCount)} تنوع
+          {faNum(uniqueOptions.length || family.variantCount)} تنوع
         </span>
 
         {/* Hover hint */}
@@ -195,33 +213,33 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
         <p className="text-xs text-slate-500 mb-3.5 font-medium flex items-center gap-1.5 flex-wrap">
           <span>{family.mainCategory === "electromotor" ? `پوسته ${family.shellType}` : categoryLabel}</span>
           {uniqueSpeeds.length > 0 && <span>· {faNum(uniqueSpeeds[0])} دور</span>}
-          {sizeRange && <span>· سایز {sizeRange}</span>}
+          {sizeRange && <span>· {sizeRange}</span>}
         </p>
 
-        {/* Size Selector Chips */}
-        {uniqueSizes.length > 0 && (
+        {/* Variant Selector Chips (Size or Ratio) */}
+        {uniqueOptions.length > 0 && (
           <div className="mb-3.5">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[11px] text-slate-500 font-medium">
-                انتخاب مدل / سایز:
+                {isRatioSelectable ? "انتخاب نسبت تبدیل:" : "انتخاب مدل / سایز:"}
               </span>
-              {effectiveSelectedSize && (
+              {effectiveSelectedOption && (
                 <span className="text-[11px] font-bold text-blue-700 num-en">
-                  {effectiveSelectedSize}
+                  {isRatioSelectable ? `1:${effectiveSelectedOption}` : effectiveSelectedOption}
                 </span>
               )}
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {visibleSizes.map((size) => {
-                const sizeVariant = variantsBySize.get(size);
-                const hasInStock = Boolean(sizeVariant?.inStock);
-                const isSelected = effectiveSelectedSize === size;
+              {visibleOptions.map((opt) => {
+                const optVariant = variantsByOption.get(opt);
+                const hasInStock = Boolean(optVariant?.inStock);
+                const isSelected = effectiveSelectedOption === opt;
 
                 return (
                   <button
-                    key={size}
+                    key={opt}
                     type="button"
-                    onClick={() => setSelectedSize(size)}
+                    onClick={() => setSelectedOption(opt)}
                     aria-pressed={isSelected}
                     className={`relative min-h-9 min-w-9 px-2.5 py-1 rounded-lg text-xs font-bold num-en transition-all duration-150 ${
                       isSelected
@@ -231,7 +249,7 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
                         : "bg-slate-50 border border-dashed border-slate-200 text-slate-400 hover:border-amber-300 hover:text-amber-700"
                     }`}
                   >
-                    {size}
+                    {isRatioSelectable ? `1:${opt}` : opt}
                     {!hasInStock && (
                       <span className="absolute -top-1.5 -left-1.5 text-[7px] bg-amber-100 text-amber-700 font-medium px-1 rounded leading-none border border-amber-200">
                         استعلام
@@ -240,13 +258,13 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
                   </button>
                 );
               })}
-              {hiddenSizeCount > 0 && (
+              {hiddenOptionCount > 0 && (
                 <Link
                   href={`/product/${family.slug}`}
                   className="inline-flex min-h-9 items-center rounded-lg border border-dashed border-slate-300 hover:border-blue-400 hover:text-blue-700 px-2.5 text-xs font-semibold text-slate-500 num-en transition-colors"
-                  title={`${hiddenSizeCount} سایز دیگر`}
+                  title={`${hiddenOptionCount} ${isRatioSelectable ? "نسبت" : "سایز"} دیگر`}
                 >
-                  +{faNum(hiddenSizeCount)}
+                  +{faNum(hiddenOptionCount)}
                 </Link>
               )}
             </div>

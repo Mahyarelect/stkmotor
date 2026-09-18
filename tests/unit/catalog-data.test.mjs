@@ -52,8 +52,8 @@ describe("catalog seed integrity", () => {
     ]);
   });
 
-  test("contains the expected 30 families and 863 variants", () => {
-    assert.equal(seed.families.length, 30);
+  test("contains the expected 36 families and 863 variants", () => {
+    assert.equal(seed.families.length, 36);
     assert.equal(seed.variants.length, 863);
   });
 
@@ -144,7 +144,7 @@ describe("runtime database integrity", () => {
       db.productVariant.count(),
       db.category.count(),
     ]);
-    assert.deepEqual({ families, variants, categories }, { families: 30, variants: 863, categories: 4 });
+    assert.deepEqual({ families, variants, categories }, { families: 36, variants: 863, categories: 4 });
   });
 
   test("database has no orphaned variants", async () => {
