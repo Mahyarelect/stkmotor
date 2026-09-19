@@ -32,6 +32,7 @@ import { ProductGrid } from "@/components/product/ProductGrid";
 import { ProductFamilyData } from "@/components/product/ProductCard";
 import { telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
 import { CATALOG_CATEGORIES } from "@/data/catalogCategories";
+import { useCategories } from "@/hooks/use-categories";
 
 interface CatalogMeta {
   total: number;
@@ -61,6 +62,7 @@ function faNum(n: number | string): string {
 
 export default function HomePage() {
   const siteSettings = useSiteSettings();
+  const { getCategoryImage } = useCategories();
   const phoneLink = telHref(siteSettings.phone);
   const whatsappLink = whatsappHref(siteSettings.whatsapp);
 
@@ -221,39 +223,69 @@ export default function HomePage() {
       {/* ─── Category Entry Points ─── */}
       <section className="max-w-7xl mx-auto px-4 py-12">
         <div className="text-center mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">
-            دسته‌بندی محصولات
+          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 mb-2 text-xs font-semibold px-3 py-1">
+            دسترسی سریع به کاتالوگ
+          </Badge>
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">
+            دسته‌بندی محصولات STK
           </h3>
-          <p className="text-gray-500 text-sm">
-            جهت مشاهده کاتالوگ تخصصی هر بخش، دسته مورد نظر را انتخاب کنید
+          <p className="text-gray-500 text-sm max-w-lg mx-auto">
+            جهت مشاهده کاتالوگ تخصصی، مشخصات فنی و استعلام قیمت، دسته مورد نظر را انتخاب فرمایید
           </p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {CATALOG_CATEGORIES.map((cat) => {
             const IconComp = cat.icon;
+            const categoryImage = getCategoryImage(cat.slug);
             return (
               <Link
                 key={cat.slug}
                 href={cat.href}
-                className="group text-center rounded-xl p-5 border-2 border-gray-200 bg-white hover:border-blue-500 hover:shadow-lg transition-all"
+                className="group relative flex flex-col rounded-2xl bg-white border border-slate-200/90 shadow-xs hover:shadow-xl hover:border-blue-500/80 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
               >
-                <div className="w-12 h-12 mx-auto mb-3 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-700 transition-colors">
-                  <IconComp
-                    size={22}
-                    className="text-blue-700 group-hover:text-white transition-colors"
-                  />
+                {/* Category Image Preview Area */}
+                <div className="relative h-44 sm:h-48 w-full bg-gradient-to-b from-slate-50 via-gray-50 to-blue-50/30 flex items-center justify-center overflow-hidden border-b border-slate-100 p-4">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-slate-50/50 to-slate-100/60 pointer-events-none" />
+                  {categoryImage ? (
+                    <img
+                      src={categoryImage}
+                      alt={cat.name}
+                      className="relative z-10 h-full w-full object-contain drop-shadow-sm group-hover:drop-shadow-md group-hover:scale-105 transition-all duration-300"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-700">
+                      <IconComp size={32} />
+                    </div>
+                  )}
+
+                  {/* Icon Badge */}
+                  <span className="absolute top-3 right-3 z-20 w-8 h-8 rounded-lg bg-white/90 backdrop-blur-xs border border-slate-200/80 shadow-xs flex items-center justify-center text-blue-700 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <IconComp size={16} />
+                  </span>
+
+                  {/* Subcategory Count Tag */}
+                  {cat.subCategories.length > 0 && (
+                    <span className="absolute bottom-3 right-3 z-20 text-[11px] font-semibold px-2.5 py-0.5 bg-white/90 backdrop-blur-xs text-slate-700 border border-slate-200/80 rounded-full shadow-xs">
+                      {faNum(cat.subCategories.length)} زیردسته
+                    </span>
+                  )}
                 </div>
-                <h4 className="font-bold text-sm text-gray-900 mb-1">
-                  {cat.name}
-                </h4>
-                {cat.subCategories.length > 0 && (
-                  <p className="text-xs text-gray-400">
-                    {faNum(cat.subCategories.length)} زیردسته
-                  </p>
-                )}
-                <div className="mt-2 flex items-center justify-center gap-1 text-xs text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
-                  <span>مشاهده کاتالوگ</span>
-                  <ChevronLeft size={12} />
+
+                {/* Content */}
+                <div className="p-4 flex flex-col flex-1 justify-between">
+                  <div>
+                    <h4 className="font-bold text-base text-slate-900 group-hover:text-blue-700 transition-colors mb-1">
+                      {cat.name}
+                    </h4>
+                    <p className="text-xs text-slate-500 leading-relaxed line-clamp-1">
+                      کاتالوگ تخصصی و استعلام قیمت انواع {cat.name}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-blue-600 font-bold group-hover:text-blue-700">
+                    <span>ورود به دسته‌بندی</span>
+                    <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                  </div>
                 </div>
               </Link>
             );

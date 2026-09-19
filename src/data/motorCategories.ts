@@ -43,7 +43,7 @@ export const ROOT_MOTOR_CATEGORY: MotorCategoryNode = {
   title: "الکتروموتورها",
   breadcrumbTitle: "الکتروموتورها",
   description: "بررسی مشخصات فنی، سایزها و استعلام قیمت انواع الکتروموتورهای صنعتی تک‌فاز و سه‌فاز",
-  image: "",
+  image: "/media/products/fallback/electromotor-1.png",
   filter: {
     category: "electromotor",
   },
@@ -54,7 +54,7 @@ export const ROOT_MOTOR_CATEGORY: MotorCategoryNode = {
       title: "الکتروموتورهای تک‌فاز",
       breadcrumbTitle: "تک‌فاز",
       description: "انواع الکتروموتورهای صنعتی تک‌فاز ۲۲۰ ولت در مدل‌های پوسته چدنی و آلومینیومی",
-      image: "",
+      image: "/media/products/fallback/electromotor-2.png",
       filter: {
         phase: "single-phase",
       },
@@ -65,7 +65,7 @@ export const ROOT_MOTOR_CATEGORY: MotorCategoryNode = {
           title: "الکتروموتورهای تک‌فاز چدنی",
           breadcrumbTitle: "چدنی",
           description: "الکتروموتورهای تک‌فاز با بدنه مقاوم چدنی مناسب برای کاربری‌های سنگین و صنعتی",
-          image: "",
+          image: "/media/products/assets/cc81acf240d59a17f0bf.webp",
           filter: {
             phase: "single-phase",
             shellType: "cast-iron",
@@ -77,7 +77,7 @@ export const ROOT_MOTOR_CATEGORY: MotorCategoryNode = {
           title: "الکتروموتورهای تک‌فاز آلومینیومی",
           breadcrumbTitle: "آلومینیومی",
           description: "الکتروموتورهای تک‌فاز با بدنه سبک آلومینیومی و راندمان حرارتی بالا",
-          image: "",
+          image: "/media/products/assets/301b008b3ab032205493.webp",
           filter: {
             phase: "single-phase",
             shellType: "aluminum",
@@ -91,7 +91,7 @@ export const ROOT_MOTOR_CATEGORY: MotorCategoryNode = {
       title: "الکتروموتورهای سه‌فاز",
       breadcrumbTitle: "سه‌فاز",
       description: "انواع الکتروموتورهای صنعتی سه‌فاز ۳۸۰ ولت با توان‌ها و دورهای متنوع برای خطوط تولید و صنایع",
-      image: "",
+      image: "/media/products/fallback/electromotor-1.png",
       filter: {
         phase: "three-phase",
       },
@@ -102,7 +102,7 @@ export const ROOT_MOTOR_CATEGORY: MotorCategoryNode = {
           title: "الکتروموتورهای سه‌فاز چدنی",
           breadcrumbTitle: "چدنی",
           description: "الکتروموتورهای سه‌فاز استاندارد صنعتی با بدنه چدن نشکن و دوام فوق‌العاده",
-          image: "",
+          image: "/media/products/assets/134528d689e89b3950e1.webp",
           filter: {
             phase: "three-phase",
             shellType: "cast-iron",
@@ -114,7 +114,7 @@ export const ROOT_MOTOR_CATEGORY: MotorCategoryNode = {
           title: "الکتروموتورهای سه‌فاز آلومینیومی",
           breadcrumbTitle: "آلومینیومی",
           description: "الکتروموتورهای سه‌فاز با بدنه آلومینیومی سبک، انتقال حرارت بهینه و طراحی مدرن",
-          image: "",
+          image: "/media/products/fallback/electromotor-1.png",
           filter: {
             phase: "three-phase",
             shellType: "aluminum",

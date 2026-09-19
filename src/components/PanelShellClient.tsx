@@ -15,6 +15,7 @@ import {
   BadgeDollarSign,
   Compass,
   Building2,
+  FolderCog,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -34,6 +35,11 @@ const NAV_ITEMS = [
     href: "/panel/families",
     label: "محصولات",
     icon: Package,
+  },
+  {
+    href: "/panel/categories",
+    label: "دسته‌بندی‌ها و تصاویر",
+    icon: FolderCog,
   },
   {
     href: "/panel/landing-pages",

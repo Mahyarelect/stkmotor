@@ -189,6 +189,22 @@ export default function ProductDetailClient({
     [variantsBySize]
   );
 
+  const variantsByRatio = useMemo(() => {
+    const map = new Map<string, Variant[]>();
+    for (const variant of family?.variants || []) {
+      if (!variant.ratio) continue;
+      const current = map.get(variant.ratio) || [];
+      current.push(variant);
+      map.set(variant.ratio, current);
+    }
+    return map;
+  }, [family]);
+
+  const uniqueRatios = useMemo(
+    () => [...variantsByRatio.keys()].sort((a, b) => Number.parseFloat(a) - Number.parseFloat(b)),
+    [variantsByRatio]
+  );
+
   const uniqueSpeeds = useMemo(() => {
     const values = (family?.variants || [])
       .map((variant) => variant.speed)
@@ -555,8 +571,58 @@ export default function ProductDetailClient({
               </Badge>
             </div>
 
-            {/* Variant Selector — All sizes as chips */}
-            {uniqueSizes.length > 0 && (
+            {/* Ratio Selector — For gearboxes with multiple ratios */}
+            {uniqueRatios.length > 1 && (
+              <Card className="border-gray-200 mb-4">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-semibold text-gray-700">انتخاب نسبت تبدیل گیربکس</p>
+                    {selectedVariant?.ratio && (
+                      <span className="text-xs font-bold text-blue-700 num-en">
+                        نسبت ۱:{selectedVariant.ratio}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueRatios.map((ratio) => {
+                      const variantsForRatio = variantsByRatio.get(ratio) || [];
+                      const hasInStock = variantsForRatio.some((v) => v.inStock);
+                      const isSelected = selectedVariant?.ratio === ratio;
+
+                      return (
+                        <button
+                          key={ratio}
+                          type="button"
+                          onClick={() => {
+                            const nextVariant =
+                              variantsForRatio.find((variant) => variant.inStock) || variantsForRatio[0];
+                            if (nextVariant) setSelectedVariantId(nextVariant.id);
+                          }}
+                          aria-pressed={isSelected}
+                          className={`relative min-h-11 min-w-14 px-3.5 py-2 rounded-lg text-sm font-bold num-en transition-all ${
+                            isSelected
+                              ? "bg-blue-700 text-white shadow-md shadow-blue-200 ring-2 ring-blue-300"
+                              : hasInStock
+                                ? "bg-white border border-gray-200 text-gray-700 hover:border-blue-400 hover:text-blue-700 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-200 text-gray-500 hover:border-orange-300 hover:text-orange-700"
+                          }`}
+                        >
+                          1:{ratio}
+                          {!hasInStock && (
+                            <span className="absolute -top-1.5 -left-1.5 text-[8px] bg-orange-100 text-orange-600 px-1 rounded">
+                              استعلام
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Variant Selector — Frame sizes as chips (when applicable) */}
+            {uniqueSizes.length > 1 && (
               <Card className="border-gray-200">
                 <CardContent className="p-4">
                   <p className="text-sm font-semibold text-gray-700 mb-3">انتخاب سایز فریم</p>

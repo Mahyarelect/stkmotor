@@ -152,7 +152,7 @@ export function ElectromotorsClient({ initialSlugs = [] }: { initialSlugs: strin
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#60a5fa_1px,transparent_1px)] [background-size:24px_24px]" />
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-4 py-10 sm:py-14">
+        <div className="relative max-w-7xl mx-auto px-4 py-10 sm:py-14 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="max-w-3xl">
             <Badge className="bg-blue-600/40 hover:bg-blue-600/50 text-blue-200 border-blue-400/30 text-xs mb-3.5 inline-flex items-center gap-1">
               <Zap size={12} className="text-blue-300" />
@@ -165,6 +165,16 @@ export function ElectromotorsClient({ initialSlugs = [] }: { initialSlugs: strin
               {activeNode.description}
             </p>
           </div>
+
+          {activeNode.image && (
+            <div className="shrink-0 w-36 h-36 sm:w-44 sm:h-44 rounded-2xl bg-white/10 backdrop-blur-md p-3 border border-white/20 shadow-2xl flex items-center justify-center">
+              <img
+                src={activeNode.image}
+                alt={activeNode.title}
+                className="w-full h-full object-contain drop-shadow-lg"
+              />
+            </div>
+          )}
         </div>
       </header>
 

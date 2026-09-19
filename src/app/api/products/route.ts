@@ -77,7 +77,18 @@ export async function GET(request: NextRequest) {
 
   if (level2) {
     if (category === "gearbox") {
-      if (level2.includes("فلنج")) {
+      if (level1 === "مکعبی" || subCategory === "cubic") {
+        const cleanSize = level2.replace(/[^\d]/g, "");
+        if (cleanSize) {
+          and.push({
+            OR: [
+              { slug: `cubic-gearbox-nmrv-${cleanSize}` },
+              { name: { contains: cleanSize } },
+              { variants: { some: { size: cleanSize } } },
+            ],
+          });
+        }
+      } else if (level2.includes("فلنج")) {
         variantFilters.push({ inputType: { contains: "فلنج" } });
       } else {
         variantFilters.push({ inputType: level2 });

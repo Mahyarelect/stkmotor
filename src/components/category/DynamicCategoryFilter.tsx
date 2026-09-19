@@ -15,7 +15,22 @@ const FILTERS: Record<string, { level1: Option[]; level2: Record<string, Option[
   },
   gearbox: {
     level1: [{ value: "حلزونی", label: "حلزونی" }, { value: "مکعبی", label: "مکعبی" }, { value: "شافت مستقیم", label: "شافت مستقیم" }],
-    level2: { "حلزونی": [{ value: "شافت‌دار", label: "VF شافت‌دار" }, { value: "فلنج‌دار", label: "MVF فلنج‌دار" }], "مکعبی": [], "شافت مستقیم": [] },
+    level2: {
+      "حلزونی": [{ value: "شافت‌دار", label: "VF شافت‌دار" }, { value: "فلنج‌دار", label: "MVF فلنج‌دار" }],
+      "مکعبی": [
+        { value: "25", label: "تیپ ۲۵ (NMRV 25)" },
+        { value: "30", label: "تیپ ۳۰ (NMRV 30)" },
+        { value: "40", label: "تیپ ۴۰ (NMRV 40)" },
+        { value: "50", label: "تیپ ۵۰ (NMRV 50)" },
+        { value: "63", label: "تیپ ۶۳ (NMRV 63)" },
+        { value: "75", label: "تیپ ۷۵ (NMRV 75)" },
+        { value: "90", label: "تیپ ۹۰ (NMRV 90)" },
+        { value: "110", label: "تیپ ۱۱۰ (NMRV 110)" },
+        { value: "130", label: "تیپ ۱۳۰ (NMRV 130)" },
+        { value: "150", label: "تیپ ۱۵۰ (NMRV 150)" },
+      ],
+      "شافت مستقیم": [],
+    },
   },
   pump: {
     level1: [{ value: "الکتروپمپ", label: "الکتروپمپ" }, { value: "کف‌کش", label: "کف‌کش" }, { value: "لجن‌کش", label: "لجن‌کش" }, { value: "شناور", label: "شناور" }, { value: "پمپ دنده‌ای", label: "دنده‌ای" }, { value: "کله پمپ اسید", label: "پمپ اسید" }],
@@ -42,11 +57,12 @@ export function DynamicCategoryFilter({ category, value, onChange, onReset }: {
     [key]: next,
     ...(key === "level1" ? { level2: "" } : {}),
   });
+  const level2Placeholder = value.level1 === "مکعبی" ? "انتخاب تیپ گیربکس" : "انتخاب مشخصه دوم";
   const controls = (
     <div className="grid gap-3">
       <div className="relative"><Search size={16} className="absolute right-3 top-3 text-gray-400" /><Input value={value.search} onChange={(e) => set("search", e.target.value)} placeholder="جستجوی نام یا کد محصول" className="pr-9" /></div>
       <Select value={value.level1 || "all"} onValueChange={(v) => set("level1", v === "all" ? "" : v)}><SelectTrigger><SelectValue placeholder="انتخاب نوع" /></SelectTrigger><SelectContent><SelectItem value="all">همه انواع</SelectItem>{config.level1.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select>
-      {level2Options.length > 0 && <Select value={value.level2 || "all"} onValueChange={(v) => set("level2", v === "all" ? "" : v)}><SelectTrigger><SelectValue placeholder="انتخاب مشخصه دوم" /></SelectTrigger><SelectContent><SelectItem value="all">همه گزینه‌ها</SelectItem>{level2Options.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select>}
+      {level2Options.length > 0 && <Select value={value.level2 || "all"} onValueChange={(v) => set("level2", v === "all" ? "" : v)}><SelectTrigger><SelectValue placeholder={level2Placeholder} /></SelectTrigger><SelectContent><SelectItem value="all">همه گزینه‌ها</SelectItem>{level2Options.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select>}
       {category === "electromotor" && <Select value={value.speed || "all"} onValueChange={(v) => set("speed", v === "all" ? "" : v)}><SelectTrigger><SelectValue placeholder="دور موتور" /></SelectTrigger><SelectContent><SelectItem value="all">همه دورها</SelectItem>{["750", "1000", "1400", "3000"].map(v => <SelectItem key={v} value={v}>{v} RPM</SelectItem>)}</SelectContent></Select>}
     </div>
   );

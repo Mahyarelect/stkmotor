@@ -66,11 +66,15 @@ function faNum(n: number | string): string {
 
 export function ProductCard({ family }: { family: ProductFamilyData }) {
   const isRatioSelectable = useMemo(() => {
-    if (family.mainCategory !== "gearbox") return false;
+    if (family.mainCategory !== "gearbox" && family.category !== "cubic") return false;
     const ratios = new Set(family.variants.map((v) => v.ratio).filter(Boolean));
-    const sizes = new Set(family.variants.map((v) => v.size).filter(Boolean));
+    const sizes = new Set(
+      family.variants
+        .map((v) => v.size)
+        .filter((s) => typeof s === "string" && s.trim().length > 0)
+    );
     return ratios.size > 1 && sizes.size <= 1;
-  }, [family.mainCategory, family.variants]);
+  }, [family.mainCategory, family.category, family.variants]);
 
   const variantsByOption = useMemo(() => {
     const map = new Map<string, Variant>();
@@ -122,8 +126,12 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
       : "";
   }, [isRatioSelectable, activeVariant, uniqueOptions]);
 
-  const visibleOptions = uniqueOptions.slice(0, 6);
-  const hiddenOptionCount = Math.max(0, uniqueOptions.length - visibleOptions.length);
+  const visibleOptions = isRatioSelectable ? uniqueOptions : uniqueOptions.slice(0, 6);
+  const hiddenOptionCount = isRatioSelectable ? 0 : Math.max(0, uniqueOptions.length - visibleOptions.length);
+
+  const productUrl = activeVariant?.sku
+    ? `/product/${family.slug}?sku=${activeVariant.sku}`
+    : `/product/${family.slug}`;
 
   const categoryLabel = {
     electromotor: family.phase || "الکتروموتور",
@@ -164,14 +172,14 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
     <Card className="overflow-hidden border border-slate-200/90 rounded-2xl hover:shadow-2xl hover:border-blue-400/80 hover:-translate-y-1 transition-all duration-300 group flex flex-col bg-white">
       {/* Product Image Header (Showcase Room) */}
       <Link
-        href={`/product/${family.slug}`}
+        href={productUrl}
         className="relative bg-gradient-to-b from-slate-50/90 via-white to-slate-100/70 h-56 sm:h-64 flex items-center justify-center overflow-hidden border-b border-slate-100 p-4 block group/img"
       >
         {/* Subtle radial glow to make machinery pop */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-slate-50/50 to-slate-100/60 pointer-events-none" />
 
         <ProductImage
-          src={activeVariant?.media?.images[0] || family.imageUrl}
+          src={activeVariant?.media?.images[0] || firstVariant?.media?.images[0] || family.imageUrl}
           alt={family.name}
           className="relative z-10 h-full w-full object-contain drop-shadow-md group-hover:drop-shadow-xl transition-all duration-300 group-hover:scale-105"
           iconSize={48}
@@ -203,7 +211,7 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
 
       <CardContent className="p-4 sm:p-5 flex flex-col flex-1">
         {/* Systematic Name */}
-        <Link href={`/product/${family.slug}`} className="block mb-1">
+        <Link href={productUrl} className="block mb-1">
           <h4 className="font-bold text-slate-900 text-base sm:text-lg group-hover:text-blue-700 transition-colors line-clamp-1">
             {family.name}
           </h4>
@@ -322,7 +330,7 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
         </div>
 
         {/* CTA */}
-        <Link href={`/product/${family.slug}`} className="block">
+        <Link href={productUrl} className="block">
           <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold h-10 rounded-xl shadow-xs transition-all duration-200">
             مشاهده مشخصات و خرید
             <ChevronLeft size={15} className="mr-1" />
