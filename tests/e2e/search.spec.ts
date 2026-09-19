@@ -77,14 +77,14 @@ test.describe("Desktop Unified Main Search Bar", () => {
   test("prominent search input is visible in desktop header", async ({ page }) => {
     test.setTimeout(60000);
     await page.goto("/");
-    const searchInput = page.getByPlaceholder("جستجوی محصول، توان، دور، تیپ گیربکس یا کد فنی...");
+    const searchInput = page.getByPlaceholder("جستجوی محصولات...");
     await expect(searchInput).toBeVisible();
   });
 
   test("focuses search input with ⌘K / Ctrl+K keyboard shortcut", async ({ page }) => {
     test.setTimeout(60000);
     await page.goto("/");
-    const searchInput = page.getByPlaceholder("جستجوی محصول، توان، دور، تیپ گیربکس یا کد فنی...");
+    const searchInput = page.getByPlaceholder("جستجوی محصولات...");
     await expect(searchInput).toBeVisible();
 
     const modifier = process.platform === "darwin" ? "Meta" : "Control";
@@ -95,7 +95,7 @@ test.describe("Desktop Unified Main Search Bar", () => {
 
   test("typing in search input displays instant dropdown and navigates on click", async ({ page }) => {
     await page.goto("/");
-    const searchInput = page.getByPlaceholder("جستجوی محصول، توان، دور، تیپ گیربکس یا کد فنی...");
+    const searchInput = page.getByPlaceholder("جستجوی محصولات...");
     await expect(searchInput).toBeVisible();
     await searchInput.fill("VF 86");
 
@@ -195,7 +195,7 @@ test.describe("Mobile Search UX & Fullscreen Overlay", () => {
     await expect(overlay).toBeVisible();
 
     // Input should be visible
-    const input = overlay.getByPlaceholder("جستجوی نام، توان، دور یا کد فنی...");
+    const input = overlay.getByPlaceholder("جستجوی محصولات...");
     await expect(input).toBeVisible();
 
     // Type query

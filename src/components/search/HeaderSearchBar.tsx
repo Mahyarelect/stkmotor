@@ -276,7 +276,7 @@ export function HeaderSearchBar({
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <Search size={16} className="text-gray-400 shrink-0" />
           <span className="text-xs truncate font-normal">
-            جستجوی نام، توان، دور یا کد فنی...
+            جستجوی محصولات...
           </span>
         </div>
       </button>
@@ -307,7 +307,7 @@ export function HeaderSearchBar({
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
             autoFocus={autoFocus}
-            placeholder="جستجوی محصول، توان، دور، تیپ گیربکس یا کد فنی..."
+            placeholder="جستجوی محصولات..."
             aria-label="جستجوی سریع محصولات"
             aria-expanded={isOpen}
             aria-autocomplete="list"
@@ -600,7 +600,7 @@ export function HeaderSearchBar({
                     executeFullSearch(query);
                   }
                 }}
-                placeholder="جستجوی نام، توان، دور یا کد فنی..."
+                placeholder="جستجوی محصولات..."
                 className="w-full bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none"
               />
 

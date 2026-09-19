@@ -192,7 +192,7 @@ export function SiteHeader() {
             </nav>
 
             {/* Desktop Unified Main Search Bar */}
-            <div className="hidden md:flex items-center flex-1 max-w-xs lg:max-w-sm xl:max-w-md mx-3">
+            <div className="hidden md:flex items-center flex-1 max-w-[260px] lg:max-w-[320px] xl:max-w-[380px] mx-2.5">
               <HeaderSearchBar desktopOnly={true} />
             </div>
 
@@ -244,7 +244,7 @@ export function SiteHeader() {
             >
               <Search size={15} className="text-gray-400 shrink-0" />
               <span className="truncate font-normal">
-                جستجوی محصول، توان، دور، تیپ گیربکس یا کد فنی...
+                جستجوی محصولات...
               </span>
             </button>
           </div>
@@ -265,7 +265,7 @@ export function SiteHeader() {
                 aria-label="جستجوی سریع محصولات"
               >
                 <Search size={16} className="text-gray-400 shrink-0" />
-                <span>جستجوی نام، توان، دور یا کد فنی...</span>
+                <span>جستجوی محصولات...</span>
               </button>
             </div>
 
