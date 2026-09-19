@@ -19,7 +19,6 @@ import { Separator } from "@/components/ui/separator";
 import { rubikaHref, telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
 import { RubikaIcon } from "@/components/icons/RubikaIcon";
 import { CATALOG_CATEGORIES } from "@/data/catalogCategories";
-import { GlobalSearchDialog } from "@/components/search/GlobalSearchDialog";
 import { HeaderSearchBar } from "@/components/search/HeaderSearchBar";
 
 export function SiteHeader() {
@@ -192,27 +191,13 @@ export function SiteHeader() {
               </Link>
             </nav>
 
-            {/* Desktop Search Bar (Permanent & Prominent) */}
+            {/* Desktop Unified Main Search Bar */}
             <div className="hidden md:flex items-center flex-1 max-w-xs lg:max-w-sm xl:max-w-md mx-3">
-              <HeaderSearchBar />
+              <HeaderSearchBar desktopOnly={true} />
             </div>
 
-            {/* Desktop CTA & Quick Search Trigger */}
+            {/* Desktop CTA */}
             <div className="hidden md:flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setSearchOpen(true)}
-                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-gray-50/80 hover:bg-gray-100 hover:border-gray-300 text-gray-500 hover:text-gray-900 transition-colors text-xs cursor-pointer"
-                aria-label="جستجوی سریع محصولات"
-                title="جستجوی پیشرفته (⌘K)"
-              >
-                <Search size={14} className="text-gray-400" />
-                <span className="hidden xl:inline">جستجوی سریع</span>
-                <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-gray-400 bg-white border border-gray-200 rounded shadow-2xs">
-                  ⌘K
-                </kbd>
-              </button>
-
               <a href={phoneLink}>
                 <Button
                   size="sm"
@@ -230,7 +215,7 @@ export function SiteHeader() {
                 type="button"
                 className="min-h-11 min-w-11 p-2 text-gray-600 hover:bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer"
                 onClick={() => setSearchOpen(true)}
-                aria-label="جستجوی محصول"
+                aria-label="جستجوی سریع محصولات"
               >
                 <Search size={20} />
               </button>
@@ -248,15 +233,40 @@ export function SiteHeader() {
           </div>
         </div>
 
+        {/* Mobile Search Bar Trigger Row (Prominent on Mobile) */}
+        {!mobileMenuOpen && (
+          <div className="md:hidden px-4 pb-2.5 pt-0.5 border-t border-gray-100/60">
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-gray-100/90 hover:bg-gray-200/70 text-gray-400 text-xs border border-gray-200/80 transition-all cursor-pointer text-right shadow-2xs active:scale-[0.99]"
+              aria-label="جستجوی سریع محصولات"
+            >
+              <Search size={15} className="text-gray-400 shrink-0" />
+              <span className="truncate font-normal">
+                جستجوی محصول، توان، دور، تیپ گیربکس یا کد فنی...
+              </span>
+            </button>
+          </div>
+        )}
+
         {/* Mobile Nav — Product Categories Accordion */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-2 max-h-[70vh] overflow-y-auto">
-            {/* Interactive Search Bar in Mobile Drawer */}
+            {/* Quick Search Button in Mobile Drawer */}
             <div className="pt-1 pb-2">
-              <HeaderSearchBar
-                isMobileDrawer={true}
-                onNavigate={() => setMobileMenuOpen(false)}
-              />
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setSearchOpen(true);
+                }}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-500 hover:text-gray-900 transition-colors text-right cursor-pointer text-xs"
+                aria-label="جستجوی سریع محصولات"
+              >
+                <Search size={16} className="text-gray-400 shrink-0" />
+                <span>جستجوی نام، توان، دور یا کد فنی...</span>
+              </button>
             </div>
 
             <Link
@@ -396,7 +406,12 @@ export function SiteHeader() {
         )}
       </header>
 
-      <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+      {/* Dedicated Mobile Full-Screen Search Overlay */}
+      <HeaderSearchBar
+        mobileOnly={true}
+        isMobileSearchOpen={searchOpen}
+        onMobileSearchClose={() => setSearchOpen(false)}
+      />
     </>
   );
 }

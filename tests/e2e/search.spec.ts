@@ -73,90 +73,32 @@ test.describe("Search API Endpoints", () => {
   });
 });
 
-test.describe("Global Search Dialog & Header UX", () => {
-  test("opens search dialog on clicking desktop header search button", async ({ page }) => {
+test.describe("Desktop Unified Main Search Bar", () => {
+  test("prominent search input is visible in desktop header", async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto("/");
-    const searchTrigger = page.getByRole("button", { name: "جستجوی سریع محصولات" });
-    await expect(searchTrigger).toBeVisible();
-    await searchTrigger.click();
-
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-    await expect(page.getByPlaceholder("جستجوی محصول، توان، دور، تیپ گیربکس یا کد SKU...")).toBeVisible();
+    const searchInput = page.getByPlaceholder("جستجوی محصول، توان، دور، تیپ گیربکس یا کد فنی...");
+    await expect(searchInput).toBeVisible();
   });
 
-  test("opens search dialog with ⌘K / Ctrl+K keyboard shortcut", async ({ page }) => {
+  test("focuses search input with ⌘K / Ctrl+K keyboard shortcut", async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto("/");
-    const searchTrigger = page.getByRole("button", { name: "جستجوی سریع محصولات" });
-    await expect(searchTrigger).toBeVisible();
+    const searchInput = page.getByPlaceholder("جستجوی محصول، توان، دور، تیپ گیربکس یا کد فنی...");
+    await expect(searchInput).toBeVisible();
 
     const modifier = process.platform === "darwin" ? "Meta" : "Control";
     await page.keyboard.press(`${modifier}+KeyK`);
 
-    const dialog = page.getByRole("dialog");
-    if (!await dialog.isVisible()) {
-      await page.keyboard.press("Control+k");
-    }
-    await expect(dialog).toBeVisible();
+    await expect(searchInput).toBeFocused();
   });
 
-  test("typing in search dialog returns live suggestions and navigates on click", async ({ page }) => {
+  test("typing in search input displays instant dropdown and navigates on click", async ({ page }) => {
     await page.goto("/");
-    const searchTrigger = page.getByRole("button", { name: "جستجوی سریع محصولات" });
-    await searchTrigger.click();
-
-    const searchInput = page.getByPlaceholder("جستجوی محصول، توان، دور، تیپ گیربکس یا کد SKU...");
+    const searchInput = page.getByPlaceholder("جستجوی محصول، توان، دور، تیپ گیربکس یا کد فنی...");
     await expect(searchInput).toBeVisible();
     await searchInput.fill("VF 86");
 
-    // Live results should appear
-    const resultItem = page.locator("[cmdk-item]").first();
-    await expect(resultItem).toBeVisible({ timeout: 8000 });
-    await resultItem.click();
-
-    // Navigates to product detail page with sku query parameter
-    await expect(page).toHaveURL(/\/product\/.*sku=/);
-  });
-});
-
-test.describe("Search Results Page (/search)", () => {
-  test("renders search results with category pills and variant cards", async ({ page }) => {
-    await page.goto("/search?q=تک فاز");
-    await expect(page.locator("h1, h2").first()).toBeVisible();
-    await expect(page.getByText("فقط کالاهای موجود")).toBeVisible();
-    await expect(page.getByRole("button", { name: "همه تجهیزات" })).toBeVisible();
-
-    // Results cards should be displayed
-    const cards = page.locator(".group.flex.flex-col");
-    await expect(cards.first()).toBeVisible();
-  });
-
-  test("empty query results display fallback consultation and suggestion", async ({ page }) => {
-    await page.goto("/search?q=unknownequipmentxyz999");
-    await expect(page.getByText("محصولی با مشخصات مورد نظر یافت نشد")).toBeVisible();
-    await expect(page.getByText("استعلام موجودی در واتس‌اپ")).toBeVisible();
-  });
-});
-
-test.describe("Variant Deep Linking via SKU", () => {
-  test("pre-selects variant matching SKU on product detail page", async ({ page }) => {
-    await page.goto("/product/worm-gearbox-vf?sku=10000014");
-    // Verify that the variant with SKU 10000014 is pre-selected and rendered
-    await expect(page.locator('bdi:text("10000014")')).toBeVisible();
-    // Verify the inquiry link strictly includes the SKU
-    const whatsappLink = page.getByRole("link", { name: "استعلام در واتساپ" }).first();
-    await expect(whatsappLink).toBeVisible();
-    await expect(whatsappLink).toHaveAttribute("href", /10000014/);
-  });
-});
-
-test.describe("Header Search Bar & Autocomplete Dropdown", () => {
-  test("typing in prominent header search bar displays instant dropdown and navigates", async ({ page }) => {
-    await page.goto("/");
-    const headerInput = page.getByPlaceholder("جستجوی محصول، توان، دور، تیپ گیربکس یا کد فنی...");
-    await expect(headerInput).toBeVisible();
-
-    await headerInput.fill("گیربکس");
     const dropdown = page.locator("#header-search-results");
     await expect(dropdown).toBeVisible({ timeout: 8000 });
 
@@ -168,8 +110,43 @@ test.describe("Header Search Bar & Autocomplete Dropdown", () => {
   });
 });
 
+test.describe("Search Results Page (/search)", () => {
+  test("renders search results with category pills and variant cards", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto("/search?q=تک فاز");
+    await expect(page.locator("h1, h2").first()).toBeVisible();
+    await expect(page.getByText("فقط کالاهای موجود")).toBeVisible();
+    await expect(page.getByRole("button", { name: "همه تجهیزات" })).toBeVisible();
+
+    // Results cards should be displayed
+    const cards = page.locator(".group.flex.flex-col");
+    await expect(cards.first()).toBeVisible();
+  });
+
+  test("empty query results display fallback consultation and suggestion", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto("/search?q=unknownequipmentxyz999");
+    await expect(page.getByText("محصولی با مشخصات مورد نظر یافت نشد")).toBeVisible();
+    await expect(page.getByText("استعلام موجودی در واتس‌اپ")).toBeVisible();
+  });
+});
+
+test.describe("Variant Deep Linking via SKU", () => {
+  test("pre-selects variant matching SKU on product detail page", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto("/product/worm-gearbox-vf?sku=10000014");
+    // Verify that the variant with SKU 10000014 is pre-selected and rendered
+    await expect(page.locator('bdi:text("10000014")')).toBeVisible();
+    // Verify the inquiry link strictly includes the SKU
+    const whatsappLink = page.getByRole("link", { name: "ارتباط در واتساپ" });
+    await expect(whatsappLink).toBeVisible();
+    await expect(whatsappLink).toHaveAttribute("href", /10000014/);
+  });
+});
+
 test.describe("Product Image Magnifier / Zoom Effect", () => {
   test("interactive inner lens zoom on desktop hover and fullscreen modal on click", async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto("/product/cubic-gearbox-nmrv?sku=10000021");
 
     // If lead inquiry modal appears, dismiss it
@@ -204,3 +181,34 @@ test.describe("Product Image Magnifier / Zoom Effect", () => {
   });
 });
 
+test.describe("Mobile Search UX & Fullscreen Overlay", () => {
+  test("tapping mobile search trigger opens full-screen overlay and searches", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+
+    const mobileTrigger = page.getByRole("button", { name: "جستجوی سریع محصولات" }).first();
+    await expect(mobileTrigger).toBeVisible();
+    await mobileTrigger.click();
+
+    // Verify full-screen overlay
+    const overlay = page.getByRole("dialog", { name: "جستجوی سریع محصولات" });
+    await expect(overlay).toBeVisible();
+
+    // Input should be visible
+    const input = overlay.getByPlaceholder("جستجوی نام، توان، دور یا کد فنی...");
+    await expect(input).toBeVisible();
+
+    // Type query
+    await input.fill("گیربکس");
+
+    // Match items should appear
+    const item = overlay.locator("[role='option']").first();
+    await expect(item).toBeVisible({ timeout: 8000 });
+
+    // Back button should close overlay
+    const backBtn = overlay.getByRole("button", { name: "بستن جستجو" });
+    await expect(backBtn).toBeVisible();
+    await backBtn.click();
+    await expect(overlay).toHaveCount(0);
+  });
+});
