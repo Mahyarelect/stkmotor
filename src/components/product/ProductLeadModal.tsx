@@ -38,7 +38,7 @@ export interface ProductLeadModalProps {
   variantDetails?: string;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-  autoTriggerDelayMs?: number; // default 6000ms
+  autoTriggerDelayMs?: number; // default 15000ms (15 seconds)
   enableExitIntent?: boolean; // default true
 }
 
@@ -49,7 +49,7 @@ export function ProductLeadModal({
   variantDetails = "",
   isOpen: controlledIsOpen,
   onOpenChange: controlledOnOpenChange,
-  autoTriggerDelayMs = 6000,
+  autoTriggerDelayMs = 15000,
   enableExitIntent = true,
 }: ProductLeadModalProps) {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
@@ -64,9 +64,9 @@ export function ProductLeadModal({
       controlledOnOpenChange?.(nextOpen);
 
       if (!nextOpen) {
-        // Record dismissal in sessionStorage so it doesn't pop up again in this session
+        // Record dismissal in sessionStorage with timestamp so it won't repeatedly pop up immediately
         try {
-          sessionStorage.setItem(`didar_popup_dismissed_${productSlug}`, "true");
+          sessionStorage.setItem(`didar_popup_dismissed_${productSlug}`, String(Date.now()));
         } catch {
           // Ignore storage restrictions
         }
@@ -114,22 +114,29 @@ export function ProductLeadModal({
 
   // Auto popup timer and exit intent
   useEffect(() => {
-    // Check if user already dismissed or submitted
+    // Check if user already dismissed recently (within 15 minutes) or already submitted
     try {
-      if (sessionStorage.getItem(`didar_popup_dismissed_${productSlug}`)) return;
+      const dismissed = sessionStorage.getItem(`didar_popup_dismissed_${productSlug}`);
+      if (dismissed) {
+        const dismissedAt = parseInt(dismissed, 10);
+        if (!isNaN(dismissedAt) && Date.now() - dismissedAt < 15 * 60 * 1000) return;
+      }
       if (localStorage.getItem(`didar_lead_submitted_${productSlug}`)) return;
     } catch {
       // Storage unavailable
     }
 
-    // 1. Timed popup (only if autoTriggerDelayMs > 0)
+    // 1. Timed popup (after 15 seconds)
     let timer: ReturnType<typeof setTimeout> | null = null;
     if (autoTriggerDelayMs > 0) {
       timer = setTimeout(() => {
         try {
-          if (!sessionStorage.getItem(`didar_popup_dismissed_${productSlug}`)) {
-            handleOpenChange(true);
+          const dismissed = sessionStorage.getItem(`didar_popup_dismissed_${productSlug}`);
+          if (dismissed) {
+            const dismissedAt = parseInt(dismissed, 10);
+            if (!isNaN(dismissedAt) && Date.now() - dismissedAt < 15 * 60 * 1000) return;
           }
+          handleOpenChange(true);
         } catch {
           handleOpenChange(true);
         }
@@ -141,9 +148,12 @@ export function ProductLeadModal({
       if (!enableExitIntent) return;
       if (e.clientY <= 15) {
         try {
-          if (!sessionStorage.getItem(`didar_popup_dismissed_${productSlug}`)) {
-            handleOpenChange(true);
+          const dismissed = sessionStorage.getItem(`didar_popup_dismissed_${productSlug}`);
+          if (dismissed) {
+            const dismissedAt = parseInt(dismissed, 10);
+            if (!isNaN(dismissedAt) && Date.now() - dismissedAt < 15 * 60 * 1000) return;
           }
+          handleOpenChange(true);
         } catch {
           handleOpenChange(true);
         }
@@ -244,22 +254,22 @@ export function ProductLeadModal({
 
           {/* Ad Badge */}
           <div className="flex items-center gap-2 mb-2.5">
-            <Badge className="bg-amber-400/90 text-amber-950 hover:bg-amber-400 border-0 font-bold px-2.5 py-0.5 text-xs shadow-sm flex items-center gap-1">
-              <Sparkles size={12} className="text-amber-900" />
-              استعلام قیمت ویژه و مشاوره رایگان
+            <Badge className="bg-amber-400 text-amber-950 hover:bg-amber-400 border-0 font-bold px-3 py-1 text-xs shadow-sm flex items-center gap-1.5">
+              <Sparkles size={13} className="text-amber-950 animate-pulse" />
+              استعلام آنلاین قیمت و پیش‌فاکتور رسمی
             </Badge>
             <span className="text-[11px] text-blue-200 hidden sm:inline-flex items-center gap-1">
               <Clock size={12} />
-              پاسخگویی سریع
+              ثبت مستقیم در CRM
             </span>
           </div>
 
           <DialogTitle className="text-xl sm:text-2xl font-black tracking-tight text-white mb-2 leading-snug">
-            دریافت پیش‌فاکتور رسمی و بهترین قیمت روز
+            استعلام آنلاین قیمت و دریافت پیش‌فاکتور رسمی
           </DialogTitle>
 
           <DialogDescription className="text-xs sm:text-sm text-blue-100 leading-relaxed max-w-md">
-            اطلاعات تماس خود را وارد کنید تا کارشناسان فنی استیکو در کوتاه‌ترین زمان برای ارائه قیمت همکاری، تخفیف پروژه و مشاوره تخصصی با شما تماس بگیرند.
+            اطلاعات تماس خود را وارد نمایید تا پیش‌فاکتور رسمی و بهترین قیمت روز همراه با تخفیف پروژه در سیستم CRM ثبت شده و کارشناسان استیکو به سرعت با شما تماس بگیرند.
           </DialogDescription>
 
           {/* Active Product Context Chip */}
@@ -489,9 +499,9 @@ export function ProductLeadTriggerButton({
       type="button"
       size="lg"
       onClick={onClick}
-      className={`bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white font-bold shadow-sm hover:shadow transition-all ${className}`}
+      className={`bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 hover:from-blue-800 hover:to-indigo-700 text-white font-extrabold shadow-md hover:shadow-lg transition-all h-12 px-6 rounded-xl cursor-pointer ${className}`}
     >
-      <Sparkles size={16} className="ml-1.5 text-amber-300" />
+      <Sparkles size={17} className="ml-2 text-amber-300 animate-pulse" />
       استعلام آنلاین قیمت و پیش‌فاکتور
     </Button>
   );

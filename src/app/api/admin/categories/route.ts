@@ -41,10 +41,21 @@ export async function GET() {
 
     const result = categories.map((cat) => {
       const catalogEntry = CATALOG_CATEGORIES.find((c) => c.slug === cat.slug);
-      const subCategories = (catalogEntry?.subCategories || []).map((sub) => ({
-        ...sub,
-        imageUrl: subCatImages[sub.slug] || DEFAULT_CATEGORY_IMAGES[sub.slug] || "",
-      }));
+      const subCategories = (catalogEntry?.subCategories || []).map((sub) => {
+        const custom = subCatImages[sub.slug];
+        let img = "";
+        if (custom === "__NONE__") {
+          img = "";
+        } else if (custom) {
+          img = custom;
+        } else {
+          img = DEFAULT_CATEGORY_IMAGES[sub.slug] || "";
+        }
+        return {
+          ...sub,
+          imageUrl: img,
+        };
+      });
 
       const catImg = cat.imageUrl || "";
 

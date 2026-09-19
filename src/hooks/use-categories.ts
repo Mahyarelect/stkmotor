@@ -50,8 +50,12 @@ export function useCategories() {
   };
 
   const getSubCategoryImage = (categorySlug: string, subCategorySlug: string): string => {
-    if (subCatImages[subCategorySlug]) {
-      return subCatImages[subCategorySlug];
+    const custom = subCatImages[subCategorySlug];
+    if (custom === "__NONE__") {
+      return "";
+    }
+    if (custom) {
+      return custom;
     }
     return getSubcategoryDefaultImage(categorySlug, subCategorySlug);
   };

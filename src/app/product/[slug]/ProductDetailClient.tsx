@@ -883,8 +883,8 @@ export default function ProductDetailClient({
         }
         isOpen={isLeadModalOpen}
         onOpenChange={setIsLeadModalOpen}
-        autoTriggerDelayMs={0}
-        enableExitIntent={false}
+        autoTriggerDelayMs={15000}
+        enableExitIntent={true}
       />
 
       {/* ─── Footer ─── */}

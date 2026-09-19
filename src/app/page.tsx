@@ -33,6 +33,7 @@ import { ProductFamilyData } from "@/components/product/ProductCard";
 import { telHref, useSiteSettings, whatsappHref } from "@/hooks/use-site-settings";
 import { CATALOG_CATEGORIES } from "@/data/catalogCategories";
 import { useCategories } from "@/hooks/use-categories";
+import { HomeHeroSlider } from "@/components/home/HomeHeroSlider";
 
 interface CatalogMeta {
   total: number;
@@ -170,55 +171,8 @@ export default function HomePage() {
       {/* ─── Shared Site Header ─── */}
       <SiteHeader />
 
-      {/* ─── Hero Section ─── */}
-      <section
-        id="home"
-        className="relative bg-gradient-to-bl from-blue-900 via-blue-800 to-blue-950 text-white overflow-hidden"
-      >
-        {/* Decorative background glow */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 right-20 w-72 h-72 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-10 left-20 w-96 h-96 bg-blue-400 rounded-full blur-3xl" />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 py-20 md:py-28">
-          <div className="max-w-2xl">
-            <Badge className="bg-blue-600/50 text-blue-100 mb-4 text-sm">
-              <Zap size={12} className="ml-1" />
-              نماینده رسمی STK Motors
-            </Badge>
-            <h1 className="text-3xl md:text-5xl font-extrabold leading-tight mb-6">
-              تجهیزات صنعتی برای حرکت، انتقال و سیالات
-              <br />
-              <span className="text-blue-300">الکتروموتور، گیربکس، پمپ و قطعات جانبی</span>
-            </h1>
-            <p className="text-blue-100/80 text-base md:text-lg leading-relaxed mb-8 max-w-xl">
-              مجموعه یکپارچه تجهیزات صنعتی با مشخصات فنی دقیق، مدل‌های متنوع و امکان استعلام مستقیم از کارشناسان STK Motors.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="#products">
-                <Button
-                  size="lg"
-                  className="bg-white text-blue-900 hover:bg-blue-50 font-semibold px-8 shadow-sm"
-                >
-                  مشاهده همه محصولات
-                  <ChevronLeft size={18} className="mr-1" />
-                </Button>
-              </Link>
-              <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white px-8"
-                >
-                  <MessageCircle size={16} className="ml-1.5" />
-                  استعلام قیمت
-                </Button>
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ─── Hero Section with Horizontal Slider ─── */}
+      <HomeHeroSlider whatsappLink={whatsappLink} />
 
       {/* ─── Category Entry Points ─── */}
       <section className="max-w-7xl mx-auto px-4 py-12">

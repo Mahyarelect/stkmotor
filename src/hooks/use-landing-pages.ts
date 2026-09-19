@@ -7,8 +7,12 @@ export interface LandingPageBrief {
   slug: string;
   title: string;
   subtitle?: string;
+  description?: string;
   bannerUrl?: string;
+  ctaText?: string;
+  ctaLink?: string;
   sortOrder: number;
+  featuredFamilySlugs?: string;
 }
 
 export function useLandingPages() {

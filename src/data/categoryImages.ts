@@ -13,8 +13,8 @@ export const DEFAULT_CATEGORY_IMAGES: Record<string, string> = {
   // Main Categories
   electromotor: "/media/products/fallback/electromotor-1.png",
   gearbox: "/media/products/assets/895dff27ba068dccd40a.webp",
-  pump: "/media/products/fallback/electromotor-3.png",
-  accessories: "/media/products/fallback/electromotor-4.jpg",
+  pump: "",
+  accessories: "",
 
   // Subcategories - Electromotor
   "single-phase": "/media/products/fallback/electromotor-2.png",
@@ -27,28 +27,34 @@ export const DEFAULT_CATEGORY_IMAGES: Record<string, string> = {
   worm: "/media/products/assets/005f2619a912f49197d5.webp",
   "inline-shaft": "/media/products/assets/cb599e3a10692260e20d.webp",
 
-  // Subcategories - Pump
-  "surface-pump": "/media/products/fallback/electromotor-3.png",
-  "submersible-sump": "/media/products/fallback/electromotor-3.png",
-  "sewage-pump": "/media/products/fallback/electromotor-3.png",
-  "submersible-pump": "/media/products/fallback/electromotor-3.png",
-  "gear-pump": "/media/products/assets/895dff27ba068dccd40a.webp",
-  "acid-pump": "/media/products/fallback/electromotor-3.png",
+  // Subcategories - Pump (No defaults; images must be uploaded by admin)
+  "surface-pump": "",
+  "submersible-sump": "",
+  "sewage-pump": "",
+  "submersible-pump": "",
+  "gear-pump": "",
+  "acid-pump": "",
 
-  // Subcategories - Accessories
-  "motor-flange": "/media/products/fallback/electromotor-4.jpg",
-  "rear-bracket": "/media/products/fallback/electromotor-4.jpg",
-  "gearbox-flange": "/media/products/assets/895dff27ba068dccd40a.webp",
+  // Subcategories - Accessories (No defaults; images must be uploaded by admin)
+  "motor-flange": "",
+  "rear-bracket": "",
+  "gearbox-flange": "",
 };
 
 export function getCategoryDefaultImage(slug: string): string {
-  return DEFAULT_CATEGORY_IMAGES[slug] || "/media/products/fallback/electromotor-1.png";
+  if (slug === "pump" || slug === "accessories") {
+    return "";
+  }
+  return DEFAULT_CATEGORY_IMAGES[slug] || "";
 }
 
 export function getSubcategoryDefaultImage(categorySlug: string, subCategorySlug: string): string {
+  if (categorySlug === "pump" || categorySlug === "accessories") {
+    return DEFAULT_CATEGORY_IMAGES[subCategorySlug] || "";
+  }
   return (
     DEFAULT_CATEGORY_IMAGES[subCategorySlug] ||
     DEFAULT_CATEGORY_IMAGES[categorySlug] ||
-    "/media/products/fallback/electromotor-1.png"
+    ""
   );
 }

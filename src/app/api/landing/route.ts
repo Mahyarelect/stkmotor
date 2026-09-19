@@ -13,8 +13,12 @@ export async function GET() {
         slug: true,
         title: true,
         subtitle: true,
+        description: true,
         bannerUrl: true,
+        ctaText: true,
+        ctaLink: true,
         sortOrder: true,
+        featuredFamilySlugs: true,
       },
     });
 

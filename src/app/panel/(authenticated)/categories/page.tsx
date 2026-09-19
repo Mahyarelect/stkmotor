@@ -242,11 +242,15 @@ export default function AdminCategoriesPage() {
                       className="text-xs font-bold text-red-600 border-red-200 bg-red-50 hover:bg-red-100 hover:text-red-700 cursor-pointer flex items-center gap-1.5"
                     >
                       <Trash2 size={13} className="text-red-600" />
-                      حذف عکس شاخص (بازگشت به تصویر پیش‌فرض سیستم)
+                      حذف عکس شاخص
                     </Button>
-                  ) : (
+                  ) : getCategoryDefaultImage(selectedCategory.slug) ? (
                     <p className="text-xs text-amber-600 font-medium">
                       در حال حاضر تصویر پیش‌فرض سیستم برای این دسته‌بندی فعال است.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-slate-400 font-medium">
+                      هنوز تصویری برای این دسته‌بندی بارگذاری نشده است (بدون تصویر پیش‌فرض).
                     </p>
                   )}
                 </div>
@@ -282,14 +286,20 @@ export default function AdminCategoriesPage() {
                   <div className="grid sm:grid-cols-2 gap-4">
                     {selectedCategory.subCategories.map((sub) => {
                       const customUrl = subCatImages[sub.slug] || "";
-                      const isCustom = Boolean(customUrl);
-                      const currentImg = customUrl || DEFAULT_CATEGORY_IMAGES[sub.slug] || "";
+                      const isNone = customUrl === "__NONE__";
+                      const isCustom = Boolean(customUrl) && !isNone;
+                      const defaultImg = DEFAULT_CATEGORY_IMAGES[sub.slug] || "";
+                      const currentImg = isNone ? "" : customUrl || defaultImg;
 
                       return (
                         <div
                           key={sub.slug}
                           className={`p-4 rounded-xl border transition-all space-y-3 ${
-                            isCustom ? "border-blue-200 bg-blue-50/25" : "border-slate-200 bg-slate-50/50"
+                            isCustom
+                              ? "border-blue-200 bg-blue-50/25"
+                              : isNone
+                              ? "border-red-200 bg-red-50/20"
+                              : "border-slate-200 bg-slate-50/50"
                           }`}
                         >
                           <div className="flex items-center justify-between">
@@ -300,10 +310,14 @@ export default function AdminCategoriesPage() {
                                 className={
                                   isCustom
                                     ? "bg-emerald-100 text-emerald-700 text-[10px] font-semibold border-emerald-200"
-                                    : "text-[10px] text-slate-500"
+                                    : isNone
+                                    ? "bg-red-100 text-red-700 text-[10px] font-semibold border-red-200"
+                                    : defaultImg
+                                    ? "text-[10px] text-slate-500"
+                                    : "text-[10px] text-slate-400 bg-slate-100 border-slate-200"
                                 }
                               >
-                                {isCustom ? "تصویر اختصاصی" : "پیش‌فرض"}
+                                {isCustom ? "تصویر اختصاصی" : isNone ? "حذف شده" : defaultImg ? "پیش‌فرض" : "بدون تصویر"}
                               </Badge>
                             </div>
                             <Badge variant="outline" className="text-[10px] text-slate-400 font-mono">
@@ -319,14 +333,17 @@ export default function AdminCategoriesPage() {
                                 className="h-full w-full object-contain"
                               />
                             ) : (
-                              <ImageIcon size={28} className="text-slate-300" />
+                              <div className="flex flex-col items-center justify-center text-slate-300 gap-1">
+                                <ImageIcon size={28} />
+                                <span className="text-[10px] text-slate-400">بدون تصویر</span>
+                              </div>
                             )}
                           </div>
 
                           <div className="space-y-2">
                             <ProductImageUploader
                               slug={`subcat-${sub.slug}`}
-                              value={customUrl}
+                              value={isNone ? "" : customUrl}
                               onChange={(url) => handleSubImageChange(sub.slug, url)}
                               compact
                             />
@@ -337,15 +354,39 @@ export default function AdminCategoriesPage() {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleSubImageChange(sub.slug, "")}
+                                onClick={() => handleSubImageChange(sub.slug, defaultImg ? "__NONE__" : "")}
                                 className="w-full h-8.5 text-xs font-bold text-red-600 border-red-200 bg-red-50/70 hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                               >
                                 <Trash2 size={13} className="text-red-600" />
-                                حذف عکس (بازگشت به پیش‌فرض سیستم)
+                                حذف عکس
                               </Button>
+                            ) : defaultImg && !isNone ? (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleSubImageChange(sub.slug, "__NONE__")}
+                                className="w-full h-8.5 text-xs font-bold text-red-600 border-red-200 bg-red-50/50 hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                              >
+                                <Trash2 size={13} className="text-red-600" />
+                                حذف تصویر پیش‌فرض
+                              </Button>
+                            ) : isNone ? (
+                              <div className="flex items-center justify-between gap-2 p-1">
+                                <span className="text-[11px] text-red-600 font-medium">تصویر حذف شده است</span>
+                                {defaultImg && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSubImageChange(sub.slug, "")}
+                                    className="text-[11px] text-blue-600 hover:underline font-bold cursor-pointer"
+                                  >
+                                    بازگردانی پیش‌فرض
+                                  </button>
+                                )}
+                              </div>
                             ) : (
                               <div className="text-[11px] text-slate-400 text-center py-1.5 bg-slate-100/60 rounded-lg font-medium">
-                                تصویر پیش‌فرض سیستم فعال است
+                                تصویری برای این زیردسته تنظیم نشده است
                               </div>
                             )}
                           </div>
@@ -376,11 +417,18 @@ export default function AdminCategoriesPage() {
                   <span className="text-xs font-semibold text-slate-500 mb-2 block">کارت صفحه اصلی:</span>
                   <div className="rounded-2xl border-2 border-blue-500/80 bg-white p-4 text-center shadow-lg transition-all overflow-hidden relative group">
                     <div className="relative h-32 w-full mb-3 rounded-xl bg-gradient-to-b from-slate-50 to-blue-50/40 flex items-center justify-center overflow-hidden border border-slate-100 p-2">
-                      <img
-                        src={selectedCategory.imageUrl}
-                        alt={selectedCategory.name}
-                        className="h-full w-full object-contain drop-shadow-sm"
-                      />
+                      {selectedCategory.imageUrl ? (
+                        <img
+                          src={selectedCategory.imageUrl}
+                          alt={selectedCategory.name}
+                          className="h-full w-full object-contain drop-shadow-sm"
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center text-slate-300 gap-1.5 py-4">
+                          <ImageIcon size={32} className="text-slate-300" />
+                          <span className="text-[11px] font-medium text-slate-400">بدون تصویر شاخص</span>
+                        </div>
+                      )}
                     </div>
                     <h4 className="font-bold text-sm text-slate-900 mb-1">{selectedCategory.name}</h4>
                     <p className="text-xs text-slate-400">

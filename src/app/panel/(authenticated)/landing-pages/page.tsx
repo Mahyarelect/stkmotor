@@ -54,9 +54,15 @@ interface LandingPageItem {
 }
 
 interface FamilyOption {
+  id: string;
   slug: string;
   name: string;
+  nameEn?: string;
   mainCategory: string;
+  category?: string;
+  brand?: string;
+  imageUrl?: string;
+  variantCount?: number;
 }
 
 export default function LandingPagesAdminPage() {
@@ -84,6 +90,7 @@ export default function LandingPagesAdminPage() {
   const [isActive, setIsActive] = useState(true);
   const [sortOrder, setSortOrder] = useState(0);
   const [familyFilterQuery, setFamilyFilterQuery] = useState("");
+  const [pickerCategoryFilter, setPickerCategoryFilter] = useState<string>("all");
 
   // Delete State
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -104,9 +111,15 @@ export default function LandingPagesAdminPage() {
         const famData = await resFamilies.json();
         setAvailableFamilies(
           famData.map((f: any) => ({
+            id: f.id,
             slug: f.slug,
             name: f.name,
-            mainCategory: f.mainCategory,
+            nameEn: f.nameEn,
+            mainCategory: f.mainCategory || "electromotor",
+            category: f.category,
+            brand: f.brand,
+            imageUrl: f.imageUrl,
+            variantCount: f._count?.variants || f.variants?.length || 0,
           }))
         );
       }
@@ -262,12 +275,22 @@ export default function LandingPagesAdminPage() {
   }, [pages, searchQuery]);
 
   const filteredAvailableFamilies = useMemo(() => {
-    if (!familyFilterQuery.trim()) return availableFamilies;
-    const q = familyFilterQuery.toLowerCase();
-    return availableFamilies.filter(
-      (f) => f.name.toLowerCase().includes(q) || f.slug.toLowerCase().includes(q)
-    );
-  }, [availableFamilies, familyFilterQuery]);
+    return availableFamilies.filter((f) => {
+      if (pickerCategoryFilter === "selected") {
+        if (!selectedFamilySlugs.includes(f.slug)) return false;
+      } else if (pickerCategoryFilter !== "all" && f.mainCategory !== pickerCategoryFilter) {
+        return false;
+      }
+
+      if (!familyFilterQuery.trim()) return true;
+      const q = familyFilterQuery.toLowerCase();
+      return (
+        f.name.toLowerCase().includes(q) ||
+        f.slug.toLowerCase().includes(q) ||
+        (f.brand && f.brand.toLowerCase().includes(q))
+      );
+    });
+  }, [availableFamilies, familyFilterQuery, pickerCategoryFilter, selectedFamilySlugs]);
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -573,67 +596,195 @@ export default function LandingPagesAdminPage() {
 
             {/* Featured Product Families Picker */}
             <div className="border-t border-gray-200 pt-4 space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <Label className="text-xs font-semibold text-gray-800">
-                    محصولات و خانواده‌های منتخب این صفحه
+                  <Label className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                    <Package size={15} className="text-blue-600" />
+                    محصولات و ویترین منتخب این صفحه
                   </Label>
-                  <p className="text-[11px] text-gray-400">
-                    محصولاتی که می‌خواهید در بخش ویترین این صفحه فرود نمایش داده شوند را انتخاب کنید (
-                    {selectedFamilySlugs.length} مورد انتخاب شده).
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    محصولاتی که می‌خواهید در ویترین این صفحه نمایش داده شوند را انتخاب کنید ({selectedFamilySlugs.length} محصول انتخاب شده).
                   </p>
                 </div>
                 {selectedFamilySlugs.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setSelectedFamilySlugs([])}
-                    className="text-xs text-red-600 hover:underline"
+                    className="text-xs text-red-600 hover:text-red-700 hover:underline font-semibold cursor-pointer self-start sm:self-auto"
                   >
-                    پاک کردن همه
+                    پاک کردن همه انتخاب‌ها ({selectedFamilySlugs.length})
                   </button>
                 )}
               </div>
 
-              <div className="relative">
-                <Search size={14} className="absolute right-2.5 top-2.5 text-gray-400" />
-                <Input
-                  value={familyFilterQuery}
-                  onChange={(e) => setFamilyFilterQuery(e.target.value)}
-                  placeholder="فیلتر کردن نام یا مدل محصول..."
-                  className="pr-8 text-xs h-8"
-                />
+              {/* Selected items chips strip */}
+              {selectedFamilySlugs.length > 0 && (
+                <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-200/80 space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px] text-blue-900 font-bold">
+                    <span>محصولات در حال حاضر انتخاب‌شده ({selectedFamilySlugs.length} مورد):</span>
+                    <span className="text-[10px] text-blue-600 font-normal">جهت حذف، روی ✕ کلیک کنید</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pt-1">
+                    {selectedFamilySlugs.map((slug) => {
+                      const fam = availableFamilies.find((f) => f.slug === slug);
+                      return (
+                        <span
+                          key={slug}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-blue-900 border border-blue-200 shadow-2xs"
+                        >
+                          <span className="max-w-[200px] truncate">{fam ? fam.name : slug}</span>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedFamilySlugs((prev) => prev.filter((s) => s !== slug))}
+                            className="text-slate-400 hover:text-red-600 transition-colors cursor-pointer p-0.5"
+                            title="حذف از انتخاب‌ها"
+                          >
+                            <X size={12} />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Search & Category Filter Pills */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Input
+                    value={familyFilterQuery}
+                    onChange={(e) => setFamilyFilterQuery(e.target.value)}
+                    placeholder="جستجو بر اساس نام کامل، برند یا کد محصول..."
+                    className="pr-9 pl-8 text-xs h-9 bg-white"
+                  />
+                  {familyFilterQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setFamilyFilterQuery("")}
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-1"
+                    >
+                      <X size={13} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Category tabs */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {[
+                    { key: "all", label: `همه (${availableFamilies.length})` },
+                    { key: "electromotor", label: `الکتروموتور (${availableFamilies.filter((f) => f.mainCategory === "electromotor").length})` },
+                    { key: "gearbox", label: `گیربکس (${availableFamilies.filter((f) => f.mainCategory === "gearbox").length})` },
+                    { key: "pump", label: `پمپ (${availableFamilies.filter((f) => f.mainCategory === "pump").length})` },
+                    { key: "accessories", label: `لوازم جانبی (${availableFamilies.filter((f) => f.mainCategory === "accessories").length})` },
+                    { key: "selected", label: `انتخاب‌شده (${selectedFamilySlugs.length})` },
+                  ].map((tab) => {
+                    const isActive = pickerCategoryFilter === tab.key;
+                    return (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        onClick={() => setPickerCategoryFilter(tab.key)}
+                        className={`text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                          isActive
+                            ? "bg-blue-600 text-white shadow-xs"
+                            : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl p-2 grid grid-cols-1 sm:grid-cols-2 gap-1.5 bg-gray-50/50">
-                {filteredAvailableFamilies.map((fam) => {
-                  const isSelected = selectedFamilySlugs.includes(fam.slug);
-                  return (
-                    <div
-                      key={fam.slug}
-                      onClick={() => {
-                        setSelectedFamilySlugs((prev) =>
+              {/* Products list with clear names, images and badges */}
+              <div className="max-h-72 overflow-y-auto border border-gray-200 rounded-xl p-2 space-y-2 bg-slate-50/50">
+                {filteredAvailableFamilies.length === 0 ? (
+                  <div className="text-center py-8 text-xs text-gray-400">
+                    هیچ محصولی با این فیلتر یا عبارت جستجو یافت نشد.
+                  </div>
+                ) : (
+                  filteredAvailableFamilies.map((fam) => {
+                    const isSelected = selectedFamilySlugs.includes(fam.slug);
+                    const categoryPersian: Record<string, string> = {
+                      electromotor: "الکتروموتور",
+                      gearbox: "گیربکس",
+                      pump: "پمپ",
+                      accessories: "لوازم جانبی",
+                    };
+
+                    return (
+                      <div
+                        key={fam.slug}
+                        onClick={() => {
+                          setSelectedFamilySlugs((prev) =>
+                            isSelected ? prev.filter((s) => s !== fam.slug) : [...prev, fam.slug]
+                          );
+                        }}
+                        className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
                           isSelected
-                            ? prev.filter((s) => s !== fam.slug)
-                            : [...prev, fam.slug]
-                        );
-                      }}
-                      className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors text-xs ${
-                        isSelected
-                          ? "bg-blue-50 text-blue-900 border border-blue-200 font-medium"
-                          : "hover:bg-white text-gray-700 border border-transparent"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => {}} // handled by parent div
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="truncate flex-1">{fam.name}</span>
-                      <span className="text-[10px] text-gray-400 font-mono">{fam.slug}</span>
-                    </div>
-                  );
-                })}
+                            ? "bg-blue-50/95 text-blue-950 border-blue-400 ring-1 ring-blue-400/30 shadow-xs"
+                            : "bg-white hover:bg-slate-50/80 text-gray-800 border-gray-200/80 shadow-2xs"
+                        }`}
+                      >
+                        {/* Checkbox */}
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {}} // handled by parent div
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer shrink-0"
+                        />
+
+                        {/* Image Thumbnail */}
+                        <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 p-1">
+                          {fam.imageUrl ? (
+                            <img
+                              src={fam.imageUrl}
+                              alt={fam.name}
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <Package size={20} className="text-slate-400" />
+                          )}
+                        </div>
+
+                        {/* Details - FULL NAME ALWAYS VISIBLE AND CLEAR */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-xs sm:text-sm text-slate-900 leading-snug break-words">
+                            {fam.name}
+                          </h4>
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                            <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-medium">
+                              {categoryPersian[fam.mainCategory] || fam.mainCategory}
+                            </Badge>
+                            {fam.brand && (
+                              <Badge variant="outline" className="text-[10px] py-0 px-1.5 border-slate-300 text-slate-600">
+                                {fam.brand}
+                              </Badge>
+                            )}
+                            {fam.variantCount !== undefined && fam.variantCount > 0 && (
+                              <span className="text-[10px] text-slate-500">
+                                {fam.variantCount} مدل / واریانت
+                              </span>
+                            )}
+                            <span className="text-[10px] text-slate-400 font-mono" dir="ltr">
+                              {fam.slug}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Selected check badge */}
+                        {isSelected && (
+                          <div className="shrink-0 text-blue-600 font-bold text-xs flex items-center gap-1">
+                            <CheckCircle2 size={16} className="text-blue-600" />
+                            <span className="hidden sm:inline">انتخاب شد</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
 

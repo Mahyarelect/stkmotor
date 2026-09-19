@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -7,6 +8,7 @@ import {
   Phone,
   MessageCircle,
   ChevronLeft,
+  ChevronRight,
   Package,
   ShieldCheck,
   Award,
@@ -68,6 +70,38 @@ export default function LandingPageClient({
   const whatsapp = settings.whatsapp || "989123456789";
   const ctaLink = page.ctaLink || "#products";
   const ctaText = page.ctaText || "مشاهده مشخصات و ثبت سفارش";
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const scrollHorizontally = useCallback((direction: "left" | "right") => {
+    if (!scrollRef.current) return;
+    const distance = 340;
+    scrollRef.current.scrollBy({
+      left: direction === "left" ? -distance : distance,
+      behavior: "smooth",
+    });
+  }, []);
+
+  // Auto-scroll products horizontally with optimal interval (4 seconds)
+  useEffect(() => {
+    if (families.length <= 1 || isPaused) return;
+
+    const timer = setInterval(() => {
+      if (!scrollRef.current) return;
+      const el = scrollRef.current;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      const currentScroll = Math.abs(el.scrollLeft);
+
+      if (currentScroll >= maxScroll - 20) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        // In RTL Persian layout, scroll moves towards left (negative scroll offset)
+        el.scrollBy({ left: -340, behavior: "smooth" });
+      }
+    }, 4000);
+
+    return () => clearInterval(timer);
+  }, [families.length, isPaused]);
 
   return (
     <div className="space-y-16 pb-20">
@@ -248,9 +282,35 @@ export default function LandingPageClient({
             </div>
             <h2 className="text-2xl font-bold text-gray-900">محصولات منتخب این صفحه</h2>
           </div>
-          <span className="text-xs text-gray-500">
-            {families.length} مدل و خانواده محصول آماده سفارش
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-gray-500">
+              {families.length} مدل و خانواده محصول آماده سفارش
+            </span>
+            {families.length > 1 && (
+              <div className="flex items-center gap-1.5 mr-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => scrollHorizontally("right")}
+                  className="w-8 h-8 rounded-lg text-slate-700 hover:bg-slate-100 cursor-pointer"
+                  title="اسکرول به راست"
+                >
+                  <ChevronRight size={16} />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => scrollHorizontally("left")}
+                  className="w-8 h-8 rounded-lg text-slate-700 hover:bg-slate-100 cursor-pointer"
+                  title="اسکرول به چپ"
+                >
+                  <ChevronLeft size={16} />
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
         {families.length === 0 ? (
@@ -264,11 +324,18 @@ export default function LandingPageClient({
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            ref={scrollRef}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            onTouchStart={() => setIsPaused(true)}
+            onTouchEnd={() => setIsPaused(false)}
+            className="flex gap-6 overflow-x-auto pb-4 pt-1 snap-x scroll-smooth select-none"
+          >
             {families.map((fam) => (
               <Card
                 key={fam.id}
-                className="overflow-hidden border border-gray-200 hover:border-blue-300 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col bg-white rounded-2xl"
+                className="min-w-[280px] sm:min-w-[320px] max-w-[340px] shrink-0 snap-start overflow-hidden border border-gray-200 hover:border-blue-300 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col bg-white rounded-2xl"
               >
                 <div className="relative aspect-video w-full bg-slate-50 border-b border-gray-100 flex items-center justify-center p-4">
                   {fam.imageUrl ? (
