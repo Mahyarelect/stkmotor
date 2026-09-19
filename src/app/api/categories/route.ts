@@ -28,6 +28,19 @@ export async function GET() {
 
     const categories = rawCategories as unknown as CategoryRecord[];
 
+    // Load custom subcategory images if configured
+    const subCatSetting = await db.siteSetting.findUnique({
+      where: { key: "category_sub_images" },
+    });
+    let subCatImages: Record<string, string> = {};
+    if (subCatSetting?.value) {
+      try {
+        subCatImages = JSON.parse(subCatSetting.value);
+      } catch {
+        subCatImages = {};
+      }
+    }
+
     const enriched = categories.map((cat) => {
       const img = cat.imageUrl || getCategoryDefaultImage(cat.slug);
       return {
@@ -45,7 +58,7 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({ categories: enriched });
+    return NextResponse.json({ categories: enriched, subCatImages });
   } catch (error) {
     console.error("Failed to fetch categories:", error);
     return NextResponse.json({ error: "خطا در دریافت دسته‌بندی‌ها" }, { status: 500 });

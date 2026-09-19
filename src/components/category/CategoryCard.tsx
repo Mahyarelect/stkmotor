@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Cog, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,10 @@ export function CategoryCard({
   className,
 }: CategoryCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [image]);
 
   return (
     <Link

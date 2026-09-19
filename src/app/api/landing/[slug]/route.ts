@@ -9,12 +9,30 @@ export async function GET(
   props: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await props.params;
+    const rawSlug = (await props.params).slug || "";
+    let decoded = rawSlug;
+    try {
+      decoded = decodeURIComponent(rawSlug);
+    } catch {
+      decoded = rawSlug;
+    }
+    const clean = decoded.trim();
+    const lower = clean.toLowerCase();
+    const rawLower = rawSlug.trim().toLowerCase();
+
     const session = await getSession();
     const isAdmin = session?.role === "admin";
 
-    const landingPage = await db.landingPage.findUnique({
-      where: { slug },
+    const landingPage = await db.landingPage.findFirst({
+      where: {
+        OR: [
+          { slug: clean },
+          { slug: rawSlug },
+          { slug: lower },
+          { slug: rawLower },
+          { slug: { equals: clean, mode: "insensitive" } },
+        ],
+      },
     });
 
     if (!landingPage || (!landingPage.isActive && !isAdmin)) {

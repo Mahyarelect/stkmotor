@@ -14,9 +14,10 @@ const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "i
 const ALLOWED_IMAGE_FORMATS = new Set(["jpeg", "png", "webp", "gif"]);
 const ALLOWED_VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime", "video/x-matroska"]);
 
-function safeSlug(value: FormDataEntryValue | null): string | null {
+function safeSlug(value: FormDataEntryValue | null): string {
   const slug = String(value ?? "").trim().toLowerCase();
-  return /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/.test(slug) ? slug : null;
+  const cleaned = slug.replace(/[^a-z0-9_-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+  return cleaned || "general";
 }
 
 function unauthorized(error: unknown) {

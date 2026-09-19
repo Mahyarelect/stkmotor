@@ -66,20 +66,21 @@ function faNum(n: number | string): string {
 
 export function ProductCard({ family }: { family: ProductFamilyData }) {
   const isRatioSelectable = useMemo(() => {
-    if (family.mainCategory !== "gearbox" && family.category !== "cubic") return false;
-    const ratios = new Set(family.variants.map((v) => v.ratio).filter(Boolean));
-    const sizes = new Set(
+    const isGearbox = family.mainCategory === "gearbox" || family.category === "cubic";
+    if (!isGearbox) return false;
+    const ratios = new Set(
       family.variants
-        .map((v) => v.size)
-        .filter((s) => typeof s === "string" && s.trim().length > 0)
+        .map((v) => v.ratio)
+        .filter((r): r is string => typeof r === "string" && r.trim().length > 0)
     );
-    return ratios.size > 1 && sizes.size <= 1;
+    return ratios.size > 0;
   }, [family.mainCategory, family.category, family.variants]);
 
   const variantsByOption = useMemo(() => {
     const map = new Map<string, Variant>();
     for (const variant of family.variants) {
-      const key = isRatioSelectable ? variant.ratio : variant.size;
+      const rawKey = isRatioSelectable ? variant.ratio : variant.size;
+      const key = rawKey?.trim();
       if (key && (!map.has(key) || (variant.inStock && !map.get(key)?.inStock))) {
         map.set(key, variant);
       }
@@ -143,8 +144,9 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
   const specs = useMemo(() => {
     const list: Array<[string, string | undefined]> = [];
     if (family.mainCategory === "gearbox") {
+      if (activeVariant?.ratio) list.push(["نسبت تبدیل", `1:${activeVariant.ratio}`]);
+      if (activeVariant?.size) list.push(["تیپ / سایز", `تیپ ${activeVariant.size}`]);
       if (activeVariant?.modelType) list.push(["مدل", activeVariant.modelType]);
-      if (activeVariant?.ratio) list.push(["نسبت", `1:${activeVariant.ratio}`]);
       if (activeVariant?.inputFrame) list.push(["فریم ورودی", activeVariant.inputFrame]);
       if (activeVariant?.inputType) list.push(["نوع ورودی", activeVariant.inputType]);
       if (activeVariant?.mountingType) list.push(["نصب", activeVariant.mountingType]);
@@ -198,7 +200,7 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
 
         {/* Variant count badge */}
         <span className="absolute top-3.5 left-3.5 z-20 text-[11px] font-semibold px-2.5 py-1 bg-white/95 backdrop-blur-xs text-slate-700 border border-slate-200/90 rounded-lg shadow-xs">
-          {faNum(uniqueOptions.length || family.variantCount)} تنوع
+          {faNum(uniqueOptions.length || family.variantCount)} {isRatioSelectable ? "نسبت" : "تنوع"}
         </span>
 
         {/* Hover hint */}
@@ -217,22 +219,27 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
           </h4>
         </Link>
 
-        {/* Subtitle: Shell Type + Speed + Size Range */}
+        {/* Subtitle: Shell Type + Speed + Size Range + Active Ratio */}
         <p className="text-xs text-slate-500 mb-3.5 font-medium flex items-center gap-1.5 flex-wrap">
           <span>{family.mainCategory === "electromotor" ? `پوسته ${family.shellType}` : categoryLabel}</span>
           {uniqueSpeeds.length > 0 && <span>· {faNum(uniqueSpeeds[0])} دور</span>}
           {sizeRange && <span>· {sizeRange}</span>}
+          {isRatioSelectable && activeVariant?.ratio && (
+            <span className="text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/80">
+              نسبت ۱:{faNum(activeVariant.ratio)}
+            </span>
+          )}
         </p>
 
         {/* Variant Selector Chips (Size or Ratio) */}
         {uniqueOptions.length > 0 && (
           <div className="mb-3.5">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] text-slate-500 font-medium">
+              <span className="text-[11px] text-slate-700 font-bold flex items-center gap-1">
                 {isRatioSelectable ? "انتخاب نسبت تبدیل:" : "انتخاب مدل / سایز:"}
               </span>
               {effectiveSelectedOption && (
-                <span className="text-[11px] font-bold text-blue-700 num-en">
+                <span className="text-xs font-black text-blue-700 bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded num-en">
                   {isRatioSelectable ? `1:${effectiveSelectedOption}` : effectiveSelectedOption}
                 </span>
               )}
@@ -249,7 +256,8 @@ export function ProductCard({ family }: { family: ProductFamilyData }) {
                     type="button"
                     onClick={() => setSelectedOption(opt)}
                     aria-pressed={isSelected}
-                    className={`relative min-h-9 min-w-9 px-2.5 py-1 rounded-lg text-xs font-bold num-en transition-all duration-150 ${
+                    title={isRatioSelectable ? `نسبت تبدیل ۱:${opt}` : `سایز ${opt}`}
+                    className={`relative min-h-9 min-w-9 px-2.5 py-1 rounded-lg text-xs font-bold num-en transition-all duration-150 cursor-pointer ${
                       isSelected
                         ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-300 scale-[1.02]"
                         : hasInStock

@@ -8,13 +8,36 @@ import LandingPageClient from "./LandingPageClient";
 
 export const revalidate = 30;
 
+async function findLandingPage(rawSlug: string) {
+  if (!rawSlug) return null;
+  let decoded = rawSlug;
+  try {
+    decoded = decodeURIComponent(rawSlug);
+  } catch {
+    decoded = rawSlug;
+  }
+  const clean = decoded.trim();
+  const lower = clean.toLowerCase();
+  const rawLower = rawSlug.trim().toLowerCase();
+
+  return db.landingPage.findFirst({
+    where: {
+      OR: [
+        { slug: clean },
+        { slug: rawSlug },
+        { slug: lower },
+        { slug: rawLower },
+        { slug: { equals: clean, mode: "insensitive" } },
+      ],
+    },
+  });
+}
+
 export async function generateMetadata(
   props: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const page = await db.landingPage.findUnique({
-    where: { slug },
-  });
+  const page = await findLandingPage(slug);
 
   if (!page) {
     return {
@@ -43,9 +66,7 @@ export default async function DynamicLandingPage(
   const session = await getSession();
   const isAdmin = session?.role === "admin";
 
-  const landingPage = await db.landingPage.findUnique({
-    where: { slug },
-  });
+  const landingPage = await findLandingPage(slug);
 
   if (!landingPage || (!landingPage.isActive && !isAdmin)) {
     notFound();

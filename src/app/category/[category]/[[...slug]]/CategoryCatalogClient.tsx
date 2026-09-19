@@ -39,7 +39,7 @@ export function CategoryCatalogClient({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const { getCategoryImage, getSubcategoryDefaultImage } = useCategories();
+  const { getCategoryImage, getSubCategoryImage } = useCategories();
 
   const [filter, setFilter] = useState<CategoryFilterValue>(() => ({
     search: searchParams.get("search") || "",
@@ -184,7 +184,7 @@ export function CategoryCatalogClient({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {catalogCategoryData.subCategories.map((sub) => {
-                const subImage = getSubcategoryDefaultImage(category, sub.slug);
+                const subImage = getSubCategoryImage(category, sub.slug);
                 return (
                   <CategoryCard
                     key={sub.slug}

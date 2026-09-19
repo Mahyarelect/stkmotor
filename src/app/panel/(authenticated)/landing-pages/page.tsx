@@ -428,7 +428,7 @@ export default function LandingPagesAdminPage() {
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-1.5">
                           <Link
-                            href={`/landing/${page.slug}`}
+                            href={`/landing/${encodeURIComponent(page.slug.trim())}`}
                             target="_blank"
                             className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition-colors"
                             title="مشاهده زنده صفحه فرود"

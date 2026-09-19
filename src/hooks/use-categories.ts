@@ -17,15 +17,21 @@ export interface CategoryData {
 
 export function useCategories() {
   const [categories, setCategories] = useState<CategoryData[]>([]);
+  const [subCatImages, setSubCatImages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
     fetch("/api/categories")
-      .then((res) => (res.ok ? res.json() : { categories: [] }))
+      .then((res) => (res.ok ? res.json() : { categories: [], subCatImages: {} }))
       .then((data) => {
-        if (active && Array.isArray(data.categories)) {
-          setCategories(data.categories);
+        if (active) {
+          if (Array.isArray(data.categories)) {
+            setCategories(data.categories);
+          }
+          if (data.subCatImages && typeof data.subCatImages === "object") {
+            setSubCatImages(data.subCatImages);
+          }
         }
       })
       .catch(() => undefined)
@@ -43,5 +49,19 @@ export function useCategories() {
     return found?.imageUrl || getCategoryDefaultImage(slug);
   };
 
-  return { categories, loading, getCategoryImage, getSubcategoryDefaultImage };
+  const getSubCategoryImage = (categorySlug: string, subCategorySlug: string): string => {
+    if (subCatImages[subCategorySlug]) {
+      return subCatImages[subCategorySlug];
+    }
+    return getSubcategoryDefaultImage(categorySlug, subCategorySlug);
+  };
+
+  return {
+    categories,
+    subCatImages,
+    loading,
+    getCategoryImage,
+    getSubCategoryImage,
+    getSubcategoryDefaultImage,
+  };
 }

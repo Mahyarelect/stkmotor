@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MotorCategoryNode, getChildMotorCategories, getSiblingMotorCategories } from "@/data/motorCategories";
 import { CategoryCard } from "./CategoryCard";
 import { Sparkles, ArrowRightLeft } from "lucide-react";
+import { useCategories } from "@/hooks/use-categories";
 
 interface CategorySelectorProps {
   slugs: string[];
@@ -11,6 +12,7 @@ interface CategorySelectorProps {
 }
 
 export function CategorySelector({ slugs, activeCategory }: CategorySelectorProps) {
+  const { getSubCategoryImage } = useCategories();
   const children = getChildMotorCategories(slugs);
   const siblings = slugs.length > 1 ? getSiblingMotorCategories(slugs) : [];
 
@@ -37,7 +39,7 @@ export function CategorySelector({ slugs, activeCategory }: CategorySelectorProp
               key={child.slug}
               title={child.title}
               href={child.href}
-              image={child.image}
+              image={getSubCategoryImage("electromotor", child.slug) || child.image}
               description={child.description}
             />
           ))}

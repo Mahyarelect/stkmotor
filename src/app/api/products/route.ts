@@ -269,12 +269,23 @@ export async function GET(request: NextRequest) {
   ]);
 
   const products = families.map((family) => {
-    const bySize = new Map<string, (typeof family.variants)[number]>();
+    const isRatioFamily =
+      (family.mainCategory === "gearbox" || family.category === "cubic") &&
+      family.variants.some((v) => Boolean(v.ratio));
+
+    const byOption = new Map<string, (typeof family.variants)[number]>();
     for (const variant of family.variants) {
-      const key = variant.size || variant.id;
-      if (!bySize.has(key)) bySize.set(key, variant);
+      const key = isRatioFamily
+        ? (variant.ratio || variant.size || variant.id)
+        : (variant.size || variant.id);
+      const existing = byOption.get(key);
+      if (!existing) {
+        byOption.set(key, variant);
+      } else if (!existing.inStock && variant.inStock) {
+        byOption.set(key, variant);
+      }
     }
-    const variants = Array.from(bySize.values()).map((variant) => ({
+    const variants = Array.from(byOption.values()).map((variant) => ({
       ...variant,
       price: Number(variant.price),
       media: resolvedProductMedia(

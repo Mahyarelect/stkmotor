@@ -13,6 +13,7 @@ import {
   X,
   Search,
   MessageCircle,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -20,9 +21,11 @@ import { rubikaHref, telHref, useSiteSettings, whatsappHref } from "@/hooks/use-
 import { RubikaIcon } from "@/components/icons/RubikaIcon";
 import { CATALOG_CATEGORIES } from "@/data/catalogCategories";
 import { HeaderSearchBar } from "@/components/search/HeaderSearchBar";
+import { useLandingPages } from "@/hooks/use-landing-pages";
 
 export function SiteHeader() {
   const siteSettings = useSiteSettings();
+  const { landingPages } = useLandingPages();
   const phoneLink = telHref(siteSettings.phone);
   const rubikaLink = rubikaHref(siteSettings.rubika) || "https://rubika.ir/stkmotors";
   const whatsappLink = whatsappHref(siteSettings.whatsapp);
@@ -53,6 +56,16 @@ export function SiteHeader() {
               <Mail size={12} />
               <span className="num-en">{siteSettings.email}</span>
             </a>
+            {landingPages.length > 0 && (
+              <Link
+                href={`/landing/${landingPages[0].slug}`}
+                className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 hover:text-white transition-colors text-[11px] font-medium"
+              >
+                <Sparkles size={11} className="text-amber-300 animate-pulse" />
+                <span>پیشنهاد ویژه: {landingPages[0].title}</span>
+                <span className="text-[10px] text-amber-300">←</span>
+              </Link>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <a
@@ -183,6 +196,66 @@ export function SiteHeader() {
                   )}
                 </div>
               ))}
+
+              {/* Landing Pages in Desktop Nav */}
+              {landingPages.length === 1 && (
+                <Link
+                  href={`/landing/${landingPages[0].slug}`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-300/80 transition-all hover:scale-105 shadow-xs whitespace-nowrap"
+                >
+                  <Sparkles size={13} className="text-amber-600 animate-pulse" />
+                  {landingPages[0].title}
+                </Link>
+              )}
+
+              {landingPages.length > 1 && (
+                <div
+                  className="relative"
+                  onMouseEnter={() => {
+                    if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current);
+                    setOpenDropdown("landings");
+                  }}
+                  onMouseLeave={() => {
+                    dropdownTimeout.current = setTimeout(() => setOpenDropdown(null), 150);
+                  }}
+                >
+                  <button
+                    type="button"
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                      openDropdown === "landings"
+                        ? "bg-amber-100 text-amber-950 border border-amber-300"
+                        : "bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200"
+                    }`}
+                  >
+                    <Sparkles size={13} className="text-amber-600 animate-pulse" />
+                    صفحات ویژه
+                    <ChevronDown
+                      size={13}
+                      className={`transition-transform ${openDropdown === "landings" ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  {openDropdown === "landings" && (
+                    <div className="absolute top-full right-0 mt-0 pt-1 z-50">
+                      <div className="bg-white border border-slate-200 rounded-xl shadow-xl py-2 min-w-[220px]">
+                        {landingPages.map((lp) => (
+                          <Link
+                            key={lp.id}
+                            href={`/landing/${lp.slug}`}
+                            className="block px-4 py-2 text-xs text-slate-800 hover:bg-amber-50 hover:text-amber-900 transition-colors"
+                          >
+                            <div className="font-bold">{lp.title}</div>
+                            {lp.subtitle && (
+                              <div className="text-[10px] text-slate-400 truncate">{lp.subtitle}</div>
+                            )}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <Link
                 href="/about"
                 className="px-3 py-2 rounded-md hover:text-blue-700 hover:bg-gray-50 transition-colors whitespace-nowrap"
@@ -333,6 +406,29 @@ export function SiteHeader() {
                 )}
               </div>
             ))}
+
+            {/* Mobile Landing Pages */}
+            {landingPages.length > 0 && (
+              <div className="p-2.5 bg-amber-50/90 rounded-xl border border-amber-200/90 space-y-1.5 my-2">
+                <div className="text-[11px] font-bold text-amber-900 flex items-center gap-1.5 px-1">
+                  <Sparkles size={13} className="text-amber-600 animate-pulse" />
+                  پیشنهادات و صفحات ویژه
+                </div>
+                {landingPages.map((lp) => (
+                  <Link
+                    key={lp.id}
+                    href={`/landing/${lp.slug}`}
+                    className="block p-2 rounded-lg bg-white border border-amber-200 hover:bg-amber-100/60 text-xs font-bold text-slate-800 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <div>{lp.title}</div>
+                    {lp.subtitle && (
+                      <div className="text-[10px] font-normal text-slate-500 truncate">{lp.subtitle}</div>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )}
             <Separator />
             <div className="flex gap-2 pt-1">
               <Link

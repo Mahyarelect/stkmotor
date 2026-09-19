@@ -11,6 +11,8 @@ import {
   Sparkles,
   Layers,
   ChevronDown,
+  Trash2,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -170,6 +172,13 @@ export default function AdminCategoriesPage() {
         </Button>
       </div>
 
+      {saved && (
+        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm font-bold flex items-center gap-2 shadow-xs">
+          <Check size={18} className="text-emerald-600" />
+          تمام تغییرات تصاویر دسته‌ها و زیردسته‌ها با موفقیت در سیستم ذخیره شدند.
+        </div>
+      )}
+
       {/* Category Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
         {categories.map((cat) => {
@@ -227,13 +236,13 @@ export default function AdminCategoriesPage() {
                   {selectedCategory.rawImageUrl ? (
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={() => handleMainImageChange(selectedCategory.slug, "")}
-                      className="text-xs text-slate-500 hover:text-red-600"
+                      className="text-xs font-bold text-red-600 border-red-200 bg-red-50 hover:bg-red-100 hover:text-red-700 cursor-pointer flex items-center gap-1.5"
                     >
-                      <RotateCcw size={12} className="ml-1" />
-                      بازگشت به تصویر پیش‌فرض سیستم
+                      <Trash2 size={13} className="text-red-600" />
+                      حذف عکس شاخص (بازگشت به تصویر پیش‌فرض سیستم)
                     </Button>
                   ) : (
                     <p className="text-xs text-amber-600 font-medium">
@@ -272,17 +281,32 @@ export default function AdminCategoriesPage() {
                 <CardContent className="space-y-5">
                   <div className="grid sm:grid-cols-2 gap-4">
                     {selectedCategory.subCategories.map((sub) => {
-                      const currentImg = subCatImages[sub.slug] || DEFAULT_CATEGORY_IMAGES[sub.slug] || "";
-                      const isCustom = Boolean(subCatImages[sub.slug]);
+                      const customUrl = subCatImages[sub.slug] || "";
+                      const isCustom = Boolean(customUrl);
+                      const currentImg = customUrl || DEFAULT_CATEGORY_IMAGES[sub.slug] || "";
 
                       return (
                         <div
                           key={sub.slug}
-                          className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3"
+                          className={`p-4 rounded-xl border transition-all space-y-3 ${
+                            isCustom ? "border-blue-200 bg-blue-50/25" : "border-slate-200 bg-slate-50/50"
+                          }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-bold text-sm text-slate-800">{sub.name}</span>
-                            <Badge variant="secondary" className="text-[10px]">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm text-slate-800">{sub.name}</span>
+                              <Badge
+                                variant="secondary"
+                                className={
+                                  isCustom
+                                    ? "bg-emerald-100 text-emerald-700 text-[10px] font-semibold border-emerald-200"
+                                    : "text-[10px] text-slate-500"
+                                }
+                              >
+                                {isCustom ? "تصویر اختصاصی" : "پیش‌فرض"}
+                              </Badge>
+                            </div>
+                            <Badge variant="outline" className="text-[10px] text-slate-400 font-mono">
                               {sub.slug}
                             </Badge>
                           </div>
@@ -299,24 +323,30 @@ export default function AdminCategoriesPage() {
                             )}
                           </div>
 
-                          <div className="space-y-1.5">
-                            <Input
-                              type="text"
-                              value={subCatImages[sub.slug] || ""}
-                              onChange={(e) => handleSubImageChange(sub.slug, e.target.value)}
-                              placeholder="آدرس تصویر (URL یا مسیر محلی)..."
-                              className="text-xs num-en bg-white"
-                              dir="ltr"
+                          <div className="space-y-2">
+                            <ProductImageUploader
+                              slug={`subcat-${sub.slug}`}
+                              value={customUrl}
+                              onChange={(url) => handleSubImageChange(sub.slug, url)}
+                              compact
                             />
-                            {isCustom && (
-                              <button
+
+                            {/* Explicit Delete Button for Subcategory Image */}
+                            {isCustom ? (
+                              <Button
                                 type="button"
+                                variant="outline"
+                                size="sm"
                                 onClick={() => handleSubImageChange(sub.slug, "")}
-                                className="text-[11px] text-slate-400 hover:text-red-600 transition-colors flex items-center gap-1"
+                                className="w-full h-8.5 text-xs font-bold text-red-600 border-red-200 bg-red-50/70 hover:bg-red-100 hover:text-red-700 hover:border-red-300 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                               >
-                                <RotateCcw size={10} />
-                                بازنشانی به پیش‌فرض
-                              </button>
+                                <Trash2 size={13} className="text-red-600" />
+                                حذف عکس (بازگشت به پیش‌فرض سیستم)
+                              </Button>
+                            ) : (
+                              <div className="text-[11px] text-slate-400 text-center py-1.5 bg-slate-100/60 rounded-lg font-medium">
+                                تصویر پیش‌فرض سیستم فعال است
+                              </div>
                             )}
                           </div>
                         </div>
