@@ -616,29 +616,29 @@ export default function FamilyDetailPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
-                    <TableHead className="text-right text-xs font-medium">SKU</TableHead>
-                    <TableHead className="text-center text-xs font-medium">تصاویر و مدیا</TableHead>
-                    <TableHead className="text-right text-xs font-medium">سایز</TableHead>
-                    <TableHead className="text-right text-xs font-medium">توان</TableHead>
-                    <TableHead className="text-right text-xs font-medium">kW</TableHead>
-                    <TableHead className="text-right text-xs font-medium">دور</TableHead>
-                    <TableHead className="text-right text-xs font-medium">نصب</TableHead>
-                    <TableHead className="text-right text-xs font-medium">قیمت</TableHead>
-                    <TableHead className="text-center text-xs font-medium">وضعیت</TableHead>
-                    <TableHead className="text-center text-xs font-medium">عملیات</TableHead>
+                    <TableHead className="text-right text-xs font-medium w-28">SKU</TableHead>
+                    <TableHead className="text-center text-xs font-medium w-32">تصاویر و مدیا</TableHead>
+                    <TableHead className="text-center text-xs font-medium w-24">سایز</TableHead>
+                    <TableHead className="text-center text-xs font-medium w-24">توان</TableHead>
+                    <TableHead className="text-center text-xs font-medium w-20">kW</TableHead>
+                    <TableHead className="text-center text-xs font-medium w-28">دور</TableHead>
+                    <TableHead className="text-center text-xs font-medium w-20">نصب</TableHead>
+                    <TableHead className="text-right text-xs font-medium w-36">قیمت</TableHead>
+                    <TableHead className="text-center text-xs font-medium w-24">وضعیت</TableHead>
+                    <TableHead className="text-center text-xs font-medium w-20">عملیات</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {family.variants.map((v) => (
-                    <TableRow key={v.id} className="text-sm">
-                      <TableCell className="num-en font-mono text-xs">
-                        {v.sku}
+                    <TableRow key={v.id} className="text-sm hover:bg-gray-50/80">
+                      <TableCell className="text-right font-mono text-xs font-medium text-gray-800">
+                        <bdi dir="ltr">{v.sku}</bdi>
                       </TableCell>
                       <TableCell className="text-center">
                         <button
                           type="button"
                           onClick={() => setSelectedVariantForMedia(v)}
-                          className="group inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs transition-all hover:border-blue-400 hover:bg-blue-50/50"
+                          className="group inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs transition-all hover:border-blue-400 hover:bg-blue-50/50 cursor-pointer"
                           title="مدیریت تصاویر، ترتیب و ویدیوهای این واریانت"
                           aria-label={`مدیریت مدیا برای کد ${v.sku}`}
                         >
@@ -672,14 +672,22 @@ export default function FamilyDetailPage() {
                           </div>
                         </button>
                       </TableCell>
-                      <TableCell className="num-en">{v.size || "-"}</TableCell>
-                      <TableCell className="num-en">{v.power || "-"}</TableCell>
-                      <TableCell className="num-en">{v.powerKw || "-"}</TableCell>
-                      <TableCell className="num-en">
-                        {v.speed ? `${v.speed} RPM` : "-"}
+                      <TableCell className="text-center text-xs text-gray-700">
+                        <bdi dir="ltr">{v.size || "-"}</bdi>
                       </TableCell>
-                      <TableCell className="num-en">{v.mountingType || "-"}</TableCell>
-                      <TableCell className="text-xs font-medium">
+                      <TableCell className="text-center text-xs text-gray-700">
+                        <bdi dir="ltr">{v.power || "-"}</bdi>
+                      </TableCell>
+                      <TableCell className="text-center text-xs text-gray-700">
+                        <bdi dir="ltr">{v.powerKw || "-"}</bdi>
+                      </TableCell>
+                      <TableCell className="text-center text-xs text-gray-700">
+                        <bdi dir="ltr">{v.speed ? `${v.speed} RPM` : "-"}</bdi>
+                      </TableCell>
+                      <TableCell className="text-center text-xs text-gray-700">
+                        <bdi dir="ltr">{v.mountingType || "-"}</bdi>
+                      </TableCell>
+                      <TableCell className="text-right text-xs font-medium text-gray-900">
                         {v.price > 0
                           ? formatPrice(v.price)
                           : "تماس بگیرید"}
@@ -688,10 +696,10 @@ export default function FamilyDetailPage() {
                         <button
                           onClick={() => handleToggleStock(v.id, v.inStock)}
                           disabled={saving}
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium cursor-pointer transition-colors ${
                             v.inStock
-                              ? "bg-emerald-100 text-emerald-700"
-                              : "bg-gray-100 text-gray-500"
+                              ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                           }`}
                         >
                           {v.inStock ? "موجود" : "ناموجود"}
@@ -703,13 +711,13 @@ export default function FamilyDetailPage() {
                             <button
                               onClick={() => handleDeleteVariant(v.id)}
                               disabled={saving}
-                              className="text-[10px] text-red-600 font-medium px-1"
+                              className="text-[10px] text-red-600 font-medium px-1 cursor-pointer"
                             >
                               تایید
                             </button>
                             <button
                               onClick={() => setDeleteConfirm(null)}
-                              className="text-gray-400 hover:text-gray-600"
+                              className="text-gray-400 hover:text-gray-600 cursor-pointer"
                             >
                               <X size={12} />
                             </button>
@@ -717,7 +725,7 @@ export default function FamilyDetailPage() {
                         ) : (
                           <button
                             onClick={() => setDeleteConfirm(v.id)}
-                            className="text-red-400 hover:text-red-600"
+                            className="text-red-400 hover:text-red-600 cursor-pointer"
                           >
                             <Trash2 size={14} />
                           </button>

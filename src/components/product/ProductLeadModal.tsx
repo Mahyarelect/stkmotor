@@ -122,16 +122,19 @@ export function ProductLeadModal({
       // Storage unavailable
     }
 
-    // 1. Timed popup
-    const timer = setTimeout(() => {
-      try {
-        if (!sessionStorage.getItem(`didar_popup_dismissed_${productSlug}`)) {
+    // 1. Timed popup (only if autoTriggerDelayMs > 0)
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    if (autoTriggerDelayMs > 0) {
+      timer = setTimeout(() => {
+        try {
+          if (!sessionStorage.getItem(`didar_popup_dismissed_${productSlug}`)) {
+            handleOpenChange(true);
+          }
+        } catch {
           handleOpenChange(true);
         }
-      } catch {
-        handleOpenChange(true);
-      }
-    }, autoTriggerDelayMs);
+      }, autoTriggerDelayMs);
+    }
 
     // 2. Desktop Exit Intent (mouse leaving top of page)
     const handleMouseLeave = (e: MouseEvent) => {
@@ -147,10 +150,12 @@ export function ProductLeadModal({
       }
     };
 
-    window.addEventListener("mouseleave", handleMouseLeave);
+    if (enableExitIntent) {
+      window.addEventListener("mouseleave", handleMouseLeave);
+    }
 
     return () => {
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
       window.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, [productSlug, autoTriggerDelayMs, enableExitIntent, handleOpenChange]);
@@ -463,25 +468,10 @@ export function ProductLeadModal({
 }
 
 /**
- * Floating trigger pill rendered on the product page (bottom left, above WhatsApp)
- * Allows the user to re-open the offer popup anytime.
+ * Deprecated floating trigger pill - disabled per user request.
  */
-export function ProductLeadFloatingButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="fixed bottom-20 left-4 sm:bottom-24 sm:left-6 z-40 flex items-center gap-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white text-xs font-bold px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full shadow-lg shadow-blue-900/20 border border-blue-400/30 transition-all hover:scale-105 group"
-      aria-label="استعلام فوری قیمت و پیش فاکتور"
-    >
-      <span className="relative flex h-2.5 w-2.5">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400" />
-      </span>
-      <span>استعلام قیمت و پیش‌فاکتور</span>
-      <ChevronRight size={14} className="text-blue-200 group-hover:-translate-x-0.5 transition-transform" />
-    </button>
-  );
+export function ProductLeadFloatingButton(_props?: { onClick?: () => void }) {
+  return null;
 }
 
 /**

@@ -187,23 +187,12 @@ export function SiteFooter() {
         </div>
       </div>
 
-      {/* ─── Floating Desktop WhatsApp Button ─── */}
-      <a
-        href={whatsappLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="hidden md:flex fixed bottom-6 left-6 z-50 w-14 h-14 bg-emerald-500 hover:bg-emerald-600 rounded-full items-center justify-center shadow-lg shadow-emerald-500/30 transition-all hover:scale-110"
-        title="مشاوره در واتساپ"
-        aria-label="مشاوره در واتساپ"
-      >
-        <MessageCircle size={26} className="text-white" />
-      </a>
-
+      {/* ─── Floating Desktop Rubika Button ─── */}
       <a
         href={rubikaLink}
         target="_blank"
         rel="noopener noreferrer"
-        className="hidden md:flex fixed bottom-24 left-6 z-50 w-14 h-14 bg-gradient-to-tr from-blue-700 to-indigo-900 hover:from-blue-600 hover:to-indigo-800 rounded-full items-center justify-center shadow-lg shadow-indigo-950/40 transition-all hover:scale-110"
+        className="hidden md:flex fixed bottom-6 left-6 z-50 w-14 h-14 bg-gradient-to-tr from-blue-700 to-indigo-900 hover:from-blue-600 hover:to-indigo-800 rounded-full items-center justify-center shadow-lg shadow-indigo-950/40 transition-all hover:scale-110"
         title="ارتباط در روبیکا"
         aria-label="ارتباط در روبیکا"
       >

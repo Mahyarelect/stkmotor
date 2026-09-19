@@ -33,7 +33,6 @@ import { rubikaHref, telHref, useSiteSettings, whatsappHref } from "@/hooks/use-
 import { RubikaIcon } from "@/components/icons/RubikaIcon";
 import {
   ProductLeadModal,
-  ProductLeadFloatingButton,
   ProductLeadTriggerButton,
 } from "@/components/product/ProductLeadModal";
 
@@ -662,10 +661,10 @@ export default function ProductDetailClient({
                   تماس تلفنی
                 </Button>
               </a>
-              <a href={inquiryLink || undefined} target="_blank" rel="noopener" aria-label="ارتباط و استعلام قیمت در روبیکا" aria-disabled={!inquiryLink} onClick={(event) => { if (!inquiryLink) event.preventDefault(); }}>
+              <a href={inquiryLink || undefined} target="_blank" rel="noopener" aria-label="ارتباط در روبیکا" aria-disabled={!inquiryLink} onClick={(event) => { if (!inquiryLink) event.preventDefault(); }}>
                 <Button disabled={!inquiryLink} size="lg" variant="outline" className="border-blue-300 text-blue-800 hover:bg-blue-50 px-6 rounded-xl">
                   <RubikaIcon size={18} className="ml-1.5" />
-                  ارتباط و استعلام قیمت در روبیکا
+                  ارتباط در روبیکا
                 </Button>
               </a>
               <a href={whatsappHref(siteSettings.whatsapp, inquiryMessage)} target="_blank" rel="noopener" aria-label="ارتباط در واتساپ">
@@ -818,11 +817,9 @@ export default function ProductDetailClient({
         }
         isOpen={isLeadModalOpen}
         onOpenChange={setIsLeadModalOpen}
-        autoTriggerDelayMs={5000}
-        enableExitIntent={true}
+        autoTriggerDelayMs={0}
+        enableExitIntent={false}
       />
-
-      <ProductLeadFloatingButton onClick={() => setIsLeadModalOpen(true)} />
 
       {/* ─── Footer ─── */}
       <SiteFooter />
